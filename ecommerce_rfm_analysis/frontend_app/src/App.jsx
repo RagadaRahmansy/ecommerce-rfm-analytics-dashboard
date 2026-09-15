@@ -16,6 +16,7 @@ export default function App() {
   const [clusterData, setClusterData] = useState(null);
   const [forecastData, setForecastData] = useState(null);
   const [churnData, setChurnData] = useState(null);
+  const [affinityData, setAffinityData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,16 +26,18 @@ export default function App() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [overview, cluster, forecast, churn] = await Promise.all([
+      const [overview, cluster, forecast, churn, affinity] = await Promise.all([
         axios.get(`${API_BASE}/overview`),
         axios.get(`${API_BASE}/clustering`),
         axios.get(`${API_BASE}/forecast`),
-        axios.get(`${API_BASE}/churn`)
+        axios.get(`${API_BASE}/churn`),
+        axios.get(`${API_BASE}/affinity`)
       ]);
       setOverviewData(overview.data);
       setClusterData(cluster.data);
       setForecastData(forecast.data);
       setChurnData(churn.data);
+      setAffinityData(affinity.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -78,6 +81,12 @@ export default function App() {
             label="Revenue Forecast" 
             active={activeTab === 'forecast'} 
             onClick={() => setActiveTab('forecast')} 
+          />
+          <NavItem 
+            icon={<BarChart3 className="w-5 h-5 text-emerald-500" />} 
+            label="Cross-Selling" 
+            active={activeTab === 'affinity'} 
+            onClick={() => setActiveTab('affinity')} 
           />
         </nav>
       </aside>
@@ -202,6 +211,45 @@ export default function App() {
                       <Line type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={3} dot={{r: 4}} />
                     </LineChart>
                   </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'affinity' && affinityData && (
+            <div className="space-y-6">
+              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 className="text-lg font-semibold text-slate-800 mb-2">Customer Lifetime Category Affinity</h3>
+                <p className="text-slate-500 mb-6 text-sm">Cross-Selling recommendations based on historical customer purchase combinations.</p>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm text-slate-600">
+                    <thead className="bg-slate-50 text-slate-700 font-medium">
+                      <tr>
+                        <th className="px-4 py-3 border-b">Primary Category</th>
+                        <th className="px-4 py-3 border-b">Cross-Sell Opportunity</th>
+                        <th className="px-4 py-3 border-b">Joint Customers</th>
+                        <th className="px-4 py-3 border-b">Conversion Probability</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {affinityData.rules.map((rule, idx) => (
+                        <tr key={idx} className="border-b hover:bg-slate-50">
+                          <td className="px-4 py-3 font-medium text-slate-800">{rule.source}</td>
+                          <td className="px-4 py-3 font-medium text-emerald-600">{rule.target}</td>
+                          <td className="px-4 py-3">{rule.support_both.toLocaleString()}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex items-center">
+                              <div className="w-full bg-slate-200 rounded-full h-2.5 mr-2">
+                                <div className="bg-emerald-500 h-2.5 rounded-full" style={{ width: `${rule.confidence_percent}%` }}></div>
+                              </div>
+                              <span className="text-xs font-semibold">{rule.confidence_percent.toFixed(1)}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>

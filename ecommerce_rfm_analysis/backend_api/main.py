@@ -178,6 +178,53 @@ def get_churn_prediction():
         "top_at_risk": result
     }
 
+@app.get("/api/affinity")
+def get_category_affinity(min_support: int = 10):
+    # Customer Lifetime Affinity (Cross-Selling Analysis)
+    df = get_filtered_data()
+    
+    # Create a customer-category matrix (1 if customer bought the category, 0 otherwise)
+    user_category = df.groupby(['CustomerID', 'Category']).size().unstack(fill_value=0)
+    user_category = (user_category > 0).astype(int)
+    
+    categories = user_category.columns.tolist()
+    rules = []
+    
+    # Calculate support and confidence
+    for i in categories:
+        for j in categories:
+            if i == j:
+                continue
+            
+            # Customers who bought i
+            bought_i = user_category[i] == 1
+            num_bought_i = bought_i.sum()
+            
+            if num_bought_i < min_support:
+                continue
+                
+            # Customers who bought both i and j
+            bought_both = (user_category[i] == 1) & (user_category[j] == 1)
+            num_bought_both = bought_both.sum()
+            
+            # Confidence: given they bought i, probability they buy j
+            confidence = (num_bought_both / num_bought_i) * 100
+            
+            rules.append({
+                "source": i,
+                "target": j,
+                "support_both": int(num_bought_both),
+                "confidence_percent": round(confidence, 1)
+            })
+            
+    # Sort by confidence
+    rules.sort(key=lambda x: x['confidence_percent'], reverse=True)
+    
+    # Return top 10 rules
+    return {
+        "rules": rules[:10]
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
