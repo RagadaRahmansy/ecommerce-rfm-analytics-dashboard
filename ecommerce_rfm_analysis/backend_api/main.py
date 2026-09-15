@@ -60,7 +60,7 @@ def get_overview(countries: str = None):
     total_cust = int(data['CustomerID'].nunique())
     aov = total_sales / total_tx if total_tx > 0 else 0
     
-    monthly_sales = data.resample('M', on='InvoiceDate')['TotalPrice'].sum().reset_index()
+    monthly_sales = data.resample('ME', on='InvoiceDate')['TotalPrice'].sum().reset_index()
     monthly_sales['Period'] = monthly_sales['InvoiceDate'].dt.strftime('%b %Y')
     trend_data = monthly_sales[['Period', 'TotalPrice']].to_dict(orient='records')
     
@@ -114,7 +114,7 @@ def get_forecast(months: int = 3, countries: str = None):
     country_list = countries.split(',') if countries else None
     data = get_filtered_data(country_list)
     
-    ts_data = data.resample('M', on='InvoiceDate')['TotalPrice'].sum()
+    ts_data = data.resample('ME', on='InvoiceDate')['TotalPrice'].sum()
     
     if len(ts_data) < 6:
         return {"error": "Not enough data for forecasting"}
