@@ -264,7 +264,7 @@ function NavItem({ icon, label, active, onClick }) {
   return (
     <button 
       onClick={onClick}
-      className={w-full flex items-center px-6 py-3 transition-colors }
+      className={`w-full flex items-center px-6 py-3 transition-colors ${active ? 'bg-slate-800 text-white border-r-4 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
     >
       {icon}
       <span className="ml-3 font-medium">{label}</span>
