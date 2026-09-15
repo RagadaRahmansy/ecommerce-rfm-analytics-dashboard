@@ -1,5 +1,6 @@
 # E-Commerce Sales & Customer Segmentation (RFM Analysis)
 
+[![CI Pipeline](https://github.com/RagadaRahmansy/ecommerce-rfm-analytics-dashboard/actions/workflows/ci.yml/badge.svg)](https://github.com/RagadaRahmansy/ecommerce-rfm-analytics-dashboard/actions/workflows/ci.yml)
 This project is an end-to-end Data Analysis portfolio demonstrating how to process e-commerce transaction data, perform Exploratory Data Analysis (EDA), calculate RFM (Recency, Frequency, Monetary) metrics, and build an interactive Streamlit dashboard.
 
 ## Project Structure
