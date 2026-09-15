@@ -3,14 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
 import os
+from sqlalchemy import create_engine, inspect
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-app = FastAPI(title="E-Commerce API")
+app = FastAPI(title="E-Commerce API with PostgreSQL")
 
-# Enable CORS for React Frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -19,25 +19,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load data at startup
+# Database Setup
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/ecommerce_db")
+engine = create_engine(DATABASE_URL)
+
 DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'cleaned_data.csv')
-df = pd.DataFrame()
 
 @app.on_event("startup")
-def load_data():
-    global df
-    if os.path.exists(DATA_PATH):
-        df = pd.read_csv(DATA_PATH)
-        df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
-        
+def startup_db():
+    # Check if table exists, if not, load from CSV
+    inspector = inspect(engine)
+    if not inspector.has_table("transactions"):
+        print("Database is empty. Ingesting data from CSV...")
+        if os.path.exists(DATA_PATH):
+            df_init = pd.read_csv(DATA_PATH)
+            df_init['InvoiceDate'] = pd.to_datetime(df_init['InvoiceDate'])
+            df_init.to_sql('transactions', engine, if_exists='replace', index=False)
+            print("Data successfully ingested into PostgreSQL.")
+        else:
+            print(f"Error: {DATA_PATH} not found.")
+    else:
+        print("Table 'transactions' already exists. Skipping ingestion.")
+
 def get_filtered_data(country_list=None):
+    # Dynamically pull from PostgreSQL
+    df = pd.read_sql_table('transactions', engine)
+    df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+    
     if country_list and len(country_list) > 0:
         return df[df['Country'].isin(country_list)]
     return df
 
 @app.get("/api/overview")
 def get_overview(countries: str = None):
-    """Returns general KPIs and trend data"""
     country_list = countries.split(',') if countries else None
     data = get_filtered_data(country_list)
     
@@ -65,7 +79,6 @@ def get_overview(countries: str = None):
 
 @app.get("/api/clustering")
 def get_clustering(k: int = 4, countries: str = None):
-    """Returns K-Means clustering results based on RFM"""
     country_list = countries.split(',') if countries else None
     data = get_filtered_data(country_list)
     
@@ -98,7 +111,6 @@ def get_clustering(k: int = 4, countries: str = None):
 
 @app.get("/api/forecast")
 def get_forecast(months: int = 3, countries: str = None):
-    """Returns time series forecasting using Holt-Winters"""
     country_list = countries.split(',') if countries else None
     data = get_filtered_data(country_list)
     
@@ -120,25 +132,16 @@ def get_forecast(months: int = 3, countries: str = None):
 
 @app.get("/api/churn")
 def get_churn_prediction():
-    """Predicts churn probability using Random Forest based on RFM logic."""
-    # This acts globally, no country filter to ensure enough training data
+    df = get_filtered_data()
     snapshot_date = df['InvoiceDate'].max() + pd.Timedelta(days=1)
     
-    # Feature extraction
     rfm = df.groupby('CustomerID').agg({
-        'InvoiceDate': lambda x: (snapshot_date - x.max()).days, # Recency
-        'InvoiceNo': 'nunique', # Frequency
-        'TotalPrice': 'sum' # Monetary
+        'InvoiceDate': lambda x: (snapshot_date - x.max()).days, 
+        'InvoiceNo': 'nunique', 
+        'TotalPrice': 'sum' 
     }).rename(columns={'InvoiceDate': 'Recency', 'InvoiceNo': 'Frequency', 'TotalPrice': 'Monetary'})
     
-    # Define Churn: If a customer hasn't purchased in the last 60 days, they are considered churned (1) else (0)
-    # This is a basic definition for the model to train on.
     rfm['IsChurned'] = (rfm['Recency'] > 60).astype(int)
-    
-    # To predict future churn, we shift the window or just build a quick classification model.
-    # In a real scenario, we'd use features from (T-90 to T-30) to predict churn at T.
-    # For this portfolio, we'll train on Recency, Frequency, Monetary to classify Churn, 
-    # then fetch active customers (Recency <= 60) and see their probability of falling into churn class.
     
     features = ['Frequency', 'Monetary']
     X = rfm[features]
@@ -147,7 +150,6 @@ def get_churn_prediction():
     model = RandomForestClassifier(n_estimators=50, random_state=42)
     model.fit(X, y)
     
-    # Now predict on ACTIVE customers to see who is at risk
     active_customers = rfm[rfm['IsChurned'] == 0].copy()
     
     if len(active_customers) == 0:
@@ -156,7 +158,6 @@ def get_churn_prediction():
     probs = model.predict_proba(active_customers[features])[:, 1]
     active_customers['ChurnRiskProbability'] = probs * 100
     
-    # Sort by risk and return top 50
     risky = active_customers.sort_values('ChurnRiskProbability', ascending=False).head(50)
     risky.reset_index(inplace=True)
     
