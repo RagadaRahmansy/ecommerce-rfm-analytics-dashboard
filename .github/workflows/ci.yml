@@ -19,16 +19,14 @@ jobs:
         cache: 'pip'
         
     - name: Install dependencies
-      working-directory: ./backend_api
+      working-directory: ./ecommerce_rfm_analysis/backend_api
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest httpx
         
     - name: Run Pytest
-      working-directory: ./backend_api
-      # To prevent tests from failing due to missing DB in CI, 
-      # we can set a dummy database URL or skip DB initialization for tests.
+      working-directory: ./ecommerce_rfm_analysis/backend_api
       run: |
         pytest test_main.py
 
@@ -42,12 +40,12 @@ jobs:
       with:
         node-version: "20"
         cache: 'npm'
-        cache-dependency-path: ./frontend_app/package-lock.json
+        cache-dependency-path: ./ecommerce_rfm_analysis/frontend_app/package-lock.json
         
     - name: Install dependencies
-      working-directory: ./frontend_app
+      working-directory: ./ecommerce_rfm_analysis/frontend_app
       run: npm ci
         
     - name: Build frontend
-      working-directory: ./frontend_app
+      working-directory: ./ecommerce_rfm_analysis/frontend_app
       run: npm run build
