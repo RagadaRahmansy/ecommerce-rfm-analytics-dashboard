@@ -2,8 +2,8 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 
-# Override the database URL to use an in-memory SQLite database for testing BEFORE importing the app
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+# Use a physical SQLite file to avoid in-memory connection loss between threads
+os.environ["DATABASE_URL"] = "sqlite:///./test_db.sqlite"
 
 from main import app, startup_db
 
