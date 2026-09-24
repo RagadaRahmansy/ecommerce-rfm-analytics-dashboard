@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 import redis
@@ -51,6 +51,18 @@ app.add_middleware(
 # --- HIGH-PERFORMANCE REDIS CACHING LAYER ---
 REDIS_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
 redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
+
+def check_rate_limit(key: str, max_requests: int = 10, window_seconds: int = 60) -> bool:
+    """Redis-backed distributed rate limiter (Sliding Window Counter)."""
+    try:
+        current = redis_client.incr(key)
+        if current == 1:
+            redis_client.expire(key, window_seconds)
+        if current > max_requests:
+            return False
+    except Exception:
+        pass
+    return True
 
 def get_cached(key: str):
     try:
@@ -178,7 +190,16 @@ def register(request: RegisterRequest, db: Session = Depends(get_db)):
     return {"message": "User and Tenant created successfully."}
 
 @app.post("/api/auth/login")
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    # Rate Limiting Check: Max 10 attempts per IP per minute
+    client_ip = request.client.host if request.client else "unknown"
+    rate_key = f"rate:login:{client_ip}"
+    if not check_rate_limit(rate_key, max_requests=10, window_seconds=60):
+        raise HTTPException(
+            status_code=429,
+            detail="Too many authentication attempts. Please try again after 60 seconds."
+        )
+
     user = db.query(User).filter(User.email == form_data.username).first()
     if not user or not pwd_context.verify(form_data.password, user.hashed_password):
         raise HTTPException(status_code=401, detail="Incorrect email or password")

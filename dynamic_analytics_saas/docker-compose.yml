@@ -1,18 +1,21 @@
 # ==============================================================================
 # Ragada Analytics - Enterprise Production Docker Compose Configuration
-# Features: Hardened Security, Resource Limits, Healthchecks, Log Rotation
+# Features: Hardened Security, Localhost Port Isolation, Resource Limits, Healthchecks
 # ==============================================================================
 services:
   db:
     image: postgres:15-alpine
     container_name: ragada-analytics-db
     restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
       POSTGRES_DB: ${POSTGRES_DB:-saas_db}
-    ports:
-      - "${HOST_DB_PORT:-5433}:5432"
+    # Security: Zero-Trust Network Isolation (Accessible only within Docker bridge network)
+    expose:
+      - "5432"
     volumes:
       - saas_pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -37,8 +40,11 @@ services:
     image: redis:7-alpine
     container_name: ragada-analytics-redis
     restart: unless-stopped
-    ports:
-      - "${HOST_REDIS_PORT:-6380}:6379"
+    security_opt:
+      - "no-new-privileges:true"
+    # Security: Zero-Trust Network Isolation (Accessible only within Docker bridge network)
+    expose:
+      - "6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -61,6 +67,8 @@ services:
       dockerfile: backend_api/Dockerfile
     container_name: ragada-analytics-backend
     restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
     ports:
       - "${HOST_BACKEND_PORT:-8001}:8001"
     environment:
@@ -101,6 +109,8 @@ services:
       dockerfile: backend_api/Dockerfile
     container_name: ragada-analytics-worker
     restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgresql://user:password@db:5432/saas_db}
       - CELERY_BROKER_URL=${CELERY_BROKER_URL:-redis://redis:6379/0}
@@ -140,6 +150,9 @@ services:
       dockerfile: Dockerfile
     container_name: ragada-analytics-frontend
     restart: unless-stopped
+    security_opt:
+      - "no-new-privileges:true"
+    # Single Public Entrypoint Port (Served by Nginx Alpine with Rate Limiting)
     ports:
       - "${HOST_FRONTEND_PORT:-5174}:80"
     depends_on:

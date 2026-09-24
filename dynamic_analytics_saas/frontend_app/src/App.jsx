@@ -22,7 +22,7 @@ import TargetsModal from './components/modals/TargetsModal';
 import DrilldownModal from './components/modals/DrilldownModal';
 import DocsModal from './components/modals/DocsModal';
 
-const API_BASE = 'http://localhost:8001/api';
+const API_BASE = window.location.port === '5174' ? '/api' : (import.meta.env.VITE_API_BASE || 'http://localhost:8001/api');
 
 export default function App() {
   // Authentication State
