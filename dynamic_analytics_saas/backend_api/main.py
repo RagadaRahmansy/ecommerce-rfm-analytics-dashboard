@@ -1,3 +1,4 @@
+import re
 from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
@@ -825,21 +826,29 @@ def sanitize_and_validate_sql(sql: str, tenant_id: int) -> str:
         
     return cleaned
 
-@app.post("/api/copilot/query")
-def copilot_query(
-    request: CopilotQueryRequest,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """AI Data Copilot: Translates natural language questions into safe, instant SQL analytics."""
-    tenant_id = current_user.tenant_id
-    raw_query = request.query.strip().lower()
-    t0 = time.time()
+def parse_nlp_query(raw_query: str, tenant_id: int):
+    q = raw_query.strip().lower()
     
-    # NLP Intent Matching & Query Synthesis
-    # 1. Top Customers / High Spenders
-    if any(k in raw_query for k in ["pelanggan", "customer", "tertinggi", "terbesar", "top customer", "loyal", "vip"]):
-        sql = """
+    # 1. Dynamic Limit Extraction (e.g. "3 pelanggan", "10 kategori")
+    match_num = re.search(r'\b(\d+)\b', q)
+    limit = int(match_num.group(1)) if match_num else 5
+    if limit > 50:
+        limit = 50
+    if limit < 1:
+        limit = 5
+        
+    # 2. Ordering Direction Detection (ASC vs DESC)
+    is_ascending = any(k in q for k in [
+        "terendah", "terkecil", "paling sedikit", "terbawah", "paling rendah", 
+        "paling kecil", "bottom", "least", "lowest", "min", "sedikit"
+    ])
+    direction = "ASC" if is_ascending else "DESC"
+    dir_label = "terendah / paling kecil" if is_ascending else "tertinggi / paling besar"
+    
+    # 3. Intent & Subject Classification
+    # A. Customers / Pelanggan
+    if any(k in q for k in ["pelanggan", "customer", "klien", "pembeli", "buyer", "user", "vip"]):
+        sql = f"""
             SELECT 
                 "CustomerID", 
                 COUNT(DISTINCT "InvoiceNo") as total_orders, 
@@ -848,14 +857,56 @@ def copilot_query(
             FROM transactions
             WHERE tenant_id = :tenant_id AND "CustomerID" IS NOT NULL
             GROUP BY "CustomerID"
-            ORDER BY total_spent DESC
-            LIMIT 5
+            ORDER BY total_spent {direction}
+            LIMIT {limit}
         """
         viz = "table"
-        answer = "Berikut adalah 5 pelanggan dengan akumulasi nilai belanja tertinggi (VIP). Pelanggan ini berkontribusi paling besar terhadap omset perusahaan."
-        
-    # 2. Monthly Trend / Revenue movement
-    elif any(k in raw_query for k in ["tren", "bulan", "monthly", "waktu", "perkembangan", "pertumbuhan"]):
+        if is_ascending:
+            answer = f"Berikut adalah {limit} pelanggan dengan akumulasi nilai belanja terendah (kontribusi belanja paling kecil)."
+        else:
+            answer = f"Berikut adalah {limit} pelanggan dengan akumulasi nilai belanja tertinggi (VIP / Top Spenders)."
+            
+    # B. Categories / Kategori Produk
+    elif any(k in q for k in ["kategori", "category", "produk", "product", "item", "barang", "laris"]):
+        sql = f"""
+            SELECT 
+                "Category", 
+                ROUND(SUM("TotalPrice")::numeric, 2) as total_revenue, 
+                ROUND(SUM("Quantity")::numeric, 0) as total_quantity, 
+                COUNT(DISTINCT "InvoiceNo") as orders_count
+            FROM transactions
+            WHERE tenant_id = :tenant_id
+            GROUP BY "Category"
+            ORDER BY total_revenue {direction}
+            LIMIT {limit}
+        """
+        viz = "bar"
+        if is_ascending:
+            answer = f"Berikut adalah {limit} kategori produk dengan performa pendapatan terendah."
+        else:
+            answer = f"Berikut adalah {limit} kategori produk paling laris dengan total pendapatan tertinggi."
+
+    # C. Transactions / Orders
+    elif any(k in q for k in ["transaksi", "order", "pesanan", "invoice", "pembelian"]):
+        sql = f"""
+            SELECT 
+                "InvoiceNo", 
+                TO_CHAR("InvoiceDate", 'YYYY-MM-DD') as date, 
+                "CustomerID", 
+                "Category", 
+                "Quantity", 
+                ROUND("TotalPrice"::numeric, 2) as total_price, 
+                "Country"
+            FROM transactions
+            WHERE tenant_id = :tenant_id
+            ORDER BY "TotalPrice" {direction}
+            LIMIT {limit}
+        """
+        viz = "table"
+        answer = f"Berikut adalah {limit} transaksi dengan nilai pesanan {dir_label}."
+
+    # D. Monthly Time-Series Trend
+    elif any(k in q for k in ["tren", "bulan", "monthly", "waktu", "perkembangan", "pertumbuhan"]):
         sql = """
             SELECT 
                 TO_CHAR("InvoiceDate", 'YYYY-MM') as period, 
@@ -865,31 +916,14 @@ def copilot_query(
             WHERE tenant_id = :tenant_id
             GROUP BY TO_CHAR("InvoiceDate", 'YYYY-MM')
             ORDER BY period ASC
-            LIMIT 24
+            LIMIT 36
         """
         viz = "line"
         answer = "Berikut adalah grafik perkembangan tren pendapatan dan volume pesanan bulanan selama periode transaksi aktif."
 
-    # 3. Category Breakdown / Best selling categories
-    elif any(k in raw_query for k in ["kategori", "category", "produk", "laris", "terlaris", "item"]):
-        sql = """
-            SELECT 
-                "Category", 
-                ROUND(SUM("TotalPrice")::numeric, 2) as total_revenue, 
-                ROUND(SUM("Quantity")::numeric, 0) as total_quantity, 
-                COUNT(DISTINCT "InvoiceNo") as orders_count
-            FROM transactions
-            WHERE tenant_id = :tenant_id
-            GROUP BY "Category"
-            ORDER BY total_revenue DESC
-            LIMIT 7
-        """
-        viz = "bar"
-        answer = "Berikut adalah distribusi performa penjualan per kategori produk, diurutkan berdasarkan total pendapatan yang dihasilkan."
-
-    # 4. Churn Risk / Inactive Customers (>60 days)
-    elif any(k in raw_query for k in ["churn", "tidak aktif", "risiko", "hilang", "pasif", "dorman"]):
-        sql = """
+    # E. Churn Risk / Inactive Customers (>60 days)
+    elif any(k in q for k in ["churn", "tidak aktif", "risiko", "hilang", "pasif", "dorman"]):
+        sql = f"""
             WITH last_tx AS (
                 SELECT 
                     "CustomerID", 
@@ -909,14 +943,14 @@ def copilot_query(
             FROM last_tx
             WHERE EXTRACT(epoch FROM ((SELECT MAX("InvoiceDate") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400 > 60
             ORDER BY total_spent DESC
-            LIMIT 10
+            LIMIT {limit}
         """
         viz = "table"
-        answer = "Ditemukan daftar pelanggan berharga tinggi yang telah tidak aktif melakukan pembelian selama lebih dari 60 hari (risiko churn tinggi)."
+        answer = f"Ditemukan {limit} pelanggan bernilai tinggi yang telah tidak aktif melakukan transaksi selama lebih dari 60 hari (risiko churn tinggi)."
 
-    # 5. Geographic / Country Distribution
-    elif any(k in raw_query for k in ["negara", "country", "wilayah", "daerah", "geografis"]):
-        sql = """
+    # F. Geographic / Country Distribution
+    elif any(k in q for k in ["negara", "country", "wilayah", "daerah", "geografis"]):
+        sql = f"""
             SELECT 
                 "Country", 
                 ROUND(SUM("TotalPrice")::numeric, 2) as total_sales, 
@@ -925,13 +959,13 @@ def copilot_query(
             FROM transactions
             WHERE tenant_id = :tenant_id AND "Country" IS NOT NULL
             GROUP BY "Country"
-            ORDER BY total_sales DESC
-            LIMIT 7
+            ORDER BY total_sales {direction}
+            LIMIT {limit}
         """
         viz = "pie"
-        answer = "Berikut adalah persebaran pangsa pasar dan pendapatan transaksi berdasarkan asal negara pembeli."
+        answer = f"Berikut adalah sebaran pendapatan dan transaksi per negara diurutkan berdasarkan {dir_label}."
 
-    # 6. Overall Business KPI & AOV Summary
+    # G. Global KPI & AOV Summary (Default)
     else:
         sql = """
             SELECT 
@@ -946,6 +980,21 @@ def copilot_query(
         viz = "metric"
         answer = "Berikut adalah ringkasan indikator performa utama (KPI) bisnis, termasuk Total Pendapatan, Transaksi, dan Rata-rata Nilai Pesanan (AOV)."
 
+    return sql.strip(), viz, answer
+
+@app.post("/api/copilot/query")
+def copilot_query(
+    request: CopilotQueryRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """AI Data Copilot: Translates natural language questions into safe, instant SQL analytics."""
+    tenant_id = current_user.tenant_id
+    raw_query = request.query.strip()
+    t0 = time.time()
+    
+    sql, viz, answer = parse_nlp_query(raw_query, tenant_id)
+    
     # Execute query securely
     try:
         with engine.connect() as conn:
@@ -977,9 +1026,8 @@ def copilot_query(
                 "summary": {
                     "rows_count": len(formatted_rows),
                     "latency_ms": latency_ms,
-                    "model": "Ragada Semantic Engine v2.4 (NLP)"
+                    "model": "Ragada Semantic Engine v2.5 (Smart NLP)"
                 }
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution error: {str(e)}")
-

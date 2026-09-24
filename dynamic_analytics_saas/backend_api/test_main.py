@@ -98,11 +98,13 @@ def test_copilot_query_endpoint():
     
     # Test NLP questions
     queries = [
-        "Siapa 5 pelanggan tertinggi?",
-        "Tampilkan tren pendapatan bulanan",
-        "Kategori produk apa yang paling laris?"
+        ("Siapa 5 pelanggan tertinggi?", "DESC"),
+        ("Siapa pelanggan terendah?", "ASC"),
+        ("Tampilkan tren pendapatan bulanan", "ASC"),
+        ("Kategori produk apa yang paling laris?", "DESC"),
+        ("Kategori produk terendah", "ASC")
     ]
-    for q in queries:
+    for q, expected_order in queries:
         res = client.post(
             "/api/copilot/query",
             json={"query": q},
@@ -112,6 +114,7 @@ def test_copilot_query_endpoint():
         data = res.json()
         assert "answer" in data
         assert "sql" in data
+        assert expected_order in data["sql"]
         assert "visualization" in data
         assert "summary" in data
 

@@ -23,6 +23,7 @@ export default function CopilotView({ API_BASE }) {
 
   const suggestionPrompts = [
     { label: '🏆 Pelanggan Belanja Tertinggi', query: 'Siapa 5 pelanggan dengan total belanja tertinggi?' },
+    { label: '📉 Pelanggan Belanja Terendah', query: 'Siapa 5 pelanggan dengan total belanja terendah?' },
     { label: '📈 Tren Pendapatan Bulanan', query: 'Tampilkan tren pendapatan dan volume order bulanan' },
     { label: '📦 Kategori Terlaris', query: 'Kategori produk mana yang paling laris dan berapa pendapatannya?' },
     { label: '⚠️ Risiko Pelanggan Churn', query: 'Pelanggan mana yang berisiko churn atau tidak aktif >60 hari?' },
