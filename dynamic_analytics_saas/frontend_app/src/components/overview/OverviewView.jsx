@@ -28,7 +28,7 @@ export default function OverviewView({
     : '0';
 
   return (
-    <>
+    <div className="flex flex-col w-full gap-6">
       {/* Top Bar / Executive Meta Controls */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-xs">
         <div className="flex flex-col gap-1">
@@ -67,7 +67,7 @@ export default function OverviewView({
       {/* KPI Metric Strip (4 Cards) */}
       <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-gutter">
         {/* Card 1: Revenue */}
-        <div className="bg-surface-container p-space-lg rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all">
+        <div className="bg-surface-container p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all min-h-[148px]">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Revenue</span>
@@ -75,12 +75,12 @@ export default function OverviewView({
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span>+18.4% YoY
             </span>
           </div>
-          <div className="my-space-md flex items-baseline justify-between">
+          <div className="my-2 flex items-baseline justify-between">
             <div className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
               ${(totalSales / 1000000).toFixed(2)}M
             </div>
           </div>
-          <div className="flex flex-col gap-1.5 pt-space-xs">
+          <div className="flex flex-col gap-1.5 pt-2 border-t border-outline-variant/15 mt-auto">
             <div className="flex justify-between font-label-sm text-label-sm text-on-surface-variant">
               <span>Target Progress</span>
               <span className="text-on-surface font-semibold">
@@ -97,54 +97,54 @@ export default function OverviewView({
         </div>
 
         {/* Card 2: Orders */}
-        <div className="bg-surface-container p-space-lg rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all">
+        <div className="bg-surface-container p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all min-h-[148px]">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Orders</span>
             <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-sm text-label-sm">
               <span className="material-symbols-outlined text-[14px]">trending_up</span>+9.2% WoW
             </span>
           </div>
-          <div className="my-space-md flex items-baseline justify-between">
+          <div className="my-2 flex items-baseline justify-between">
             <div className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
               {totalTx.toLocaleString()}
             </div>
           </div>
-          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+          <div className="flex items-center justify-between pt-2 border-t border-outline-variant/15 mt-auto font-label-sm text-label-sm text-on-surface-variant">
             <span>Customer Base</span>
             <span className="font-code-md text-on-surface font-semibold">{totalCustomers.toLocaleString()} accounts</span>
           </div>
         </div>
 
         {/* Card 3: AOV */}
-        <div className="bg-surface-container p-space-lg rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all">
+        <div className="bg-surface-container p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all min-h-[148px]">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Avg Order Value</span>
             <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-primary/20 text-primary-fixed font-label-sm text-label-sm">
               <span className="material-symbols-outlined text-[14px]">arrow_upward</span>+3.2% vs Plan
             </span>
           </div>
-          <div className="my-space-md flex items-baseline justify-between">
+          <div className="my-2 flex items-baseline justify-between">
             <div className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
               ${aov.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
           </div>
-          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+          <div className="flex items-center justify-between pt-2 border-t border-outline-variant/15 mt-auto font-label-sm text-label-sm text-on-surface-variant">
             <span>Avg Items Per Order</span>
             <span className="font-code-md text-on-surface font-semibold">Active</span>
           </div>
         </div>
 
         {/* Card 4: Churn Risk */}
-        <div className="bg-surface-container p-space-lg rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all">
+        <div className="bg-surface-container p-5 rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all min-h-[148px]">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Avg Churn Risk</span>
           </div>
-          <div className="my-space-md flex items-baseline justify-between">
+          <div className="my-2 flex items-baseline justify-between">
             <div className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
               {avgRisk}% <span className="font-headline-sm text-headline-sm text-on-surface-variant font-normal">Risk</span>
             </div>
           </div>
-          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+          <div className="flex items-center justify-between pt-2 border-t border-outline-variant/15 mt-auto font-label-sm text-label-sm text-on-surface-variant">
             <span>Retention Health</span>
             <span className={`font-code-md font-semibold ${avgRisk < 40 ? 'text-tertiary' : avgRisk < 70 ? 'text-amber-500' : 'text-error'}`}>
               {avgRisk < 40 ? 'Healthy' : avgRisk < 70 ? 'Moderate' : 'High Alert'}
@@ -345,6 +345,6 @@ export default function OverviewView({
           </table>
         </div>
       </section>
-    </>
+    </div>
   );
 }
