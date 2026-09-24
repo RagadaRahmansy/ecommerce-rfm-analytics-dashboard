@@ -21,6 +21,7 @@ export default function OverviewView({
 
   const totalSales = overviewData?.kpi?.total_sales || 0;
   const totalTx = overviewData?.kpi?.total_transactions || 0;
+  const totalCustomers = overviewData?.kpi?.total_customers || 0;
   const aov = overviewData?.kpi?.aov || 0;
   const avgRisk = (churnData && churnData.top_at_risk && churnData.top_at_risk.length > 0)
     ? (churnData.top_at_risk.reduce((acc, curr) => acc + curr.RiskPercent, 0) / churnData.top_at_risk.length).toFixed(1)
@@ -31,15 +32,7 @@ export default function OverviewView({
       {/* Top Bar / Executive Meta Controls */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-xs">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-high text-tertiary font-label-sm text-label-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
-              STREAMING TELEMETRY
-            </span>
-            <span className="text-outline font-label-sm text-label-sm">•</span>
-            <span className="text-on-surface-variant font-label-sm text-label-sm">REFRESHED LIVE</span>
-          </div>
-          <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight">Executive Business Performance & Telemetry</h1>
+          <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight">Executive Business Performance Overview</h1>
           <p className="font-body-md text-body-md text-on-surface-variant">Real-time cross-enterprise ingestion and financial metric consolidation</p>
         </div>
         <div className="flex flex-wrap items-center gap-space-sm">
