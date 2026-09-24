@@ -15,13 +15,6 @@ export default function MetricStudioView({
       {/* Top Command Ribbon */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-lg bg-surface-container-high text-primary font-label-sm text-label-sm uppercase tracking-wider">Semantic Layer v4.12</span>
-            <span className="flex items-center gap-1 text-tertiary font-label-sm text-label-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-ping"></span>
-              99.99% Lineage Consistency
-            </span>
-          </div>
           <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight">Enterprise Semantic Catalog & Metric Studio</h1>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
             Governed single source of truth for business calculations, dimensions, and automated reporting.
@@ -49,9 +42,7 @@ export default function MetricStudioView({
               <div>
                 <span className="font-headline-sm text-headline-sm text-on-surface font-semibold">Catalog Repository</span>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="font-label-sm text-label-sm text-outline">{overviewData ? '6' : '0'} Verified</span>
-                  <span className="w-1 h-1 rounded-full bg-tertiary"></span>
-                  <span className="font-label-sm text-label-sm text-tertiary">Live Sync</span>
+                  <span className="font-label-sm text-label-sm text-outline">Standard Business Definitions</span>
                 </div>
               </div>
             </div>
@@ -63,15 +54,9 @@ export default function MetricStudioView({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Customer Lifetime Value (CLV)</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-label-sm text-label-sm text-outline">@analytics-core</span>
-                    <span className="w-1 h-1 rounded-full bg-tertiary"></span>
-                    <span className="font-label-sm text-label-sm text-tertiary">Realtime</span>
-                  </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex px-2 py-0.5 rounded-lg bg-tertiary/10 text-tertiary font-label-sm text-label-sm mr-1">CERTIFIED GOLD</span>
-                  <div className="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+                  <div className="font-headline-md text-headline-md text-on-surface font-bold">
                     ${overviewData.kpi ? (overviewData.kpi.total_sales / Math.max(1, overviewData.kpi.total_customers)).toFixed(0) : 0}
                   </div>
                 </div>
@@ -88,15 +73,9 @@ export default function MetricStudioView({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Monthly Recurring Revenue (MRR)</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-label-sm text-label-sm text-outline">@finance-bi</span>
-                    <span className="w-1 h-1 rounded-full bg-secondary"></span>
-                    <span className="font-label-sm text-label-sm text-secondary">1h Sync</span>
-                  </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex px-2 py-0.5 rounded-lg bg-tertiary/10 text-tertiary font-label-sm text-label-sm mr-1">CERTIFIED GOLD</span>
-                  <div className="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+                  <div className="font-headline-md text-headline-md text-on-surface font-bold">
                     ${overviewData.kpi ? (overviewData.kpi.total_sales / 33).toLocaleString(undefined, {maximumFractionDigits: 0}) : 0}
                   </div>
                 </div>
@@ -113,15 +92,9 @@ export default function MetricStudioView({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Active Customers (WAU)</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-label-sm text-label-sm text-outline">@product-growth</span>
-                    <span className="w-1 h-1 rounded-full bg-tertiary"></span>
-                    <span className="font-label-sm text-label-sm text-tertiary">Realtime</span>
-                  </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex px-2 py-0.5 rounded-lg bg-outline/10 text-outline font-label-sm text-label-sm mr-1">CERTIFIED SILVER</span>
-                  <div className="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+                  <div className="font-headline-md text-headline-md text-on-surface font-bold">
                     {overviewData.kpi ? overviewData.kpi.total_customers.toLocaleString() : 0}
                   </div>
                 </div>
@@ -138,15 +111,9 @@ export default function MetricStudioView({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Average Order Value (AOV)</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-label-sm text-label-sm text-outline">@finance-bi</span>
-                    <span className="w-1 h-1 rounded-full bg-secondary"></span>
-                    <span className="font-label-sm text-label-sm text-secondary">15m Batch</span>
-                  </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex px-2 py-0.5 rounded-lg bg-tertiary/10 text-tertiary font-label-sm text-label-sm mr-1">CERTIFIED GOLD</span>
-                  <div className="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+                  <div className="font-headline-md text-headline-md text-on-surface font-bold">
                     ${overviewData.kpi ? overviewData.kpi.aov.toLocaleString(undefined, {maximumFractionDigits: 0}) : 0}
                   </div>
                 </div>
@@ -163,15 +130,9 @@ export default function MetricStudioView({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">Churn Rate (Voluntary vs Invol.)</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="font-label-sm text-label-sm text-outline">@retention-ops</span>
-                    <span className="w-1 h-1 rounded-full bg-secondary"></span>
-                    <span className="font-label-sm text-label-sm text-secondary">6h Sync</span>
-                  </div>
                 </div>
                 <div className="text-right">
-                  <span className="inline-flex px-2 py-0.5 rounded-lg bg-tertiary/10 text-tertiary font-label-sm text-label-sm mr-1">CERTIFIED GOLD</span>
-                  <div className="font-headline-md text-headline-md text-on-surface font-bold mt-1">
+                  <div className="font-headline-md text-headline-md text-on-surface font-bold">
                     {churnData.top_at_risk.length > 0 ? (churnData.top_at_risk.reduce((a,c) => a + c.RiskPercent, 0) / churnData.top_at_risk.length).toFixed(2) : '0'}%
                   </div>
                 </div>
@@ -188,9 +149,6 @@ export default function MetricStudioView({
           <div className="bg-surface-container p-space-xl rounded-xl shadow-sm">
             <div className="flex items-center justify-between pb-space-md">
               <h2 className="font-headline-md text-headline-md text-on-surface font-semibold">Report Dimensions & Measures</h2>
-              <span className="flex items-center gap-1 text-tertiary font-label-sm text-label-sm">
-                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>LIVE COMPILER ACTIVE
-              </span>
             </div>
 
             <div className="h-80 rounded-xl bg-surface-container-lowest p-4">

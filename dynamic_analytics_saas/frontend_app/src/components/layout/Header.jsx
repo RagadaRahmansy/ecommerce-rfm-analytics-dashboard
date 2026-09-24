@@ -59,12 +59,6 @@ export default function Header({
           </select>
           <span className="material-symbols-outlined text-[16px] text-on-surface-variant absolute right-1.5 pointer-events-none">expand_more</span>
         </div>
-        
-        {/* Production Pill */}
-        <div className="hidden md:flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg bg-surface-container-low border border-outline-variant/20">
-          <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-          <span className="font-code-md text-body-sm text-secondary font-medium">Production v3.4.2</span>
-        </div>
 
         {/* Theme Toggle */}
         <button
@@ -91,7 +85,7 @@ export default function Header({
             <div className="absolute right-0 mt-2 w-80 rounded-xl bg-surface-container-high p-3 z-50 shadow-2xl border border-surface-variant flex flex-col gap-2 animate-in fade-in-50 zoom-in-95">
               <div className="flex items-center justify-between pb-2 border-b border-surface-container">
                 <span className="font-label-md text-label-md text-on-surface font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-tertiary"></span> System Telemetry Alerts
+                  <span className="w-2 h-2 rounded-full bg-tertiary"></span> System Notifications
                 </span>
                 <button onClick={() => setUnreadCount(0)} className="text-[11px] text-secondary hover:underline cursor-pointer">Mark all read</button>
               </div>
@@ -108,13 +102,6 @@ export default function Header({
                   <div>
                     <div className="text-on-surface font-semibold">AI Models Retrained</div>
                     <div className="text-on-surface-variant text-[11px]">RFM segmentation & churn risk matrix refreshed.</div>
-                  </div>
-                </div>
-                <div className="p-2.5 rounded-lg bg-surface-container text-xs flex gap-2.5 items-start">
-                  <span className="material-symbols-outlined text-primary text-[18px]">verified</span>
-                  <div>
-                    <div className="text-on-surface font-semibold">Cluster Health 99.98%</div>
-                    <div className="text-on-surface-variant text-[11px]">PROD-EU-WEST-1 responding within 18ms SLA.</div>
                   </div>
                 </div>
               </div>
@@ -143,7 +130,7 @@ export default function Header({
               <div className="p-2.5 bg-surface-container rounded-lg">
                 <div className="font-label-md text-label-md text-on-surface font-semibold">{userProfile?.company_name || 'Ragada Analytics'}</div>
                 <div className="font-label-sm text-label-sm text-outline truncate">{userProfile?.email || 'admin@ragada-analytics.com'}</div>
-                <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[10px] font-semibold">Tenant #{userProfile?.tenant_id || 13} • PROD-EU-WEST-1</div>
+                <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded bg-tertiary/10 text-tertiary text-[10px] font-semibold">Tenant #{userProfile?.tenant_id || 13}</div>
               </div>
               <button onClick={() => { setShowTargetsModal(true); setShowProfileModal(false); }} className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-container text-on-surface text-xs text-left transition-colors cursor-pointer">
                 <span className="material-symbols-outlined text-[16px] text-secondary">tune</span>

@@ -10,13 +10,6 @@ export default function ClusteringView({
       {/* Top Command Ribbon */}
       <section className="flex flex-col lg:flex-row lg:items-center justify-between gap-space-lg">
         <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-lg bg-surface-container-high text-tertiary font-label-sm text-label-sm uppercase tracking-wider">UNSUPERVISED ML • K-MEANS</span>
-            <span className="flex items-center gap-1 text-secondary font-label-sm text-label-sm">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-              RFM Vector Space Scaled
-            </span>
-          </div>
           <h1 className="font-headline-xl text-headline-xl text-on-surface tracking-tight">Customer RFM Segmentation</h1>
           <p className="font-body-md text-body-md text-on-surface-variant max-w-2xl">
             Algorithmic customer behavioral clustering based on Recency (last order days), Frequency (order count), and Monetary (total spend).

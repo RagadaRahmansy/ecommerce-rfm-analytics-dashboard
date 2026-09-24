@@ -26,13 +26,6 @@ export default function Sidebar({
               <span className="text-[10px] text-outline font-code-md tracking-wider">INTELLIGENCE PLATFORM</span>
             </div>
           </div>
-          <div className="flex items-center gap-space-xs">
-            <span className="inline-flex items-center px-space-xs py-0.5 rounded-lg bg-surface-container-high text-secondary font-label-sm text-label-sm tracking-wider uppercase">PROD-EU-WEST-1</span>
-            <div className="flex items-center gap-1.5 px-space-xs py-0.5 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
-              <span className="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
-              <span className="font-code-md text-[10px] text-tertiary">WH_XL (RUNNING)</span>
-            </div>
-          </div>
         </div>
 
         <nav className="flex flex-col gap-1 px-space-md mt-space-xs">
@@ -116,19 +109,6 @@ export default function Sidebar({
             </div>
           </a>
         </nav>
-      </div>
-
-      <div className="p-space-md m-space-md rounded-xl bg-surface-container flex flex-col gap-space-xs">
-        <div className="flex items-center justify-between">
-          <span className="flex items-center gap-1.5 font-label-sm text-label-sm text-on-surface">
-            <span className="w-2 h-2 rounded-full bg-tertiary"></span>Live Streaming
-          </span>
-          <span className="font-code-md text-body-sm text-tertiary font-medium">2.4k evt/s</span>
-        </div>
-        <div className="flex items-center justify-between pt-1">
-          <span className="font-label-sm text-label-sm text-outline">Cluster Health</span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded-lg bg-surface-container-high text-secondary font-label-sm text-[10px]">99.98% OK</span>
-        </div>
       </div>
     </aside>
   );

@@ -116,15 +116,9 @@ export default function OverviewView({
               {totalTx.toLocaleString()}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 pt-space-xs font-label-sm text-label-sm">
-            <div className="bg-surface-container-lowest px-2 py-1 rounded">
-              <span className="text-outline block">Avg Latency</span>
-              <span className="font-code-md text-code-md text-on-surface font-semibold">8ms</span>
-            </div>
-            <div className="bg-surface-container-lowest px-2 py-1 rounded text-right">
-              <span className="text-outline block">SLA Success</span>
-              <span className="font-code-md text-code-md text-tertiary font-semibold">99.98%</span>
-            </div>
+          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+            <span>Customer Base</span>
+            <span className="font-code-md text-on-surface font-semibold">{totalCustomers.toLocaleString()} accounts</span>
           </div>
         </div>
 
@@ -140,14 +134,10 @@ export default function OverviewView({
             <div className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
               ${aov.toLocaleString(undefined, { maximumFractionDigits: 0 })}
             </div>
-            <div className="flex items-center gap-1 font-label-md text-label-md text-tertiary">
-              <span className="material-symbols-outlined text-[16px]">verified</span>
-              Tier-1 Cohort
-            </div>
           </div>
-          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
-            <span className="text-outline">Cohort Expansion Velocity</span>
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-surface-container-lowest font-code-md text-code-md text-on-surface">Top 5% SaaS Index</span>
+          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+            <span>Avg Items Per Order</span>
+            <span className="font-code-md text-on-surface font-semibold">Active</span>
           </div>
         </div>
 
@@ -155,19 +145,17 @@ export default function OverviewView({
         <div className="bg-surface-container p-space-lg rounded-xl flex flex-col justify-between shadow-sm relative overflow-hidden group hover:bg-surface-container-high transition-all">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Avg Churn Risk</span>
-            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-sm text-label-sm">
-              <span className="material-symbols-outlined text-[14px]">speed</span>ML Predictive
-            </span>
           </div>
           <div className="my-space-md flex items-baseline justify-between">
             <div className="font-headline-xl text-headline-xl text-on-surface tracking-tight font-bold">
               {avgRisk}% <span className="font-headline-sm text-headline-sm text-on-surface-variant font-normal">Risk</span>
             </div>
-            <span className="px-2.5 py-1 rounded bg-tertiary text-on-tertiary font-headline-sm text-headline-sm font-bold shadow-sm">A+</span>
           </div>
-          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm">
-            <span className="text-outline">Capital Efficiency Ratio</span>
-            <span className="font-code-md text-code-md text-secondary font-semibold">3.8x LTV/CAC</span>
+          <div className="flex items-center justify-between pt-space-xs font-label-sm text-label-sm text-on-surface-variant">
+            <span>Retention Health</span>
+            <span className={`font-code-md font-semibold ${avgRisk < 40 ? 'text-tertiary' : avgRisk < 70 ? 'text-amber-500' : 'text-error'}`}>
+              {avgRisk < 40 ? 'Healthy' : avgRisk < 70 ? 'Moderate' : 'High Alert'}
+            </span>
           </div>
         </div>
       </section>
