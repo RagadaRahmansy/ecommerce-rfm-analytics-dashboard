@@ -17,6 +17,7 @@ export default function App() {
   const [forecastData, setForecastData] = useState(null);
   const [churnData, setChurnData] = useState(null);
   const [affinityData, setAffinityData] = useState(null);
+  const [trendFilter, setTrendFilter] = useState('All');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -107,18 +108,65 @@ export default function App() {
                 <MetricCard title="Avg Order Value" value={`Rp ${(overviewData.kpi.aov/1e6).toFixed(2)}M`} />
               </div>
               
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Revenue Trend</h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={overviewData.trend}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="Period" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} tickFormatter={(val) => `${(val/1e9).toFixed(0)}B`} />
-                      <RechartsTooltip formatter={(value) => `Rp ${(value/1e6).toFixed(2)}M`} />
-                      <Line type="monotone" dataKey="TotalPrice" stroke="#3b82f6" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
-                    </LineChart>
-                  </ResponsiveContainer>
+              <div className="grid grid-cols-3 gap-6">
+                <div className="col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-slate-800">Revenue Trend</h3>
+                    <select 
+                      className="border border-slate-300 rounded-md text-sm px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50"
+                      value={trendFilter}
+                      onChange={(e) => setTrendFilter(e.target.value)}
+                    >
+                      <option value="All">All Time</option>
+                      <option value="6">Last 6 Months</option>
+                      <option value="3">Last 3 Months</option>
+                    </select>
+                  </div>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={trendFilter === 'All' ? overviewData.trend : overviewData.trend.slice(-parseInt(trendFilter))}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                        <XAxis dataKey="Period" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
+                        <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} tickFormatter={(val) => `${(val/1e9).toFixed(0)}B`} />
+                        <RechartsTooltip formatter={(value) => `Rp ${(value/1e6).toFixed(2)}M`} />
+                        <Line type="monotone" dataKey="TotalPrice" stroke="#3b82f6" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-semibold text-slate-800 mb-4">Revenue by Category</h3>
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={overviewData.category_sales}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={90}
+                          paddingAngle={5}
+                          dataKey="TotalPrice"
+                          nameKey="Category"
+                        >
+                          {overviewData.category_sales.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <RechartsTooltip formatter={(value) => `Rp ${(value/1e9).toFixed(1)}B`} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  {/* Legend */}
+                  <div className="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-600">
+                    {overviewData.category_sales.map((entry, index) => (
+                      <div key={index} className="flex items-center">
+                        <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: COLORS[index % COLORS.length]}}></div>
+                        <span className="truncate">{entry.Category}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>

@@ -6,3 +6,11 @@ statsmodels
 sqlalchemy
 psycopg2-binary
 python-multipart
+passlib[bcrypt]
+bcrypt==3.2.2
+python-jose[cryptography]
+celery
+redis
+httpx<0.28.0
+pytest
+pytest-cov

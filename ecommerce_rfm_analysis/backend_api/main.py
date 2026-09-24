@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
 import os
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import create_engine, inspect, text
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
@@ -13,9 +13,9 @@ app = FastAPI(title="E-Commerce API with PostgreSQL")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["http://localhost:5173", "http://localhost:5174"], 
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -27,7 +27,6 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'cleaned_data.
 
 @app.on_event("startup")
 def startup_db():
-    # Check if table exists, if not, load from CSV
     inspector = inspect(engine)
     if not inspector.has_table("transactions"):
         print("Database is empty. Ingesting data from CSV...")
@@ -41,31 +40,67 @@ def startup_db():
     else:
         print("Table 'transactions' already exists. Skipping ingestion.")
 
-def get_filtered_data(country_list=None):
-    # Dynamically pull from PostgreSQL
-    df = pd.read_sql_table('transactions', engine)
-    df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
-    
-    if country_list and len(country_list) > 0:
-        return df[df['Country'].isin(country_list)]
-    return df
+def get_where_clause_and_params(countries_str=None):
+    if not countries_str:
+        return "", {}
+    countries = [c.strip() for c in countries_str.split(',')]
+    placeholders = [f":c_{i}" for i in range(len(countries))]
+    where_clause = f"WHERE \"Country\" IN ({', '.join(placeholders)})"
+    params = {f"c_{i}": c for i, c in enumerate(countries)}
+    return where_clause, params
 
 @app.get("/api/overview")
 def get_overview(countries: str = None):
-    country_list = countries.split(',') if countries else None
-    data = get_filtered_data(country_list)
+    where_clause, params = get_where_clause_and_params(countries)
     
-    total_sales = float(data['TotalPrice'].sum())
-    total_tx = int(data['InvoiceNo'].nunique())
-    total_cust = int(data['CustomerID'].nunique())
-    aov = total_sales / total_tx if total_tx > 0 else 0
-    
-    monthly_sales = data.resample('ME', on='InvoiceDate')['TotalPrice'].sum().reset_index()
-    monthly_sales['Period'] = monthly_sales['InvoiceDate'].dt.strftime('%b %Y')
-    trend_data = monthly_sales[['Period', 'TotalPrice']].to_dict(orient='records')
-    
-    cat_sales = data.groupby('Category')['TotalPrice'].sum().reset_index().to_dict(orient='records')
-    
+    with engine.connect() as conn:
+        kpi_query = text(f"""
+            SELECT 
+                SUM("TotalPrice") as total_sales,
+                COUNT(DISTINCT "InvoiceNo") as total_transactions,
+                COUNT(DISTINCT "CustomerID") as total_customers
+            FROM transactions
+            {where_clause}
+        """)
+        kpi_result = pd.read_sql_query(kpi_query, conn, params=params).iloc[0]
+        total_sales = float(kpi_result['total_sales'] or 0)
+        total_tx = int(kpi_result['total_transactions'] or 0)
+        total_cust = int(kpi_result['total_customers'] or 0)
+        aov = total_sales / total_tx if total_tx > 0 else 0
+        
+        trend_query = text(f"""
+            SELECT 
+                DATE_TRUNC('month', CAST("InvoiceDate" AS timestamp)) as month_date,
+                SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY DATE_TRUNC('month', CAST("InvoiceDate" AS timestamp))
+            ORDER BY month_date
+        """)
+        trend_df = pd.read_sql_query(trend_query, conn, params=params)
+        trend_df['Period'] = pd.to_datetime(trend_df['month_date']).dt.strftime('%b %Y')
+        trend_data = [{"Period": row['Period'], "TotalPrice": float(row['total'])} for _, row in trend_df.iterrows()]
+        
+        cat_query = text(f"""
+            SELECT "Category", SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY "Category"
+        """)
+        cat_df = pd.read_sql_query(cat_query, conn, params=params)
+        cat_sales = [{"Category": row['Category'], "TotalPrice": float(row['total'])} for _, row in cat_df.iterrows()]
+        
+        country_query = text(f"""
+            SELECT "Country", SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY "Country"
+            ORDER BY total DESC
+            LIMIT 5
+        """)
+        country_df = pd.read_sql_query(country_query, conn, params=params)
+        top_countries = [{"Country": row['Country'], "TotalPrice": float(row['total'])} for _, row in country_df.iterrows()]
+        
     return {
         "kpi": {
             "total_sales": total_sales,
@@ -74,20 +109,36 @@ def get_overview(countries: str = None):
             "aov": aov
         },
         "trend": trend_data,
-        "category_sales": cat_sales
+        "category_sales": cat_sales,
+        "top_countries": top_countries
     }
+
+def get_rfm_df(countries: str = None):
+    where_clause, params = get_where_clause_and_params(countries)
+    with engine.connect() as conn:
+        snapshot_query = text("SELECT MAX(\"InvoiceDate\") as snapshot FROM transactions")
+        snapshot_result = pd.read_sql_query(snapshot_query, conn)
+        snapshot_date = pd.to_datetime(snapshot_result['snapshot'].iloc[0]) + pd.Timedelta(days=1)
+        
+        rfm_query = text(f"""
+            SELECT 
+                "CustomerID",
+                MAX("InvoiceDate") as max_date,
+                COUNT(DISTINCT "InvoiceNo") as "Frequency",
+                SUM("TotalPrice") as "Monetary"
+            FROM transactions
+            {where_clause}
+            GROUP BY "CustomerID"
+        """)
+        rfm = pd.read_sql_query(rfm_query, conn, params=params)
+        rfm['max_date'] = pd.to_datetime(rfm['max_date'])
+        rfm['Recency'] = (snapshot_date - rfm['max_date']).dt.days
+        rfm = rfm.set_index('CustomerID')
+        return rfm[['Recency', 'Frequency', 'Monetary']]
 
 @app.get("/api/clustering")
 def get_clustering(k: int = 4, countries: str = None):
-    country_list = countries.split(',') if countries else None
-    data = get_filtered_data(country_list)
-    
-    snapshot_date = data['InvoiceDate'].max() + pd.Timedelta(days=1)
-    rfm = data.groupby('CustomerID').agg({
-        'InvoiceDate': lambda x: (snapshot_date - x.max()).days,
-        'InvoiceNo': 'nunique',
-        'TotalPrice': 'sum'
-    }).rename(columns={'InvoiceDate': 'Recency', 'InvoiceNo': 'Frequency', 'TotalPrice': 'Monetary'})
+    rfm = get_rfm_df(countries)
     
     if len(rfm) < 10:
         return {"error": "Not enough data for clustering"}
@@ -111,13 +162,23 @@ def get_clustering(k: int = 4, countries: str = None):
 
 @app.get("/api/forecast")
 def get_forecast(months: int = 3, countries: str = None):
-    country_list = countries.split(',') if countries else None
-    data = get_filtered_data(country_list)
-    
-    ts_data = data.resample('ME', on='InvoiceDate')['TotalPrice'].sum()
-    
-    if len(ts_data) < 6:
+    where_clause, params = get_where_clause_and_params(countries)
+    with engine.connect() as conn:
+        trend_query = text(f"""
+            SELECT 
+                DATE_TRUNC('month', CAST("InvoiceDate" AS timestamp)) as month_date,
+                SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY DATE_TRUNC('month', CAST("InvoiceDate" AS timestamp))
+            ORDER BY month_date
+        """)
+        trend_df = pd.read_sql_query(trend_query, conn, params=params)
+        
+    if len(trend_df) < 6:
         return {"error": "Not enough data for forecasting"}
+        
+    ts_data = pd.Series(trend_df['total'].values, index=pd.to_datetime(trend_df['month_date']))
         
     model = ExponentialSmoothing(ts_data, trend='add', seasonal=None, initialization_method="estimated")
     fit_model = model.fit()
@@ -132,15 +193,7 @@ def get_forecast(months: int = 3, countries: str = None):
 
 @app.get("/api/churn")
 def get_churn_prediction():
-    df = get_filtered_data()
-    snapshot_date = df['InvoiceDate'].max() + pd.Timedelta(days=1)
-    
-    rfm = df.groupby('CustomerID').agg({
-        'InvoiceDate': lambda x: (snapshot_date - x.max()).days, 
-        'InvoiceNo': 'nunique', 
-        'TotalPrice': 'sum' 
-    }).rename(columns={'InvoiceDate': 'Recency', 'InvoiceNo': 'Frequency', 'TotalPrice': 'Monetary'})
-    
+    rfm = get_rfm_df()
     rfm['IsChurned'] = (rfm['Recency'] > 60).astype(int)
     
     features = ['Frequency', 'Monetary']
@@ -180,36 +233,28 @@ def get_churn_prediction():
 
 @app.get("/api/affinity")
 def get_category_affinity(min_support: int = 10):
-    # Customer Lifetime Affinity (Cross-Selling Analysis)
-    df = get_filtered_data()
+    with engine.connect() as conn:
+        query = text('SELECT "CustomerID", "Category" FROM transactions')
+        df = pd.read_sql_query(query, conn)
     
-    # Create a customer-category matrix (1 if customer bought the category, 0 otherwise)
     user_category = df.groupby(['CustomerID', 'Category']).size().unstack(fill_value=0)
     user_category = (user_category > 0).astype(int)
     
     categories = user_category.columns.tolist()
     rules = []
     
-    # Calculate support and confidence
     for i in categories:
         for j in categories:
             if i == j:
                 continue
-            
-            # Customers who bought i
             bought_i = user_category[i] == 1
             num_bought_i = bought_i.sum()
-            
             if num_bought_i < min_support:
                 continue
                 
-            # Customers who bought both i and j
             bought_both = (user_category[i] == 1) & (user_category[j] == 1)
             num_bought_both = bought_both.sum()
-            
-            # Confidence: given they bought i, probability they buy j
             confidence = (num_bought_both / num_bought_i) * 100
-            
             rules.append({
                 "source": i,
                 "target": j,
@@ -217,13 +262,8 @@ def get_category_affinity(min_support: int = 10):
                 "confidence_percent": round(confidence, 1)
             })
             
-    # Sort by confidence
     rules.sort(key=lambda x: x['confidence_percent'], reverse=True)
-    
-    # Return top 10 rules
-    return {
-        "rules": rules[:10]
-    }
+    return {"rules": rules[:10]}
 
 if __name__ == "__main__":
     import uvicorn

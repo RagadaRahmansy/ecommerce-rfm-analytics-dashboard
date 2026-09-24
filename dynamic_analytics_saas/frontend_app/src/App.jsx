@@ -1,16 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, ScatterChart, Scatter, ZAxis, BarChart, Bar
-} from 'recharts';
-import { LayoutDashboard, Users, TrendingUp, BarChart3, ChevronRight, AlertTriangle, UploadCloud } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+
+// Common Components
+import ErrorBoundary from './components/common/ErrorBoundary';
+
+// Layout Components
+import Sidebar from './components/layout/Sidebar';
+import Header from './components/layout/Header';
+
+// Views
+import AuthView from './components/auth/AuthView';
+import OverviewView from './components/overview/OverviewView';
+import ClusteringView from './components/clustering/ClusteringView';
+import MetricStudioView from './components/metrics/MetricStudioView';
+
+// Modals
+import CommandPaletteModal from './components/modals/CommandPaletteModal';
+import UploadModal from './components/modals/UploadModal';
+import TargetsModal from './components/modals/TargetsModal';
+import DrilldownModal from './components/modals/DrilldownModal';
+import DocsModal from './components/modals/DocsModal';
 
 const API_BASE = 'http://localhost:8001/api';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
 export default function App() {
+  // Authentication State
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [authMode, setAuthMode] = useState('login'); 
+  const [authForm, setAuthForm] = useState({ company_name: '', email: '', password: '' });
+  const [authError, setAuthError] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+
+  // App & Data State
   const [hasData, setHasData] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [overviewData, setOverviewData] = useState(null);
@@ -18,17 +40,123 @@ export default function App() {
   const [forecastData, setForecastData] = useState(null);
   const [churnData, setChurnData] = useState(null);
   const [affinityData, setAffinityData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [uploadMessage, setUploadMessage] = useState("");
+  const [insightsData, setInsightsData] = useState(null);
+  const [dateFilter, setDateFilter] = useState('');
+  const [drilldownModal, setDrilldownModal] = useState({ open: false, category: '', data: [] });
+  const [isDark, setIsDark] = useState(localStorage.getItem('theme') === 'dark');
+  const [loading, setLoading] = useState(!!token);
 
+  // Upload & Targets State
+  const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [mappingInput, setMappingInput] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showTargetsModal, setShowTargetsModal] = useState(false);
+  const [targets, setTargets] = useState({ revenue: '', orders: '', aov: '' });
+
+  // UI & Modals State
+  const [userProfile, setUserProfile] = useState(null);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(3);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDocsModal, setShowDocsModal] = useState(false);
+
+  // Initialize Axios Token Header & Check Status
   useEffect(() => {
-    checkStatus();
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      checkStatus();
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+      setLoading(false);
+    }
+  }, [token]);
+
+  // Refetch when Date Filter changes
+  useEffect(() => {
+    if (token && hasData) {
+      fetchData();
+    }
+  }, [dateFilter]);
+
+  // Global Keyboard Shortcuts (⌘K / Ctrl+K and ESC)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette((prev) => !prev);
+      }
+      if (e.key === 'Escape') {
+        setShowCommandPalette(false);
+        setShowNotifications(false);
+        setShowProfileModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // Load Saved Targets
+  useEffect(() => {
+    const savedTargets = localStorage.getItem('targets');
+    if (savedTargets) {
+      try {
+        setTargets(JSON.parse(savedTargets));
+      } catch (e) {
+        console.error("Failed to parse saved targets:", e);
+      }
+    }
+  }, []);
+
+  // Theme Sync
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setHasData(false);
+  };
+
+  const handleAuthSubmit = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      if (authMode === 'register') {
+        await axios.post(`${API_BASE}/auth/register`, authForm);
+        setAuthMode('login');
+        setAuthError('Registration successful! Please login.');
+      } else {
+        const params = new URLSearchParams();
+        params.append('username', authForm.email);
+        params.append('password', authForm.password);
+        const res = await axios.post(`${API_BASE}/auth/login`, params);
+        localStorage.setItem('token', res.data.access_token);
+        setToken(res.data.access_token);
+      }
+    } catch (err) {
+      setAuthError(err.response?.data?.detail || "Authentication failed");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const checkStatus = async () => {
     try {
       const res = await axios.get(API_BASE + '/status');
+      if (res.data.user) {
+        setUserProfile(res.data.user);
+      }
       if (res.data.has_data) {
         setHasData(true);
         fetchData();
@@ -38,51 +166,51 @@ export default function App() {
       }
     } catch (e) {
       console.error(e);
-      setLoading(false);
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    setUploading(true);
-    setUploadMessage("Uploading and analyzing your dataset...");
-    
-    const formData = new FormData();
-    formData.append("file", file);
-    
-    try {
-      await axios.post(API_BASE + '/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setUploadMessage("Success! Generating insights...");
-      setTimeout(() => {
-        setHasData(true);
-        fetchData();
-      }, 1500);
-    } catch (err) {
-      setUploadMessage("Upload failed. Make sure it's a valid CSV.");
-      console.error(err);
-      setUploading(false);
+      if (e.response?.status === 401) handleLogout();
+      else setLoading(false);
     }
   };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [overview, cluster, forecast, churn, affinity] = await Promise.all([
-        axios.get(API_BASE + '/overview'),
-        axios.get(API_BASE + '/clustering'),
-        axios.get(API_BASE + '/forecast'),
-        axios.get(API_BASE + '/churn'),
-        axios.get(API_BASE + '/affinity')
+      let params = {};
+      if (dateFilter) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const end_date = `${yyyy}-${mm}-${dd}`;
+        let start_date = '';
+        if (dateFilter === '30d') {
+          const past = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === '90d') {
+          const past = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === '1y') {
+          const past = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === 'ytd') {
+          start_date = `${yyyy}-01-01`;
+        }
+        params = { start_date, end_date };
+      }
+      
+      const results = await Promise.allSettled([
+        axios.get(API_BASE + '/overview', { params }),
+        axios.get(API_BASE + '/clustering', { params }),
+        axios.get(API_BASE + '/forecast', { params }),
+        axios.get(API_BASE + '/churn', { params }),
+        axios.get(API_BASE + '/affinity', { params }),
+        axios.get(API_BASE + '/insights', { params })
       ]);
-      setOverviewData(overview.data);
-      setClusterData(cluster.data);
-      setForecastData(forecast.data);
-      setChurnData(churn.data);
-      setAffinityData(affinity.data);
+      if (results[0].status === 'fulfilled' && results[0].value.data) setOverviewData(results[0].value.data);
+      if (results[1].status === 'fulfilled' && results[1].value.data) setClusterData(results[1].value.data);
+      if (results[2].status === 'fulfilled' && results[2].value.data) setForecastData(results[2].value.data);
+      if (results[3].status === 'fulfilled' && results[3].value.data) setChurnData(results[3].value.data);
+      if (results[4].status === 'fulfilled' && results[4].value.data) setAffinityData(results[4].value.data);
+      if (results[5].status === 'fulfilled' && results[5].value.data) setInsightsData(results[5].value.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -91,193 +219,325 @@ export default function App() {
     }
   };
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-xl font-semibold text-slate-600">Initializing Platform...</div>;
+  const handleUploadInModal = async (e) => {
+    e.preventDefault();
+    const file = e.target.file.files[0];
+    if (!file) return;
+    setUploading(true);
+    setUploadMessage("Uploading securely...");
+    const formData = new FormData();
+    formData.append("file", file);
+    if (mappingInput) formData.append("mapping", mappingInput);
+    try {
+      const uploadRes = await axios.post(API_BASE + '/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const taskId = uploadRes.data.task_id;
+      setUploadMessage("AI is processing your dataset...");
+      const interval = setInterval(async () => {
+        try {
+          const statusRes = await axios.get(`${API_BASE}/upload/status/${taskId}`);
+          const status = statusRes.data;
+          if (status.task_status === 'SUCCESS') {
+            clearInterval(interval);
+            setUploadMessage("Processing complete!");
+            setTimeout(() => {
+              setShowUploadModal(false);
+              setUploading(false);
+              setUploadMessage("");
+              setHasData(true);
+              fetchData();
+            }, 1000);
+          } else if (status.task_status === 'FAILURE') {
+            clearInterval(interval);
+            setUploadMessage("Processing failed. Please check file format.");
+            setUploading(false);
+          } else if (status.task_status === 'PROGRESS') {
+            setUploadMessage(status.task_result?.status || "Analyzing data...");
+          }
+        } catch (pollErr) { console.error(pollErr); }
+      }, 1000);
+    } catch (err) {
+      setUploadMessage(err.response?.data?.detail || "Upload failed.");
+      setUploading(false);
+    }
+  };
+
+  const openDrilldown = async (categoryName) => {
+    try {
+      let params = { category: categoryName };
+      if (dateFilter) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const end_date = `${yyyy}-${mm}-${dd}`;
+        let start_date = '';
+        if (dateFilter === '30d') {
+          const past = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === '90d') {
+          const past = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === '1y') {
+          const past = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === 'ytd') {
+          start_date = `${yyyy}-01-01`;
+        }
+        params.start_date = start_date;
+        params.end_date = end_date;
+      }
+      
+      const res = await axios.get(API_BASE + '/category_drilldown', { params });
+      setDrilldownModal({ open: true, category: categoryName, data: res.data.top_customers });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveTargets = () => {
+    localStorage.setItem('targets', JSON.stringify(targets));
+    setShowTargetsModal(false);
+  };
+
+  const exportAffinityToCSV = () => {
+    if (!affinityData || !affinityData.rules) return;
+    const headers = ['Source Category', 'Target Category', 'Confidence (%)', 'Co-occurrences'];
+    const rows = affinityData.rules.map(r => 
+      `"${r.source}","${r.target}",${r.confidence_percent},${r.support_both}`
+    );
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'basket_analysis_report.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportDashboardCSV = () => {
+    if (!overviewData) return;
+    let csv = 'Metric,Value\n';
+    csv += `Total Revenue,${overviewData.kpi?.total_sales || 0}\n`;
+    csv += `Total Transactions,${overviewData.kpi?.total_transactions || 0}\n`;
+    csv += `Total Customers,${overviewData.kpi?.total_customers || 0}\n`;
+    csv += `AOV,${overviewData.kpi?.aov || 0}\n`;
+    csv += '\nCategory,Revenue\n';
+    if (overviewData.category_sales) {
+      overviewData.category_sales.forEach(c => {
+        csv += `${c.Category},${c.TotalPrice}\n`;
+      });
+    }
+    if (churnData && churnData.top_at_risk) {
+      csv += '\nCustomerID,RiskPercent,Frequency,Monetary\n';
+      churnData.top_at_risk.forEach(c => {
+        csv += `${c.CustomerID},${c.RiskPercent},${c.Frequency},${c.Monetary}\n`;
+      });
+    }
+    if (forecastData && forecastData.chart_data) {
+      csv += '\nPeriod,Revenue,Type\n';
+      forecastData.chart_data.forEach(d => {
+        csv += `${d.period},${d.revenue},${d.type}\n`;
+      });
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dashboard_export_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportDashboardJSON = () => {
+    const payload = { overview: overviewData, forecast: forecastData, churn: churnData, insights: insightsData, affinity: affinityData };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dashboard_payload_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // Auth Screen
+  if (!token) {
+    return (
+      <AuthView
+        authMode={authMode}
+        setAuthMode={setAuthMode}
+        authForm={authForm}
+        setAuthForm={setAuthForm}
+        authError={authError}
+        authLoading={authLoading}
+        handleAuthSubmit={handleAuthSubmit}
+      />
+    );
   }
 
-  if (!hasData) {
+  // Workspace Loading Screen
+  if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8 text-center border border-slate-100">
-          <div className="w-20 h-20 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
-            <UploadCloud size={40} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome to SaaS Analytics</h1>
-          <p className="text-slate-500 mb-8">Your database is completely empty. Upload a CSV transaction file to auto-generate predictive insights.</p>
-          
-          {uploading ? (
-            <div className="animate-pulse flex flex-col items-center">
-              <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-              <p className="text-blue-600 font-medium">{uploadMessage}</p>
-            </div>
-          ) : (
-            <label className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors inline-block w-full">
-              Choose CSV File
-              <input type="file" accept=".csv" className="hidden" onChange={handleFileUpload} />
-            </label>
-          )}
-          
-          <p className="text-xs text-slate-400 mt-6">Required columns: InvoiceNo, InvoiceDate, CustomerID, Category, UnitPrice, Quantity</p>
-        </div>
+      <div className="min-h-screen bg-surface text-on-surface flex flex-col items-center justify-center font-sans">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+        <p className="text-lg font-medium text-slate-600 dark:text-slate-300 animate-pulse">
+          Orchestrating Ragada Analytics workspace...
+        </p>
       </div>
     );
   }
 
+  // Initial Upload Prompt when no dataset is present
+  if (!hasData) {
+    return (
+      <UploadModal
+        showUploadModal={true}
+        setShowUploadModal={() => {}}
+        handleUploadInModal={handleUploadInModal}
+        uploading={uploading}
+        uploadMessage={uploadMessage}
+        mappingInput={mappingInput}
+        setMappingInput={setMappingInput}
+      />
+    );
+  }
+
+  // Main Dashboard View
   return (
-    <div className="flex h-screen bg-slate-50 font-sans">
-      <aside className="w-64 bg-slate-900 text-slate-300 flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-slate-800">
-          <BarChart3 className="w-6 h-6 text-blue-500 mr-2" />
-          <h1 className="text-lg font-bold text-white tracking-tight">SaaS Analytics</h1>
-        </div>
-        <nav className="flex-1 py-4">
-          <NavItem icon={<LayoutDashboard className="w-5 h-5" />} label="Overview" active={activeTab === 'overview'} onClick={() => setActiveTab('overview')} />
-          <NavItem icon={<Users className="w-5 h-5" />} label="RFM Segments" active={activeTab === 'clustering'} onClick={() => setActiveTab('clustering')} />
-          <NavItem icon={<AlertTriangle className="w-5 h-5 text-amber-500" />} label="Churn Prediction" active={activeTab === 'churn'} onClick={() => setActiveTab('churn')} />
-          <NavItem icon={<TrendingUp className="w-5 h-5" />} label="Revenue Forecast" active={activeTab === 'forecast'} onClick={() => setActiveTab('forecast')} />
-          <NavItem icon={<BarChart3 className="w-5 h-5 text-emerald-500" />} label="Cross-Selling" active={activeTab === 'affinity'} onClick={() => setActiveTab('affinity')} />
-        </nav>
-      </aside>
+    <div className="min-h-screen bg-surface font-body-md text-on-surface selection:bg-primary-container selection:text-on-primary-container flex">
+      {/* Persistent Left Sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        unreadCount={unreadCount}
+        setShowUploadModal={setShowUploadModal}
+        setShowTargetsModal={setShowTargetsModal}
+        setShowNotifications={setShowNotifications}
+        setShowDocsModal={setShowDocsModal}
+        exportDashboardCSV={exportDashboardCSV}
+        exportDashboardJSON={exportDashboardJSON}
+      />
 
-      <main className="flex-1 overflow-y-auto">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-8">
-          <h2 className="text-xl font-semibold text-slate-800 capitalize">{activeTab.replace('-', ' ')}</h2>
-        </header>
-        
-        <div className="p-8">
-          {activeTab === 'overview' && overviewData && !overviewData.status && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-4 gap-6">
-                <MetricCard title="Total Revenue" value={Number(overviewData.kpi.total_sales).toLocaleString()} />
-                <MetricCard title="Total Orders" value={overviewData.kpi.total_transactions.toLocaleString()} />
-                <MetricCard title="Active Customers" value={overviewData.kpi.total_customers.toLocaleString()} />
-                <MetricCard title="Avg Order Value" value={Number(overviewData.kpi.aov).toLocaleString(undefined, {maximumFractionDigits:0})} />
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800 mb-4">Revenue Trend</h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={overviewData.trend}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="Period" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                      <RechartsTooltip />
-                      <Line type="monotone" dataKey="TotalPrice" stroke="#3b82f6" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
+      {/* Main Content Area */}
+      <div className="ml-72 flex-1 flex flex-col min-h-screen">
+        {/* Global Navigation Header */}
+        <Header
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          isDark={isDark}
+          setIsDark={setIsDark}
+          unreadCount={unreadCount}
+          setUnreadCount={setUnreadCount}
+          showNotifications={showNotifications}
+          setShowNotifications={setShowNotifications}
+          userProfile={userProfile}
+          showProfileModal={showProfileModal}
+          setShowProfileModal={setShowProfileModal}
+          setShowCommandPalette={setShowCommandPalette}
+          setShowTargetsModal={setShowTargetsModal}
+          setShowUploadModal={setShowUploadModal}
+          setShowDocsModal={setShowDocsModal}
+          handleLogout={handleLogout}
+        />
+
+        {/* Main Tab View Wrapped in Error Boundaries */}
+        <main className="flex-1 mt-16 p-space-xl overflow-y-auto max-w-[1700px] w-full mx-auto">
+          {activeTab === 'overview' && (
+            <ErrorBoundary name="Executive Overview View">
+              <OverviewView
+                overviewData={overviewData}
+                forecastData={forecastData}
+                churnData={churnData}
+                insightsData={insightsData}
+                targets={targets}
+                setShowTargetsModal={setShowTargetsModal}
+                exportDashboardCSV={exportDashboardCSV}
+                exportDashboardJSON={exportDashboardJSON}
+                openDrilldown={openDrilldown}
+              />
+            </ErrorBoundary>
           )}
 
-          {activeTab === 'clustering' && clusterData && !clusterData.status && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800 mb-2">K-Means Customer Segmentation</h3>
-                <div className="grid grid-cols-4 gap-4 mt-6">
-                  {clusterData.profile && clusterData.profile.map((cluster, idx) => (
-                    <div key={idx} className="p-4 border border-slate-100 rounded-lg bg-slate-50">
-                      <h4 className="font-semibold text-slate-800 mb-2">Segment {idx + 1}</h4>
-                      <p className="text-sm text-slate-600">Population: <span className="font-semibold">{cluster.CustomerCount}</span></p>
-                      <p className="text-sm text-slate-600">Avg Spend: <span className="font-semibold">{cluster.Monetary.toLocaleString(undefined, {maximumFractionDigits:0})}</span></p>
-                      <p className="text-sm text-slate-600">Freq: <span className="font-semibold">{cluster.Frequency.toFixed(1)}</span></p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+          {activeTab === 'clustering' && (
+            <ErrorBoundary name="Customer RFM Clustering View">
+              <ClusteringView
+                clusterData={clusterData}
+                exportDashboardCSV={exportDashboardCSV}
+                setShowUploadModal={setShowUploadModal}
+              />
+            </ErrorBoundary>
           )}
 
-          {activeTab === 'churn' && churnData && !churnData.status && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800 mb-6">Customer Churn Prediction (Random Forest)</h3>
-                <div className="flex space-x-6 mb-8">
-                  <div className="flex-1 bg-red-50 border border-red-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-red-800">Total Active Customers</p>
-                    <p className="text-3xl font-bold text-red-600">{churnData.summary?.total_active}</p>
-                  </div>
-                  <div className="flex-1 bg-amber-50 border border-amber-100 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-amber-800">High Risk Customers (&gt;50% Churn Prob)</p>
-                    <p className="text-3xl font-bold text-amber-600">{churnData.summary?.high_risk_count}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {activeTab === 'metrics' && (
+            <ErrorBoundary name="Enterprise Metric Studio View">
+              <MetricStudioView
+                overviewData={overviewData}
+                churnData={churnData}
+                insightsData={insightsData}
+                affinityData={affinityData}
+                exportDashboardCSV={exportDashboardCSV}
+                exportDashboardJSON={exportDashboardJSON}
+                exportAffinityToCSV={exportAffinityToCSV}
+              />
+            </ErrorBoundary>
           )}
+        </main>
+      </div>
 
-          {activeTab === 'forecast' && forecastData && !forecastData.status && (
-            <div className="space-y-6">
-               <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800 mb-6">Revenue Projection (Holt-Winters)</h3>
-                <div className="h-96">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={forecastData.chart_data}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="period" axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                      <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b'}} />
-                      <RechartsTooltip />
-                      <Line type="monotone" dataKey="revenue" stroke="#f59e0b" strokeWidth={3} dot={{r: 4}} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          )}
+      {/* Modals & Dialogs */}
+      <ErrorBoundary name="Command Palette Modal">
+        <CommandPaletteModal
+          showCommandPalette={showCommandPalette}
+          setShowCommandPalette={setShowCommandPalette}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          setActiveTab={setActiveTab}
+          setShowUploadModal={setShowUploadModal}
+          setShowTargetsModal={setShowTargetsModal}
+          setShowDocsModal={setShowDocsModal}
+          exportDashboardCSV={exportDashboardCSV}
+          overviewData={overviewData}
+        />
+      </ErrorBoundary>
 
-          {activeTab === 'affinity' && affinityData && !affinityData.status && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-800 mb-6">Customer Lifetime Category Affinity</h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm text-slate-600">
-                    <thead className="bg-slate-50 text-slate-700 font-medium">
-                      <tr>
-                        <th className="px-4 py-3 border-b">Primary Category</th>
-                        <th className="px-4 py-3 border-b">Cross-Sell Opportunity</th>
-                        <th className="px-4 py-3 border-b">Joint Customers</th>
-                        <th className="px-4 py-3 border-b">Conversion Probability</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {affinityData.rules && affinityData.rules.map((rule, idx) => (
-                        <tr key={idx} className="border-b hover:bg-slate-50">
-                          <td className="px-4 py-3 font-medium text-slate-800">{rule.source}</td>
-                          <td className="px-4 py-3 font-medium text-emerald-600">{rule.target}</td>
-                          <td className="px-4 py-3">{rule.support_both.toLocaleString()}</td>
-                          <td className="px-4 py-3 font-bold text-emerald-600">{rule.confidence_percent.toFixed(1)}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
-  );
-}
+      <ErrorBoundary name="Upload Dataset Modal">
+        <UploadModal
+          showUploadModal={showUploadModal}
+          setShowUploadModal={setShowUploadModal}
+          handleUploadInModal={handleUploadInModal}
+          uploading={uploading}
+          uploadMessage={uploadMessage}
+          mappingInput={mappingInput}
+          setMappingInput={setMappingInput}
+        />
+      </ErrorBoundary>
 
-function NavItem({ icon, label, active, onClick }) {
-  return (
-    <button 
-      onClick={onClick}
-      className={`w-full flex items-center px-6 py-3 transition-colors ${active ? 'bg-slate-800 text-white border-r-4 border-blue-500' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
-    >
-      {icon}
-      <span className="ml-3 font-medium">{label}</span>
-      {active && <ChevronRight className="w-4 h-4 ml-auto" />}
-    </button>
-  );
-}
+      <ErrorBoundary name="Target Goals Modal">
+        <TargetsModal
+          showTargetsModal={showTargetsModal}
+          setShowTargetsModal={setShowTargetsModal}
+          targets={targets}
+          setTargets={setTargets}
+          handleSaveTargets={handleSaveTargets}
+          overviewData={overviewData}
+        />
+      </ErrorBoundary>
 
-function MetricCard({ title, value }) {
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-      <h3 className="text-sm font-medium text-slate-500 mb-2">{title}</h3>
-      <p className="text-3xl font-bold text-slate-800">{value}</p>
+      <ErrorBoundary name="Category Drilldown Modal">
+        <DrilldownModal
+          drilldownModal={drilldownModal}
+          setDrilldownModal={setDrilldownModal}
+        />
+      </ErrorBoundary>
+
+      <ErrorBoundary name="Documentation Modal">
+        <DocsModal
+          showDocsModal={showDocsModal}
+          setShowDocsModal={setShowDocsModal}
+        />
+      </ErrorBoundary>
     </div>
   );
 }

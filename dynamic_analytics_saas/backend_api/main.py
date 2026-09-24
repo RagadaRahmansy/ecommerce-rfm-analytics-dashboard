@@ -1,94 +1,392 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+import redis
+import json
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pydantic import BaseModel
 import pandas as pd
 import numpy as np
 import os
-import io
-from sqlalchemy import create_engine, inspect
+import time
+from fastapi.responses import JSONResponse
+import tempfile
+from datetime import datetime, timedelta
+from typing import Optional
+
+from sqlalchemy import create_engine, text, Column, Integer, String, ForeignKey
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
+
+from passlib.context import CryptContext
+from jose import JWTError, jwt
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-app = FastAPI(title="SaaS Analytics API")
+# --- SECURITY CONFIG ---
+SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-this-in-production")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+app = FastAPI(title="SaaS Analytics API - MultiTenant")
+
+app.add_middleware(GZipMiddleware, minimum_size=500)
+cors_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5174,http://localhost:80,http://127.0.0.1:5174")
+allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/ecommerce_db")
-engine = create_engine(DATABASE_URL)
 
-def check_data_exists():
-    inspector = inspect(engine)
-    return inspector.has_table("transactions")
+# --- HIGH-PERFORMANCE REDIS CACHING LAYER ---
+REDIS_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+redis_client = redis.Redis.from_url(REDIS_URL, decode_responses=True)
 
-def get_filtered_data(country_list=None):
-    if not check_data_exists():
-        return None
-        
-    df = pd.read_sql_table('transactions', engine)
-    df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+def get_cached(key: str):
+    try:
+        val = redis_client.get(key)
+        if val:
+            return json.loads(val)
+    except Exception:
+        pass
+    return None
+
+def set_cached(key: str, data: dict, ttl: int = 300):
+    try:
+        redis_client.setex(key, ttl, json.dumps(data))
+    except Exception:
+        pass
+
+def invalidate_tenant_cache(tenant_id: int):
+    try:
+        prefix = f"tenant:{tenant_id}:*"
+        keys = list(redis_client.scan_iter(prefix))
+        if keys:
+            redis_client.delete(*keys)
+    except Exception:
+        pass
+
+# --- DATABASE SETUP ---
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/saas_db")
+engine = create_engine(
+    DATABASE_URL,
+    pool_size=20,
+    max_overflow=10,
+    pool_pre_ping=True,
+    pool_recycle=300
+)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+class Tenant(Base):
+    __tablename__ = "tenants"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    tenant_id = Column(Integer, ForeignKey("tenants.id"))
+
+@app.on_event("startup")
+def startup_db():
+    Base.metadata.create_all(bind=engine)
+    with engine.begin() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                "InvoiceNo" TEXT,
+                "InvoiceDate" TIMESTAMP,
+                "CustomerID" TEXT,
+                "Category" TEXT,
+                "Quantity" FLOAT,
+                "UnitPrice" FLOAT,
+                "TotalPrice" FLOAT,
+                "Country" TEXT,
+                tenant_id INTEGER
+            );
+            
+            -- High-Performance Composite & Expression B-Tree Indexes
+            CREATE INDEX IF NOT EXISTS idx_transactions_tenant_date ON transactions (tenant_id, "InvoiceDate" DESC);
+            CREATE INDEX IF NOT EXISTS idx_transactions_tenant_date_cast ON transactions (tenant_id, (CAST("InvoiceDate" AS date)));
+            CREATE INDEX IF NOT EXISTS idx_transactions_tenant_cust ON transactions (tenant_id, "CustomerID");
+            CREATE INDEX IF NOT EXISTS idx_transactions_tenant_cat ON transactions (tenant_id, "Category");
+            CREATE INDEX IF NOT EXISTS idx_transactions_tenant_inv ON transactions (tenant_id, "InvoiceNo");
+            CREATE INDEX IF NOT EXISTS idx_transactions_rfm ON transactions (tenant_id, "CustomerID", "InvoiceDate", "InvoiceNo", "TotalPrice");
+        """))
+
+# --- AUTHENTICATION DEPENDENCIES ---
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=15))
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        raise credentials_exception
+    return user
+
+# --- AUTH ENDPOINTS ---
+class RegisterRequest(BaseModel):
+    company_name: str
+    email: str
+    password: str
+
+@app.post("/api/auth/register")
+def register(request: RegisterRequest, db: Session = Depends(get_db)):
+    if db.query(User).filter(User.email == request.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered")
     
-    if country_list and len(country_list) > 0:
-        return df[df['Country'].isin(country_list)]
-    return df
+    tenant = Tenant(name=request.company_name)
+    db.add(tenant)
+    db.commit()
+    db.refresh(tenant)
+    
+    hashed_password = pwd_context.hash(request.password)
+    user = User(email=request.email, hashed_password=hashed_password, tenant_id=tenant.id)
+    db.add(user)
+    db.commit()
+    
+    return {"message": "User and Tenant created successfully."}
+
+@app.post("/api/auth/login")
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == form_data.username).first()
+    if not user or not pwd_context.verify(form_data.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    
+    access_token = create_access_token(data={"sub": user.email}, expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
+    return {"access_token": access_token, "token_type": "bearer", "tenant_id": user.tenant_id}
+
+# --- DATA HELPERS ---
+def check_data_exists(tenant_id: int):
+    with engine.connect() as conn:
+        result = conn.execute(text("SELECT 1 FROM transactions WHERE tenant_id = :t LIMIT 1"), {"t": tenant_id}).scalar()
+        return result is not None
+
+def get_where_clause_and_params(tenant_id: int, start_date=None, end_date=None, countries_str=None):
+    params = {"tenant_id": tenant_id}
+    where_clauses = ["tenant_id = :tenant_id"]
+    if start_date:
+        where_clauses.append("CAST(\"InvoiceDate\" AS date) >= :sd")
+        params["sd"] = start_date
+    if end_date:
+        where_clauses.append("CAST(\"InvoiceDate\" AS date) <= :ed")
+        params["ed"] = end_date
+    if countries_str:
+        countries = [c.strip() for c in countries_str.split(',')]
+        placeholders = [f":c_{i}" for i in range(len(countries))]
+        where_clauses.append(f"\"Country\" IN ({', '.join(placeholders)})")
+        for i, c in enumerate(countries):
+            params[f"c_{i}"] = c
+    return "WHERE " + " AND ".join(where_clauses), params
+
+# --- PROTECTED API ENDPOINTS ---
+# --- DEVOPS OBSERVABILITY & HEALTH PROBES ---
+@app.get("/api/health/live")
+def health_live():
+    """Liveness probe: verifies the backend application process is alive."""
+    return {
+        "status": "alive",
+        "service": "Ragada Analytics Backend",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/api/health/ready")
+def health_ready(db: Session = Depends(get_db)):
+    """Readiness probe: verifies database and cache connectivity."""
+    checks = {}
+    is_ready = True
+
+    # 1. PostgreSQL DB Connection Check
+    try:
+        t0 = time.time()
+        db.execute(text("SELECT 1"))
+        checks["database"] = {
+            "status": "healthy",
+            "latency_ms": round((time.time() - t0) * 1000, 2)
+        }
+    except Exception as e:
+        checks["database"] = {"status": "unhealthy", "error": str(e)}
+        is_ready = False
+
+    # 2. Redis Cache Check
+    try:
+        t0 = time.time()
+        redis_client.ping()
+        checks["redis"] = {
+            "status": "healthy",
+            "latency_ms": round((time.time() - t0) * 1000, 2)
+        }
+    except Exception as e:
+        checks["redis"] = {"status": "unhealthy", "error": str(e)}
+        is_ready = False
+
+    status_code = 200 if is_ready else 503
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": "ready" if is_ready else "not_ready",
+            "checks": checks,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    )
 
 @app.get("/api/status")
-def get_status():
-    return {"has_data": check_data_exists()}
+def get_status(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    tenant = db.query(Tenant).filter(Tenant.id == current_user.tenant_id).first()
+    return {
+        "has_data": check_data_exists(current_user.tenant_id),
+        "user": {
+            "email": current_user.email,
+            "tenant_id": current_user.tenant_id,
+            "company_name": tenant.name if tenant else "Enterprise Analytics"
+        }
+    }
+
+from worker import process_csv_upload
+from celery.result import AsyncResult
+
+from fastapi import Form
+import json
 
 @app.post("/api/upload")
-async def upload_csv(file: UploadFile = File(...)):
+async def upload_csv(
+    file: UploadFile = File(...), 
+    mapping: str = Form(None, description="JSON string mapping internal columns to CSV columns e.g. {'InvoiceNo': 'No_Transaksi'}"),
+    current_user: User = Depends(get_current_user)
+):
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload a CSV file.")
     
+    mapping_dict = None
+    if mapping:
+        try:
+            mapping_dict = json.loads(mapping)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="Invalid JSON in mapping parameter.")
+    
     try:
-        contents = await file.read()
-        df = pd.read_csv(io.StringIO(contents.decode('utf-8')))
-        
-        required_cols = ['InvoiceNo', 'InvoiceDate', 'CustomerID', 'Category']
-        for col in required_cols:
-            if col not in df.columns:
-                raise HTTPException(status_code=400, detail=f"Missing required column: {col}")
-                
-        if 'TotalPrice' not in df.columns:
-            if 'Quantity' in df.columns and 'UnitPrice' in df.columns:
-                df['TotalPrice'] = df['Quantity'] * df['UnitPrice']
-            else:
-                raise HTTPException(status_code=400, detail="Missing pricing columns.")
-                
-        if 'InvoiceDate' in df.columns:
-            df['InvoiceDate'] = pd.to_datetime(df['InvoiceDate'])
+        if not os.path.exists('/shared_tmp'):
+            os.makedirs('/shared_tmp', exist_ok=True)
             
-        df.to_sql('transactions', engine, if_exists='replace', index=False)
-        return {"status": "success", "message": f"Successfully ingested {len(df)} rows."}
+        fd, temp_path = tempfile.mkstemp(suffix=".csv", dir='/shared_tmp')
+        with os.fdopen(fd, 'wb') as buffer:
+            while chunk := await file.read(1024 * 1024):
+                buffer.write(chunk)
+                
+        # Send task to Celery worker
+        task = process_csv_upload.delay(temp_path, current_user.tenant_id, mapping_dict)
+        
+        return {"status": "processing", "task_id": task.id, "message": "File is being processed in the background."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/upload/status/{task_id}")
+def get_upload_status(task_id: str, current_user: User = Depends(get_current_user)):
+    task_result = AsyncResult(task_id)
+    result = {
+        "task_id": task_id,
+        "task_status": task_result.status,
+        "task_result": task_result.result
+    }
+    return result
+
 @app.get("/api/overview")
-def get_overview(countries: str = None):
-    country_list = countries.split(',') if countries else None
-    data = get_filtered_data(country_list)
-    if data is None:
+def get_overview(start_date: str = None, end_date: str = None, countries: str = None, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    if not check_data_exists(tenant_id):
         return {"status": "empty"}
         
-    total_sales = float(data['TotalPrice'].sum())
-    total_tx = int(data['InvoiceNo'].nunique())
-    total_cust = int(data['CustomerID'].nunique())
-    aov = total_sales / total_tx if total_tx > 0 else 0
-    
-    monthly_sales = data.resample('ME', on='InvoiceDate')['TotalPrice'].sum().reset_index()
-    monthly_sales['Period'] = monthly_sales['InvoiceDate'].dt.strftime('%b %Y')
-    trend_data = monthly_sales[['Period', 'TotalPrice']].to_dict(orient='records')
-    
-    cat_sales = data.groupby('Category')['TotalPrice'].sum().reset_index().to_dict(orient='records')
-    
-    return {
+    cache_key = f"tenant:{tenant_id}:overview:{start_date}:{end_date}:{countries}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+        
+    where_clause, params = get_where_clause_and_params(tenant_id, start_date, end_date, countries)
+    with engine.connect() as conn:
+        kpi_query = text(f"""
+            SELECT 
+                SUM("TotalPrice") as total_sales,
+                COUNT(DISTINCT "InvoiceNo") as total_transactions,
+                COUNT(DISTINCT "CustomerID") as total_customers
+            FROM transactions
+            {where_clause}
+        """)
+        kpi_result = pd.read_sql_query(kpi_query, conn, params=params).iloc[0]
+        total_sales = float(kpi_result['total_sales'] or 0)
+        total_tx = int(kpi_result['total_transactions'] or 0)
+        total_cust = int(kpi_result['total_customers'] or 0)
+        aov = total_sales / total_tx if total_tx > 0 else 0
+        
+        # Smart date grouping: daily for <= 45d, weekly for <= 120d, monthly for full view
+        interval = 'month'
+        dt_format = '%b %Y'
+        if start_date and end_date:
+            try:
+                sd_dt = datetime.strptime(start_date, '%Y-%m-%d')
+                ed_dt = datetime.strptime(end_date, '%Y-%m-%d')
+                diff_d = (ed_dt - sd_dt).days
+                if diff_d <= 45:
+                    interval = 'day'
+                    dt_format = '%d %b'
+                elif diff_d <= 120:
+                    interval = 'week'
+                    dt_format = 'Wk %W %b'
+            except Exception:
+                pass
+
+        trend_query = text(f"""
+            SELECT 
+                DATE_TRUNC('{interval}', CAST("InvoiceDate" AS timestamp)) as month_date,
+                SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY DATE_TRUNC('{interval}', CAST("InvoiceDate" AS timestamp))
+            ORDER BY month_date
+        """)
+        trend_df = pd.read_sql_query(trend_query, conn, params=params)
+        trend_df['Period'] = pd.to_datetime(trend_df['month_date']).dt.strftime(dt_format)
+        trend_data = [{"Period": row['Period'], "TotalPrice": float(row['total'])} for _, row in trend_df.iterrows()]
+        
+        cat_query = text(f"""
+            SELECT "Category", SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY "Category"
+        """)
+        cat_df = pd.read_sql_query(cat_query, conn, params=params)
+        cat_sales = [{"Category": row['Category'], "TotalPrice": float(row['total'])} for _, row in cat_df.iterrows()]
+        
+    res_data = {
         "kpi": {
             "total_sales": total_sales,
             "total_transactions": total_tx,
@@ -98,21 +396,44 @@ def get_overview(countries: str = None):
         "trend": trend_data,
         "category_sales": cat_sales
     }
+    set_cached(cache_key, res_data, ttl=300)
+    return res_data
+
+def get_rfm_df(tenant_id: int, start_date: str = None, end_date: str = None, countries: str = None):
+    where_clause, params = get_where_clause_and_params(tenant_id, start_date, end_date, countries)
+    with engine.connect() as conn:
+        snapshot_query = text(f"SELECT MAX(\"InvoiceDate\") as snapshot FROM transactions WHERE tenant_id = :tenant_id")
+        snapshot_result = pd.read_sql_query(snapshot_query, conn, params={"tenant_id": tenant_id})
+        snapshot_date = pd.to_datetime(snapshot_result['snapshot'].iloc[0]) + pd.Timedelta(days=1)
+        
+        rfm_query = text(f"""
+            SELECT 
+                "CustomerID",
+                MAX("InvoiceDate") as max_date,
+                COUNT(DISTINCT "InvoiceNo") as "Frequency",
+                SUM("TotalPrice") as "Monetary"
+            FROM transactions
+            {where_clause}
+            GROUP BY "CustomerID"
+        """)
+        rfm = pd.read_sql_query(rfm_query, conn, params=params)
+        rfm['max_date'] = pd.to_datetime(rfm['max_date'])
+        rfm['Recency'] = (snapshot_date - rfm['max_date']).dt.days
+        rfm = rfm.set_index('CustomerID')
+        return rfm[['Recency', 'Frequency', 'Monetary']]
 
 @app.get("/api/clustering")
-def get_clustering(k: int = 4, countries: str = None):
-    country_list = countries.split(',') if countries else None
-    data = get_filtered_data(country_list)
-    if data is None:
+def get_clustering(start_date: str = None, end_date: str = None, k: int = 4, countries: str = None, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    if not check_data_exists(tenant_id):
         return {"status": "empty"}
         
-    snapshot_date = data['InvoiceDate'].max() + pd.Timedelta(days=1)
-    rfm = data.groupby('CustomerID').agg({
-        'InvoiceDate': lambda x: (snapshot_date - x.max()).days,
-        'InvoiceNo': 'nunique',
-        'TotalPrice': 'sum'
-    }).rename(columns={'InvoiceDate': 'Recency', 'InvoiceNo': 'Frequency', 'TotalPrice': 'Monetary'})
-    
+    cache_key = f"tenant:{tenant_id}:clustering:{start_date}:{end_date}:{k}:{countries}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+        
+    rfm = get_rfm_df(tenant_id, start_date, end_date, countries)
     if len(rfm) < 10:
         return {"error": "Not enough data"}
         
@@ -128,94 +449,314 @@ def get_clustering(k: int = 4, countries: str = None):
     }).reset_index()
     profile['CustomerCount'] = rfm.groupby('Cluster').size().values
     
-    return {"profile": profile.to_dict(orient='records')}
+    res_data = {"profile": profile.to_dict(orient='records')}
+    set_cached(cache_key, res_data, ttl=300)
+    return res_data
 
 @app.get("/api/forecast")
-def get_forecast(months: int = 3, countries: str = None):
-    country_list = countries.split(',') if countries else None
-    data = get_filtered_data(country_list)
-    if data is None:
+def get_forecast(start_date: str = None, end_date: str = None, months: int = 3, countries: str = None, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    if not check_data_exists(tenant_id):
         return {"status": "empty"}
         
-    ts_data = data.resample('ME', on='InvoiceDate')['TotalPrice'].sum()
-    if len(ts_data) < 6:
-        return {"error": "Not enough data"}
+    cache_key = f"tenant:{tenant_id}:forecast:{start_date}:{end_date}:{months}:{countries}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
         
+    where_clause, params = get_where_clause_and_params(tenant_id, start_date, end_date, countries)
+    interval = 'month'
+    dt_fmt = '%b %Y'
+    if start_date and end_date:
+        try:
+            sd_dt = datetime.strptime(start_date, '%Y-%m-%d')
+            ed_dt = datetime.strptime(end_date, '%Y-%m-%d')
+            diff_d = (ed_dt - sd_dt).days
+            if diff_d <= 45:
+                interval = 'day'
+                dt_fmt = '%d %b'
+            elif diff_d <= 120:
+                interval = 'week'
+                dt_fmt = 'Wk %W'
+        except Exception:
+            pass
+
+    with engine.connect() as conn:
+        trend_query = text(f"""
+            SELECT 
+                DATE_TRUNC('{interval}', CAST("InvoiceDate" AS timestamp)) as month_date,
+                SUM("TotalPrice") as total
+            FROM transactions
+            {where_clause}
+            GROUP BY DATE_TRUNC('{interval}', CAST("InvoiceDate" AS timestamp))
+            ORDER BY month_date
+        """)
+        trend_df = pd.read_sql_query(trend_query, conn, params=params)
+        
+    if len(trend_df) < 6:
+        historical = [{"period": k.strftime('%b %Y'), "revenue": float(v), "type": "Actual"} for k, v in zip(pd.to_datetime(trend_df['month_date']), trend_df['total'])]
+        return {"chart_data": historical}
+        
+    ts_data = pd.Series(trend_df['total'].values, index=pd.to_datetime(trend_df['month_date']))
     model = ExponentialSmoothing(ts_data, trend='add', seasonal=None, initialization_method="estimated")
     fit_model = model.fit()
     forecast = fit_model.forecast(months)
     
     historical = [{"period": k.strftime('%b %Y'), "revenue": v, "type": "Actual"} for k, v in ts_data.items()]
     projected = [{"period": k.strftime('%b %Y'), "revenue": v, "type": "Forecast"} for k, v in forecast.items()]
-    return {"chart_data": historical + projected}
+    res_data = {"chart_data": historical + projected}
+    set_cached(cache_key, res_data, ttl=300)
+    return res_data
 
 @app.get("/api/churn")
-def get_churn_prediction():
-    df = get_filtered_data()
-    if df is None:
+def get_churn_prediction(start_date: str = None, end_date: str = None, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    if not check_data_exists(tenant_id):
         return {"status": "empty"}
         
-    snapshot_date = df['InvoiceDate'].max() + pd.Timedelta(days=1)
-    rfm = df.groupby('CustomerID').agg({
-        'InvoiceDate': lambda x: (snapshot_date - x.max()).days, 
-        'InvoiceNo': 'nunique', 
-        'TotalPrice': 'sum' 
-    }).rename(columns={'InvoiceDate': 'Recency', 'InvoiceNo': 'Frequency', 'TotalPrice': 'Monetary'})
-    
+    cache_key = f"tenant:{tenant_id}:churn:{start_date}:{end_date}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+        
+    rfm = get_rfm_df(tenant_id, start_date, end_date, countries=None)
+    if len(rfm) < 10:
+        return {"error": "Not enough data"}
     rfm['IsChurned'] = (rfm['Recency'] > 60).astype(int)
+    
     features = ['Frequency', 'Monetary']
     X = rfm[features]
     y = rfm['IsChurned']
     
-    model = RandomForestClassifier(n_estimators=50, random_state=42)
-    model.fit(X, y)
-    
     active_customers = rfm[rfm['IsChurned'] == 0].copy()
     if len(active_customers) == 0:
-        return {"error": "No active"}
-        
-    probs = model.predict_proba(active_customers[features])[:, 1]
-    active_customers['ChurnRiskProbability'] = probs * 100
+        active_customers = rfm.copy()
+
+    # Bulletproof check: only call predict_proba[:, 1] if at least 2 classes exist!
+    unique_classes = np.unique(y)
+    if len(unique_classes) >= 2:
+        model = RandomForestClassifier(n_estimators=50, random_state=42)
+        model.fit(X, y)
+        probs = model.predict_proba(active_customers[features])[:, 1]
+    else:
+        # Single class (e.g. 30d window where no users are yet churned > 60 days)
+        # Assign risk proportionally based on relative recency within the window (0-35% risk)
+        max_r = max(1.0, float(active_customers['Recency'].max()))
+        probs = (active_customers['Recency'] / max_r).values * 0.35
+
+    active_customers['ChurnRiskProbability'] = np.clip(probs * 100, 0, 100)
     
     risky = active_customers.sort_values('ChurnRiskProbability', ascending=False).head(50).reset_index()
     result = [{"CustomerID": row['CustomerID'], "Frequency": float(row['Frequency']), "Monetary": float(row['Monetary']), "RiskPercent": float(row['ChurnRiskProbability'])} for _, row in risky.iterrows()]
         
-    return {
+    res_data = {
         "summary": {"total_active": len(active_customers), "high_risk_count": int((active_customers['ChurnRiskProbability'] > 50).sum())},
         "top_at_risk": result
     }
+    set_cached(cache_key, res_data, ttl=300)
+    return res_data
 
 @app.get("/api/affinity")
-def get_category_affinity(min_support: int = 10):
-    df = get_filtered_data()
-    if df is None:
+def get_category_affinity(start_date: str = None, end_date: str = None, min_support: int = 5, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    if not check_data_exists(tenant_id):
         return {"status": "empty"}
         
+    cache_key = f"tenant:{tenant_id}:affinity:{start_date}:{end_date}:{min_support}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+        
+    with engine.connect() as conn:
+        q_cond = 'WHERE tenant_id = :t'
+        p = {"t": tenant_id}
+        if start_date:
+            q_cond += ' AND CAST("InvoiceDate" AS date) >= :sd'
+            p['sd'] = start_date
+        if end_date:
+            q_cond += ' AND CAST("InvoiceDate" AS date) <= :ed'
+            p['ed'] = end_date
+        query = text(f'SELECT "CustomerID", "Category" FROM transactions {q_cond}')
+        df = pd.read_sql_query(query, conn, params=p)
+    
+    if df.empty:
+        return {"rules": []}
+
     user_category = df.groupby(['CustomerID', 'Category']).size().unstack(fill_value=0)
     user_category = (user_category > 0).astype(int)
     categories = user_category.columns.tolist()
-    rules = []
     
-    for i in categories:
-        for j in categories:
-            if i == j: continue
-            bought_i = user_category[i] == 1
-            num_bought_i = bought_i.sum()
-            if num_bought_i < min_support: continue
-            
-            bought_both = (user_category[i] == 1) & (user_category[j] == 1)
-            num_bought_both = bought_both.sum()
-            confidence = (num_bought_both / num_bought_i) * 100
-            
+    if len(categories) < 2:
+        return {"rules": []}
+
+    # Vectorized Matrix Multiplication (C-speed Co-occurrence)
+    M = user_category.values
+    C_co = M.T @ M
+    support_single = np.diag(C_co)
+    
+    rules = []
+    for i, cat_i in enumerate(categories):
+        num_bought_i = support_single[i]
+        if num_bought_i < min_support:
+            continue
+        for j, cat_j in enumerate(categories):
+            if i == j:
+                continue
+            num_both = C_co[i, j]
+            if num_both == 0:
+                continue
+            confidence = (num_both / num_bought_i) * 100
             rules.append({
-                "source": i, "target": j,
-                "support_both": int(num_bought_both),
-                "confidence_percent": round(confidence, 1)
+                "source": cat_i,
+                "target": cat_j,
+                "support_both": int(num_both),
+                "confidence_percent": round(float(confidence), 1)
             })
             
     rules.sort(key=lambda x: x['confidence_percent'], reverse=True)
-    return {"rules": rules[:10]}
+    res_data = {"rules": rules[:10]}
+    set_cached(cache_key, res_data, ttl=300)
+    return res_data
+
+@app.get("/api/insights")
+def get_insights(start_date: str = None, end_date: str = None, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    if not check_data_exists(tenant_id):
+        return {"status": "empty"}
+        
+    cache_key = f"tenant:{tenant_id}:insights:{start_date}:{end_date}"
+    cached = get_cached(cache_key)
+    if cached:
+        return cached
+    
+    insights = []
+    
+    with engine.connect() as conn:
+        # Trend / Sales Movement Analysis
+        q_cond = 'WHERE tenant_id = :t'
+        p = {"t": tenant_id}
+        if start_date:
+            q_cond += ' AND CAST("InvoiceDate" AS date) >= :sd'
+            p['sd'] = start_date
+        if end_date:
+            q_cond += ' AND CAST("InvoiceDate" AS date) <= :ed'
+            p['ed'] = end_date
+            
+        trend_query = text(f"""
+            SELECT 
+                DATE_TRUNC('month', CAST("InvoiceDate" AS timestamp)) as month_date,
+                SUM("TotalPrice") as total
+            FROM transactions
+            {q_cond}
+            GROUP BY DATE_TRUNC('month', CAST("InvoiceDate" AS timestamp))
+            ORDER BY month_date
+        """)
+        trend_df = pd.read_sql_query(trend_query, conn, params=p)
+        
+        if len(trend_df) >= 2:
+            last_month = trend_df.iloc[-1]['total']
+            prev_month = trend_df.iloc[-2]['total']
+            pct_change = ((last_month - prev_month) / prev_month) * 100 if prev_month > 0 else 0
+            
+            if pct_change < -5:
+                insights.append({
+                    "type": "warning",
+                    "title": "Penurunan Momentum Penjualan",
+                    "description": f"Penjualan turun {abs(pct_change):.1f}% di bulan terakhir. Saran: Segera luncurkan promo kilat (Flash Sale) atau evaluasi efektivitas kampanye pemasaran Anda untuk mengembalikan momentum."
+                })
+            elif pct_change > 5:
+                insights.append({
+                    "type": "success",
+                    "title": "Momentum Penjualan Positif",
+                    "description": f"Pertumbuhan luar biasa! Penjualan naik {pct_change:.1f}%. Saran: Tingkatkan budget pemasaran (Ads) pada produk terlaris selagi momentum audiens sedang tinggi."
+                })
+            else:
+                insights.append({
+                    "type": "info",
+                    "title": "Pertumbuhan Stagnan",
+                    "description": "Pendapatan cenderung datar bulan ini. Saran: Lakukan A/B testing harga atau perkenalkan paket bundling (Cross-sell) untuk menaikkan Average Order Value."
+                })
+
+        # Forecasting Inventory
+        if len(trend_df) >= 6:
+            ts_data = pd.Series(trend_df['total'].values, index=pd.to_datetime(trend_df['month_date']))
+            model = ExponentialSmoothing(ts_data, trend='add', seasonal=None, initialization_method="estimated")
+            fit_model = model.fit()
+            forecast = fit_model.forecast(1)
+            next_month_proj = forecast.values[0]
+            avg_past = ts_data.mean()
+            
+            if next_month_proj > avg_past * 1.1:
+                insights.append({
+                    "type": "logistics",
+                    "title": "Persiapan Stok (Forecast AI)",
+                    "description": "AI memproyeksikan lonjakan permintaan bulan depan di atas rata-rata. Saran: Pastikan rantai pasok (supply chain) aman dan tingkatkan stok inventaris kategori utama untuk mencegah kehabisan barang (Out-of-Stock)."
+                })
+                
+        # Basket Analysis (Cross-Selling)
+        rules_res = get_category_affinity(start_date, end_date, 10, current_user)
+        if isinstance(rules_res, dict) and "rules" in rules_res:
+            rules = rules_res["rules"]
+            if len(rules) > 0:
+                top_rule = rules[0]
+                insights.append({
+                    "type": "opportunity",
+                    "title": "Peluang Cross-Selling Emas",
+                    "description": f"Pembeli {top_rule['source']} sangat sering membeli {top_rule['target']} bersamaan (Confidence {top_rule['confidence_percent']}%). Saran: Buat diskon bundling otomatis untuk kombinasi ini di halaman *checkout*."
+                })
+            
+        # Churn Risk
+        rfm = get_rfm_df(tenant_id, start_date, end_date, countries=None)
+        if not rfm.empty:
+            rfm['IsChurned'] = (rfm['Recency'] > 60).astype(int)
+            active_customers = rfm[rfm['IsChurned'] == 0]
+            if not active_customers.empty and len(rfm) > 10:
+                features = ['Frequency', 'Monetary']
+                X = rfm[features]
+                y = rfm['IsChurned']
+                if y.sum() > 0: # Ensure at least one churned and one active
+                    from sklearn.ensemble import RandomForestClassifier
+                    model = RandomForestClassifier(n_estimators=50, random_state=42)
+                    model.fit(X, y)
+                    probs = model.predict_proba(active_customers[features])[:, 1]
+                    high_risk = (probs > 0.5).sum()
+                    
+                    if high_risk > 0:
+                        insights.append({
+                            "type": "danger",
+                            "title": "Risiko Kehilangan Pelanggan (Churn)",
+                            "description": f"Terdapat {high_risk} pelanggan aktif dengan risiko *churn* tinggi (>50%). Saran: Eksekusi *email blast* berisi kupon diskon re-aktivasi khusus untuk kelompok ini maksimal minggu ini."
+                        })
+                    
+    res_data = {"insights": insights}
+    set_cached(cache_key, res_data, ttl=300)
+    return res_data
+
+
+@app.get("/api/category_drilldown")
+def get_category_drilldown(category: str, start_date: str = None, end_date: str = None, current_user: User = Depends(get_current_user)):
+    tenant_id = current_user.tenant_id
+    with engine.connect() as conn:
+        q_cond = 'WHERE tenant_id = :t AND "Category" = :c'
+        p = {"t": tenant_id, "c": category}
+        if start_date:
+            q_cond += ' AND CAST("InvoiceDate" AS date) >= :sd'
+            p['sd'] = start_date
+        if end_date:
+            q_cond += ' AND CAST("InvoiceDate" AS date) <= :ed'
+            p['ed'] = end_date
+            
+        query = text(f"""
+            SELECT "CustomerID", COUNT(DISTINCT "InvoiceNo") as total_orders, SUM("TotalPrice") as total_spent, SUM("Quantity") as total_quantity
+            FROM transactions
+            {q_cond}
+            GROUP BY "CustomerID"
+            ORDER BY total_spent DESC
+            LIMIT 5
+        """)
+        df = pd.read_sql_query(query, conn, params=p)
+        return {"top_customers": df.to_dict(orient="records")}
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
