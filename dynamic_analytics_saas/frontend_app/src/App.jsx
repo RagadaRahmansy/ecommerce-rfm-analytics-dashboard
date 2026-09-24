@@ -14,6 +14,7 @@ import AuthView from './components/auth/AuthView';
 import OverviewView from './components/overview/OverviewView';
 import ClusteringView from './components/clustering/ClusteringView';
 import MetricStudioView from './components/metrics/MetricStudioView';
+import CopilotView from './components/copilot/CopilotView';
 
 // Modals
 import CommandPaletteModal from './components/modals/CommandPaletteModal';
@@ -424,6 +425,8 @@ export default function App() {
       <div className="ml-72 flex-1 flex flex-col min-h-screen">
         {/* Global Navigation Header */}
         <Header
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
           isDark={isDark}
@@ -481,6 +484,12 @@ export default function App() {
                 exportDashboardJSON={exportDashboardJSON}
                 exportAffinityToCSV={exportAffinityToCSV}
               />
+            </ErrorBoundary>
+          )}
+
+          {activeTab === 'copilot' && (
+            <ErrorBoundary name="AI Data Copilot View">
+              <CopilotView API_BASE={API_BASE} />
             </ErrorBoundary>
           )}
         </main>

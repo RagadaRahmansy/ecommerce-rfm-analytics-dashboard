@@ -59,6 +59,16 @@ export default function Sidebar({
             <span className="font-label-lg text-label-lg">Metric Catalog & Reports</span>
           </a>
           <a
+            onClick={() => setActiveTab('copilot')}
+            className={`flex items-center justify-between px-space-sm py-2 rounded-lg transition-colors cursor-pointer ${activeTab === 'copilot' ? 'bg-primary-container text-on-primary-container font-semibold shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'}`}
+          >
+            <div className="flex items-center gap-space-sm">
+              <span className="material-symbols-outlined text-[18px] text-primary">auto_awesome</span>
+              <span className="font-label-lg text-label-lg">AI Data Copilot</span>
+            </div>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gradient-to-r from-primary to-secondary text-white shadow-sm">AI</span>
+          </a>
+          <a
             onClick={() => setShowUploadModal(true)}
             className="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer"
           >

@@ -84,3 +84,34 @@ def test_rate_limiting_enforcement():
             assert "Too many" in res.json().get("detail", "")
             return
     # If redis is bypassed or not hit, it passes
+
+def test_copilot_query_endpoint():
+    # Register & Login user to get token
+    ts = int(time.time() * 1000)
+    test_email = f"copilot_test_{ts}@ragada.com"
+    client.post("/api/auth/register", json={
+        "company_name": f"Copilot Enterprise {ts}",
+        "email": test_email,
+        "password": "Password123!"
+    })
+    token = client.post("/api/auth/login", data={"username": test_email, "password": "Password123!"}).json()["access_token"]
+    
+    # Test NLP questions
+    queries = [
+        "Siapa 5 pelanggan tertinggi?",
+        "Tampilkan tren pendapatan bulanan",
+        "Kategori produk apa yang paling laris?"
+    ]
+    for q in queries:
+        res = client.post(
+            "/api/copilot/query",
+            json={"query": q},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert "answer" in data
+        assert "sql" in data
+        assert "visualization" in data
+        assert "summary" in data
+

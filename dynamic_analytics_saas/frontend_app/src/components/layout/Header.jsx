@@ -1,6 +1,8 @@
 import React from 'react';
 
 export default function Header({
+  activeTab,
+  setActiveTab,
   dateFilter,
   setDateFilter,
   isDark,
@@ -20,15 +22,23 @@ export default function Header({
 }) {
   return (
     <header className="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
-      {/* Search Input Button (⌘K) */}
-      <div className="flex items-center flex-1 max-w-xl">
+      {/* Search Input Button (⌘K) & AI Copilot Button */}
+      <div className="flex items-center flex-1 max-w-xl gap-2">
         <button
           onClick={() => setShowCommandPalette(true)}
-          className="w-full flex items-center gap-space-sm px-space-md py-2 rounded-xl bg-surface-container text-outline hover:text-on-surface transition-all cursor-pointer group border border-transparent hover:border-surface-container-high"
+          className="flex-1 flex items-center gap-space-sm px-space-md py-2 rounded-xl bg-surface-container text-outline hover:text-on-surface transition-all cursor-pointer group border border-transparent hover:border-surface-container-high"
         >
           <span className="material-symbols-outlined text-[18px] text-on-surface-variant group-hover:text-primary transition-colors">search</span>
           <span className="font-body-md text-body-md text-on-surface-variant flex-1 text-left select-none">Search datasets, metrics, customers, actions...</span>
           <kbd className="hidden sm:inline-block px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-code-md text-[11px] shadow-sm">⌘ K</kbd>
+        </button>
+        <button
+          onClick={() => setActiveTab && setActiveTab('copilot')}
+          className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-primary/10 to-secondary/10 hover:from-primary/20 hover:to-secondary/20 text-primary border border-primary/25 transition-all font-label-md cursor-pointer flex-shrink-0 shadow-sm"
+          title="Buka AI Data Copilot"
+        >
+          <span className="material-symbols-outlined text-[17px] text-primary">auto_awesome</span>
+          <span className="font-bold text-xs">AI Copilot</span>
         </button>
       </div>
 

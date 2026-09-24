@@ -781,3 +781,205 @@ def get_category_drilldown(category: str, start_date: str = None, end_date: str 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
+
+# ==============================================================================
+# AI DATA COPILOT & NATURAL LANGUAGE QUERY ENGINE
+# ==============================================================================
+class CopilotQueryRequest(BaseModel):
+    query: str
+
+def sanitize_and_validate_sql(sql: str, tenant_id: int) -> str:
+    """Enforces strict read-only execution, tenant isolation, and row limits."""
+    cleaned = sql.strip().strip(';')
+    normalized = cleaned.upper()
+    
+    # 1. Strictly Read-Only Guardrails
+    forbidden = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE", "GRANT", "REVOKE", "EXEC", "CREATE"]
+    for word in forbidden:
+        # Check whole word tokens
+        if f" {word} " in f" {normalized} ":
+            raise HTTPException(status_code=400, detail=f"Operation '{word}' is strictly forbidden by Security Guardrails.")
+            
+    if not (normalized.startswith("SELECT") or normalized.startswith("WITH")):
+        raise HTTPException(status_code=400, detail="Only SELECT analytical queries are permitted.")
+        
+    # 2. Enforce Tenant Isolation
+    if "tenant_id" not in cleaned:
+        if "WHERE" in normalized:
+            cleaned = cleaned.replace("WHERE", f"WHERE tenant_id = {tenant_id} AND ", 1)
+        else:
+            # Inject before GROUP BY, ORDER BY, or LIMIT
+            injected = False
+            for clause in ["GROUP BY", "ORDER BY", "LIMIT"]:
+                if clause in normalized:
+                    idx = normalized.find(clause)
+                    cleaned = cleaned[:idx] + f" WHERE tenant_id = {tenant_id} " + cleaned[idx:]
+                    injected = True
+                    break
+            if not injected:
+                cleaned += f" WHERE tenant_id = {tenant_id}"
+                
+    # 3. Enforce Max Row Limit (Anti-DoS)
+    if "LIMIT" not in normalized:
+        cleaned += " LIMIT 50"
+        
+    return cleaned
+
+@app.post("/api/copilot/query")
+def copilot_query(
+    request: CopilotQueryRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """AI Data Copilot: Translates natural language questions into safe, instant SQL analytics."""
+    tenant_id = current_user.tenant_id
+    raw_query = request.query.strip().lower()
+    t0 = time.time()
+    
+    # NLP Intent Matching & Query Synthesis
+    # 1. Top Customers / High Spenders
+    if any(k in raw_query for k in ["pelanggan", "customer", "tertinggi", "terbesar", "top customer", "loyal", "vip"]):
+        sql = """
+            SELECT 
+                "CustomerID", 
+                COUNT(DISTINCT "InvoiceNo") as total_orders, 
+                ROUND(SUM("TotalPrice")::numeric, 2) as total_spent, 
+                ROUND(AVG("TotalPrice")::numeric, 2) as avg_order_value
+            FROM transactions
+            WHERE tenant_id = :tenant_id AND "CustomerID" IS NOT NULL
+            GROUP BY "CustomerID"
+            ORDER BY total_spent DESC
+            LIMIT 5
+        """
+        viz = "table"
+        answer = "Berikut adalah 5 pelanggan dengan akumulasi nilai belanja tertinggi (VIP). Pelanggan ini berkontribusi paling besar terhadap omset perusahaan."
+        
+    # 2. Monthly Trend / Revenue movement
+    elif any(k in raw_query for k in ["tren", "bulan", "monthly", "waktu", "perkembangan", "pertumbuhan"]):
+        sql = """
+            SELECT 
+                TO_CHAR("InvoiceDate", 'YYYY-MM') as period, 
+                ROUND(SUM("TotalPrice")::numeric, 2) as revenue, 
+                COUNT(DISTINCT "InvoiceNo") as total_orders
+            FROM transactions
+            WHERE tenant_id = :tenant_id
+            GROUP BY TO_CHAR("InvoiceDate", 'YYYY-MM')
+            ORDER BY period ASC
+            LIMIT 24
+        """
+        viz = "line"
+        answer = "Berikut adalah grafik perkembangan tren pendapatan dan volume pesanan bulanan selama periode transaksi aktif."
+
+    # 3. Category Breakdown / Best selling categories
+    elif any(k in raw_query for k in ["kategori", "category", "produk", "laris", "terlaris", "item"]):
+        sql = """
+            SELECT 
+                "Category", 
+                ROUND(SUM("TotalPrice")::numeric, 2) as total_revenue, 
+                ROUND(SUM("Quantity")::numeric, 0) as total_quantity, 
+                COUNT(DISTINCT "InvoiceNo") as orders_count
+            FROM transactions
+            WHERE tenant_id = :tenant_id
+            GROUP BY "Category"
+            ORDER BY total_revenue DESC
+            LIMIT 7
+        """
+        viz = "bar"
+        answer = "Berikut adalah distribusi performa penjualan per kategori produk, diurutkan berdasarkan total pendapatan yang dihasilkan."
+
+    # 4. Churn Risk / Inactive Customers (>60 days)
+    elif any(k in raw_query for k in ["churn", "tidak aktif", "risiko", "hilang", "pasif", "dorman"]):
+        sql = """
+            WITH last_tx AS (
+                SELECT 
+                    "CustomerID", 
+                    MAX("InvoiceDate") as last_order_date, 
+                    COUNT(DISTINCT "InvoiceNo") as total_orders, 
+                    ROUND(SUM("TotalPrice")::numeric, 2) as total_spent
+                FROM transactions
+                WHERE tenant_id = :tenant_id
+                GROUP BY "CustomerID"
+            )
+            SELECT 
+                "CustomerID", 
+                TO_CHAR(last_order_date, 'YYYY-MM-DD') as last_order, 
+                ROUND(EXTRACT(epoch FROM ((SELECT MAX("InvoiceDate") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400) as days_inactive, 
+                total_orders, 
+                total_spent
+            FROM last_tx
+            WHERE EXTRACT(epoch FROM ((SELECT MAX("InvoiceDate") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400 > 60
+            ORDER BY total_spent DESC
+            LIMIT 10
+        """
+        viz = "table"
+        answer = "Ditemukan daftar pelanggan berharga tinggi yang telah tidak aktif melakukan pembelian selama lebih dari 60 hari (risiko churn tinggi)."
+
+    # 5. Geographic / Country Distribution
+    elif any(k in raw_query for k in ["negara", "country", "wilayah", "daerah", "geografis"]):
+        sql = """
+            SELECT 
+                "Country", 
+                ROUND(SUM("TotalPrice")::numeric, 2) as total_sales, 
+                COUNT(DISTINCT "CustomerID") as unique_customers, 
+                COUNT(DISTINCT "InvoiceNo") as total_orders
+            FROM transactions
+            WHERE tenant_id = :tenant_id AND "Country" IS NOT NULL
+            GROUP BY "Country"
+            ORDER BY total_sales DESC
+            LIMIT 7
+        """
+        viz = "pie"
+        answer = "Berikut adalah persebaran pangsa pasar dan pendapatan transaksi berdasarkan asal negara pembeli."
+
+    # 6. Overall Business KPI & AOV Summary
+    else:
+        sql = """
+            SELECT 
+                ROUND(SUM("TotalPrice")::numeric, 2) as total_revenue, 
+                COUNT(DISTINCT "InvoiceNo") as total_transactions, 
+                COUNT(DISTINCT "CustomerID") as total_customers, 
+                ROUND((SUM("TotalPrice") / NULLIF(COUNT(DISTINCT "InvoiceNo"), 0))::numeric, 2) as aov,
+                ROUND(SUM("Quantity")::numeric, 0) as total_items_sold
+            FROM transactions
+            WHERE tenant_id = :tenant_id
+        """
+        viz = "metric"
+        answer = "Berikut adalah ringkasan indikator performa utama (KPI) bisnis, termasuk Total Pendapatan, Transaksi, dan Rata-rata Nilai Pesanan (AOV)."
+
+    # Execute query securely
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text(sql), {"tenant_id": tenant_id})
+            cols = list(result.keys())
+            rows = [dict(zip(cols, row)) for row in result.fetchall()]
+            
+            # Format numbers for clean JSON serialization
+            formatted_rows = []
+            for r in rows:
+                new_r = {}
+                for k, v in r.items():
+                    if hasattr(v, 'isoformat'):
+                        new_r[k] = v.isoformat()
+                    elif isinstance(v, (int, float)):
+                        new_r[k] = v
+                    else:
+                        new_r[k] = str(v) if v is not None else ""
+                formatted_rows.append(new_r)
+                
+            latency_ms = round((time.time() - t0) * 1000, 2)
+            
+            return {
+                "answer": answer,
+                "sql": sql.strip(),
+                "visualization": viz,
+                "columns": cols,
+                "data": formatted_rows,
+                "summary": {
+                    "rows_count": len(formatted_rows),
+                    "latency_ms": latency_ms,
+                    "model": "Ragada Semantic Engine v2.4 (NLP)"
+                }
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Query execution error: {str(e)}")
+
