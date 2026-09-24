@@ -304,10 +304,16 @@ import json
 async def upload_csv(
     file: UploadFile = File(...), 
     mapping: str = Form(None, description="JSON string mapping internal columns to CSV columns e.g. {'InvoiceNo': 'No_Transaksi'}"),
+    mode: str = Form("append", description="Ingestion mode: 'append' (incremental) or 'replace' (full overwrite)"),
     current_user: User = Depends(get_current_user)
 ):
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload a CSV file.")
+    
+    # Normalize mode
+    mode = mode.lower().strip() if mode else "append"
+    if mode not in ("append", "replace"):
+        mode = "append"
     
     mapping_dict = None
     if mapping:
@@ -325,10 +331,15 @@ async def upload_csv(
             while chunk := await file.read(1024 * 1024):
                 buffer.write(chunk)
                 
-        # Send task to Celery worker
-        task = process_csv_upload.delay(temp_path, current_user.tenant_id, mapping_dict)
+        # Send task to Celery worker with mode parameter
+        task = process_csv_upload.delay(temp_path, current_user.tenant_id, mapping_dict, mode)
         
-        return {"status": "processing", "task_id": task.id, "message": "File is being processed in the background."}
+        return {
+            "status": "processing", 
+            "task_id": task.id, 
+            "mode": mode,
+            "message": f"File is being processed in the background (Mode: {mode})."
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend_api/ ./backend_api/
 
 # Set proper ownership to non-root user
-RUN chown -R appuser:appgroup /app
+RUN mkdir -p /shared_tmp && chown -R appuser:appgroup /app /shared_tmp && chmod 777 /shared_tmp
 
 # Switch to non-root user
 USER appuser

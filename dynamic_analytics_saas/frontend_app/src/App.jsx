@@ -220,7 +220,7 @@ export default function App() {
     }
   };
 
-  const handleUploadInModal = async (e) => {
+  const handleUploadInModal = async (e, mode = 'append') => {
     e.preventDefault();
     const file = e.target.file.files[0];
     if (!file) return;
@@ -228,6 +228,7 @@ export default function App() {
     setUploadMessage("Uploading securely...");
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("mode", mode);
     if (mappingInput) formData.append("mapping", mappingInput);
     try {
       const uploadRes = await axios.post(API_BASE + '/upload', formData, {
