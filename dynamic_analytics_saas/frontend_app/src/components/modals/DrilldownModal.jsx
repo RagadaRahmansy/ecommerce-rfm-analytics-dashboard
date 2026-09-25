@@ -30,8 +30,12 @@ export default function DrilldownModal({ drilldownModal, setDrilldownModal }) {
                   {drilldownModal.data.map((c, idx) => (
                     <tr key={idx} className="hover:bg-surface-container-low transition-colors">
                       <td className="py-3 px-3 font-semibold text-on-surface font-code-md text-body-sm">{c.CustomerID}</td>
-                      <td className="py-3 px-3 text-right text-on-surface font-code-md text-body-sm">{c.OrderCount}</td>
-                      <td className="py-3 px-3 text-right font-code-md text-body-sm text-primary font-bold">${c.TotalSpend.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-right text-on-surface font-code-md text-body-sm">
+                        {c.total_orders ?? c.OrderCount ?? 0}
+                      </td>
+                      <td className="py-3 px-3 text-right font-code-md text-body-sm text-primary font-bold">
+                        ${Number(c.total_spent ?? c.TotalSpend ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

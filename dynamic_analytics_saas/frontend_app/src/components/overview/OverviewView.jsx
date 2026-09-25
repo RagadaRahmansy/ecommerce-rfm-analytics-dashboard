@@ -266,11 +266,18 @@ export default function OverviewView({
                       paddingAngle={5}
                       dataKey="TotalPrice"
                       nameKey="Category"
-                      onClick={(data) => openDrilldown(data.Category)}
+                      onClick={(entry) => {
+                        const cat = entry?.name || entry?.payload?.Category || entry?.Category;
+                        if (cat) openDrilldown(cat);
+                      }}
                       className="cursor-pointer outline-none"
                     >
                       {overviewData.category_sales.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={['#8083ff', '#4cd7f6', '#4edea3', '#ffb4ab', '#ffd166'][index % 5]} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={['#8083ff', '#4cd7f6', '#4edea3', '#ffb4ab', '#ffd166'][index % 5]} 
+                          className="cursor-pointer hover:opacity-80 transition-opacity"
+                        />
                       ))}
                     </Pie>
                     <RechartsTooltip contentStyle={{backgroundColor: '#1c1f2a', borderColor: '#313540', color: '#dfe2f1', borderRadius: '8px', padding: '8px 12px'}} formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]} />

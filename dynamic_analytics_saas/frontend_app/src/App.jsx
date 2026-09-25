@@ -266,6 +266,7 @@ export default function App() {
   };
 
   const openDrilldown = async (categoryName) => {
+    if (!categoryName) return;
     try {
       let params = { category: categoryName };
       if (dateFilter) {
