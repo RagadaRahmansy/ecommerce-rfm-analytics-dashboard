@@ -323,10 +323,17 @@ async def upload_csv(
             raise HTTPException(status_code=400, detail="Invalid JSON in mapping parameter.")
     
     try:
-        if not os.path.exists('/shared_tmp'):
-            os.makedirs('/shared_tmp', exist_ok=True)
+        temp_dir = '/shared_tmp'
+        try:
+            os.makedirs(temp_dir, exist_ok=True)
+            test_file = os.path.join(temp_dir, '.write_test')
+            with open(test_file, 'w') as f:
+                f.write('ok')
+            os.remove(test_file)
+        except Exception:
+            temp_dir = tempfile.gettempdir()
             
-        fd, temp_path = tempfile.mkstemp(suffix=".csv", dir='/shared_tmp')
+        fd, temp_path = tempfile.mkstemp(suffix=".csv", dir=temp_dir)
         with os.fdopen(fd, 'wb') as buffer:
             while chunk := await file.read(1024 * 1024):
                 buffer.write(chunk)
@@ -839,6 +846,17 @@ def sanitize_and_validate_sql(sql: str, tenant_id: int) -> str:
 
 def parse_nlp_query(raw_query: str, tenant_id: int):
     q = raw_query.strip().lower()
+    is_sqlite = engine.dialect.name == "sqlite"
+    date_ym = "strftime('%Y-%m', \"InvoiceDate\")" if is_sqlite else "TO_CHAR(\"InvoiceDate\", 'YYYY-MM')"
+    date_ymd = "strftime('%Y-%m-%d', \"InvoiceDate\")" if is_sqlite else "TO_CHAR(\"InvoiceDate\", 'YYYY-MM-DD')"
+    date_last_order = "strftime('%Y-%m-%d', last_order_date)" if is_sqlite else "TO_CHAR(last_order_date, 'YYYY-MM-DD')"
+    
+    if is_sqlite:
+        days_inactive_calc = "ROUND(julianday((SELECT MAX(\"InvoiceDate\") FROM transactions WHERE tenant_id = :tenant_id)) - julianday(last_order_date))"
+        churn_filter = "ROUND(julianday((SELECT MAX(\"InvoiceDate\") FROM transactions WHERE tenant_id = :tenant_id)) - julianday(last_order_date)) > 60"
+    else:
+        days_inactive_calc = "ROUND(EXTRACT(epoch FROM ((SELECT MAX(\"InvoiceDate\") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400)"
+        churn_filter = "EXTRACT(epoch FROM ((SELECT MAX(\"InvoiceDate\") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400 > 60"
     
     # 1. Dynamic Limit Extraction (e.g. "3 pelanggan", "10 kategori")
     match_num = re.search(r'\b(\d+)\b', q)
@@ -863,8 +881,8 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
             SELECT 
                 "CustomerID", 
                 COUNT(DISTINCT "InvoiceNo") as total_orders, 
-                ROUND(SUM("TotalPrice")::numeric, 2) as total_spent, 
-                ROUND(AVG("TotalPrice")::numeric, 2) as avg_order_value
+                ROUND(CAST(SUM("TotalPrice") AS NUMERIC), 2) as total_spent, 
+                ROUND(CAST(AVG("TotalPrice") AS NUMERIC), 2) as avg_order_value
             FROM transactions
             WHERE tenant_id = :tenant_id AND "CustomerID" IS NOT NULL
             GROUP BY "CustomerID"
@@ -882,8 +900,8 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
         sql = f"""
             SELECT 
                 "Category", 
-                ROUND(SUM("TotalPrice")::numeric, 2) as total_revenue, 
-                ROUND(SUM("Quantity")::numeric, 0) as total_quantity, 
+                ROUND(CAST(SUM("TotalPrice") AS NUMERIC), 2) as total_revenue, 
+                ROUND(CAST(SUM("Quantity") AS NUMERIC), 0) as total_quantity, 
                 COUNT(DISTINCT "InvoiceNo") as orders_count
             FROM transactions
             WHERE tenant_id = :tenant_id
@@ -902,11 +920,11 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
         sql = f"""
             SELECT 
                 "InvoiceNo", 
-                TO_CHAR("InvoiceDate", 'YYYY-MM-DD') as date, 
+                {date_ymd} as date, 
                 "CustomerID", 
                 "Category", 
                 "Quantity", 
-                ROUND("TotalPrice"::numeric, 2) as total_price, 
+                ROUND(CAST("TotalPrice" AS NUMERIC), 2) as total_price, 
                 "Country"
             FROM transactions
             WHERE tenant_id = :tenant_id
@@ -918,14 +936,14 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
 
     # D. Monthly Time-Series Trend
     elif any(k in q for k in ["tren", "bulan", "monthly", "waktu", "perkembangan", "pertumbuhan"]):
-        sql = """
+        sql = f"""
             SELECT 
-                TO_CHAR("InvoiceDate", 'YYYY-MM') as period, 
-                ROUND(SUM("TotalPrice")::numeric, 2) as revenue, 
+                {date_ym} as period, 
+                ROUND(CAST(SUM("TotalPrice") AS NUMERIC), 2) as revenue, 
                 COUNT(DISTINCT "InvoiceNo") as total_orders
             FROM transactions
             WHERE tenant_id = :tenant_id
-            GROUP BY TO_CHAR("InvoiceDate", 'YYYY-MM')
+            GROUP BY {date_ym}
             ORDER BY period ASC
             LIMIT 36
         """
@@ -940,19 +958,19 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
                     "CustomerID", 
                     MAX("InvoiceDate") as last_order_date, 
                     COUNT(DISTINCT "InvoiceNo") as total_orders, 
-                    ROUND(SUM("TotalPrice")::numeric, 2) as total_spent
+                    ROUND(CAST(SUM("TotalPrice") AS NUMERIC), 2) as total_spent
                 FROM transactions
                 WHERE tenant_id = :tenant_id
                 GROUP BY "CustomerID"
             )
             SELECT 
                 "CustomerID", 
-                TO_CHAR(last_order_date, 'YYYY-MM-DD') as last_order, 
-                ROUND(EXTRACT(epoch FROM ((SELECT MAX("InvoiceDate") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400) as days_inactive, 
+                {date_last_order} as last_order, 
+                {days_inactive_calc} as days_inactive, 
                 total_orders, 
                 total_spent
             FROM last_tx
-            WHERE EXTRACT(epoch FROM ((SELECT MAX("InvoiceDate") FROM transactions WHERE tenant_id = :tenant_id) - last_order_date)) / 86400 > 60
+            WHERE {churn_filter}
             ORDER BY total_spent DESC
             LIMIT {limit}
         """
@@ -964,7 +982,7 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
         sql = f"""
             SELECT 
                 "Country", 
-                ROUND(SUM("TotalPrice")::numeric, 2) as total_sales, 
+                ROUND(CAST(SUM("TotalPrice") AS NUMERIC), 2) as total_sales, 
                 COUNT(DISTINCT "CustomerID") as unique_customers, 
                 COUNT(DISTINCT "InvoiceNo") as total_orders
             FROM transactions
@@ -980,11 +998,11 @@ def parse_nlp_query(raw_query: str, tenant_id: int):
     else:
         sql = """
             SELECT 
-                ROUND(SUM("TotalPrice")::numeric, 2) as total_revenue, 
+                ROUND(CAST(SUM("TotalPrice") AS NUMERIC), 2) as total_revenue, 
                 COUNT(DISTINCT "InvoiceNo") as total_transactions, 
                 COUNT(DISTINCT "CustomerID") as total_customers, 
-                ROUND((SUM("TotalPrice") / NULLIF(COUNT(DISTINCT "InvoiceNo"), 0))::numeric, 2) as aov,
-                ROUND(SUM("Quantity")::numeric, 0) as total_items_sold
+                ROUND(CAST((SUM("TotalPrice") / NULLIF(COUNT(DISTINCT "InvoiceNo"), 0)) AS NUMERIC), 2) as aov,
+                ROUND(CAST(SUM("Quantity") AS NUMERIC), 0) as total_items_sold
             FROM transactions
             WHERE tenant_id = :tenant_id
         """

@@ -119,6 +119,7 @@ def test_copilot_query_endpoint():
         assert "summary" in data
 
 def test_upload_endpoint_modes():
+    from unittest.mock import patch, MagicMock
     ts = int(time.time() * 1000)
     test_email = f"upload_test_{ts}@ragada.com"
     client.post("/api/auth/register", json={
@@ -130,24 +131,27 @@ def test_upload_endpoint_modes():
     
     csv_content = b"InvoiceNo,InvoiceDate,CustomerID,Category,Quantity,UnitPrice,TotalPrice\nINV001,2026-03-01 10:00:00,CUST01,Electronics,1,100,100\n"
     
-    # Test append mode
-    res_append = client.post(
-        "/api/upload",
-        files={"file": ("test.csv", csv_content, "text/csv")},
-        data={"mode": "append"},
-        headers={"Authorization": f"Bearer {token}"}
-    )
-    assert res_append.status_code == 200
-    assert res_append.json()["mode"] == "append"
-    assert "task_id" in res_append.json()
-    
-    # Test replace mode
-    res_replace = client.post(
-        "/api/upload",
-        files={"file": ("test.csv", csv_content, "text/csv")},
-        data={"mode": "replace"},
-        headers={"Authorization": f"Bearer {token}"}
-    )
-    assert res_replace.status_code == 200
-    assert res_replace.json()["mode"] == "replace"
-    assert "task_id" in res_replace.json()
+    with patch("main.process_csv_upload.delay") as mock_delay:
+        mock_delay.return_value = MagicMock(id=f"mock-task-{ts}")
+        
+        # Test append mode
+        res_append = client.post(
+            "/api/upload",
+            files={"file": ("test.csv", csv_content, "text/csv")},
+            data={"mode": "append"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert res_append.status_code == 200
+        assert res_append.json()["mode"] == "append"
+        assert "task_id" in res_append.json()
+        
+        # Test replace mode
+        res_replace = client.post(
+            "/api/upload",
+            files={"file": ("test.csv", csv_content, "text/csv")},
+            data={"mode": "replace"},
+            headers={"Authorization": f"Bearer {token}"}
+        )
+        assert res_replace.status_code == 200
+        assert res_replace.json()["mode"] == "replace"
+        assert "task_id" in res_replace.json()
