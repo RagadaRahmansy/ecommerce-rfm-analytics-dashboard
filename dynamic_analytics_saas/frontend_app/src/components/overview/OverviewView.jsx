@@ -14,7 +14,7 @@ export default function OverviewView({
   exportDashboardCSV,
   exportDashboardJSON,
   openDrilldown,
-  handleExportPDF
+  handleDownloadPdf
 }) {
   const chartData = (forecastData && forecastData.chart_data && forecastData.chart_data.length >= (overviewData?.trend?.length || 0))
     ? forecastData.chart_data
@@ -51,7 +51,7 @@ export default function OverviewView({
               <span className="material-symbols-outlined text-[16px]">expand_more</span>
             </button>
             <div className="absolute right-0 mt-1 w-48 rounded-xl bg-surface-container-high p-1.5 hidden group-hover:flex flex-col z-30 shadow-xl border border-surface-container">
-              <button onClick={handleExportPDF} className="flex items-center gap-2 px-3 py-2 text-left rounded-lg hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer">
+              <button onClick={handleDownloadPdf} className="flex items-center gap-2 px-3 py-2 text-left rounded-lg hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer">
                 <span className="material-symbols-outlined text-[16px] text-primary">picture_as_pdf</span> Executive PDF
               </button>
               <button onClick={exportDashboardCSV} className="flex items-center gap-2 px-3 py-2 text-left rounded-lg hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer">

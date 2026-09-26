@@ -532,7 +532,7 @@ export default function App() {
                 exportDashboardCSV={exportDashboardCSV}
                 exportDashboardJSON={exportDashboardJSON}
                 openDrilldown={openDrilldown}
-                handleExportPDF={handleExportPDF}
+                handleDownloadPdf={handleDownloadPdf}
               />
             </ErrorBoundary>
           )}
