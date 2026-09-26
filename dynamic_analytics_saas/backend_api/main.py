@@ -36,7 +36,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 app = FastAPI(title="SaaS Analytics API - MultiTenant")
 
-app.add_middleware(GZipMiddleware, minimum_size=500)
+app.add_middleware(GZipMiddleware, minimum_size=10_000_000)  # Avoid compressing binary file downloads (e.g. PDF)
 cors_env = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:5174,http://localhost:80,http://127.0.0.1:5174")
 allowed_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
@@ -1114,7 +1114,10 @@ def export_executive_pdf(
             content=pdf_bytes,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f'attachment; filename="{filename}"'
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(pdf_bytes)),
+                "Cache-Control": "no-store, no-transform",
+                "X-Content-Type-Options": "nosniff"
             }
         )
     except Exception as e:
