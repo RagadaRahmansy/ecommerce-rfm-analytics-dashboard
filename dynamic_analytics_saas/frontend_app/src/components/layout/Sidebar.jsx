@@ -9,7 +9,9 @@ export default function Sidebar({
   setShowNotifications,
   setShowDocsModal,
   exportDashboardCSV,
-  exportDashboardJSON
+  exportDashboardJSON,
+  handleDownloadPdf,
+  isDownloadingPdf
 }) {
   return (
     <aside className="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
@@ -91,6 +93,18 @@ export default function Sidebar({
           >
             <span className="material-symbols-outlined text-[18px]">menu_book</span>
             <span className="font-label-lg text-label-lg">Documentation</span>
+          </a>
+          <a
+            className="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors cursor-pointer font-medium"
+            onClick={handleDownloadPdf}
+            title="Download Executive Summary PDF Report"
+          >
+            <span className="material-symbols-outlined text-[18px]">
+              {isDownloadingPdf ? 'hourglass_top' : 'picture_as_pdf'}
+            </span>
+            <span className="font-label-lg text-label-lg">
+              {isDownloadingPdf ? 'Generating PDF...' : 'Executive PDF'}
+            </span>
           </a>
           <a
             className="flex items-center gap-space-sm px-space-sm py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors cursor-pointer"

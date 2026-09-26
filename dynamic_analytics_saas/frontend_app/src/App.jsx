@@ -365,6 +365,55 @@ export default function App() {
     URL.revokeObjectURL(url);
   };
 
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      let params = {};
+      if (dateFilter) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const end_date = `${yyyy}-${mm}-${dd}`;
+        let start_date;
+        if (dateFilter === '30d') {
+          const past = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === '90d') {
+          const past = new Date(today.getTime() - 90 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === '1y') {
+          const past = new Date(today.getTime() - 365 * 24 * 60 * 60 * 1000);
+          start_date = `${past.getFullYear()}-${String(past.getMonth() + 1).padStart(2, '0')}-${String(past.getDate()).padStart(2, '0')}`;
+        } else if (dateFilter === 'ytd') {
+          start_date = `${yyyy}-01-01`;
+        }
+        params = { start_date, end_date };
+      }
+
+      const res = await axios.get(`${API_BASE}/reports/executive_pdf`, {
+        params,
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const safeName = (userProfile?.company_name || 'Ragada_Analytics').replace(/[^a-zA-Z0-9_-]/g, '_');
+      link.setAttribute('download', `Executive_Summary_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to download PDF report:", err);
+      alert("Failed to generate PDF report. Please try again.");
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
   // Auth Screen
   if (!token) {
     return (
@@ -421,6 +470,8 @@ export default function App() {
         setShowDocsModal={setShowDocsModal}
         exportDashboardCSV={exportDashboardCSV}
         exportDashboardJSON={exportDashboardJSON}
+        handleDownloadPdf={handleDownloadPdf}
+        isDownloadingPdf={isDownloadingPdf}
       />
 
       {/* Main Content Area */}
@@ -445,6 +496,8 @@ export default function App() {
           setShowUploadModal={setShowUploadModal}
           setShowDocsModal={setShowDocsModal}
           handleLogout={handleLogout}
+          handleDownloadPdf={handleDownloadPdf}
+          isDownloadingPdf={isDownloadingPdf}
         />
 
         {/* Main Tab View Wrapped in Error Boundaries */}

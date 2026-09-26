@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 import os
 import time
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 import tempfile
 from datetime import datetime, timedelta
 from typing import Optional
@@ -91,6 +91,9 @@ def invalidate_tenant_cache(tenant_id: int):
 
 # --- DATABASE SETUP ---
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@db:5432/saas_db")
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg2://", 1)
+
 engine = create_engine(
     DATABASE_URL,
     pool_size=20,
@@ -1060,3 +1063,60 @@ def copilot_query(
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Query execution error: {str(e)}")
+
+# ==============================================================================
+# EXECUTIVE SUMMARY PDF REPORT GENERATION ENDPOINT
+# ==============================================================================
+from pdf_generator import build_executive_pdf
+
+@app.get("/api/reports/executive_pdf")
+def export_executive_pdf(
+    start_date: str = None,
+    end_date: str = None,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Generates an executive PDF report with styled tables, KPIs, monthly velocity, RFM segments, and churn risks."""
+    tenant = db.query(Tenant).filter(Tenant.id == current_user.tenant_id).first()
+    company_name = tenant.name if tenant else "Enterprise Analytics"
+    
+    # 1. Fetch Overview (KPI + Trend)
+    overview_res = get_overview(start_date=start_date, end_date=end_date, countries=None, current_user=current_user)
+    kpi = overview_res.get("kpi", {}) if isinstance(overview_res, dict) else {}
+    trend_data = overview_res.get("trend", []) if isinstance(overview_res, dict) else []
+    
+    # 2. Fetch Clustering RFM Profile
+    clustering_res = get_clustering(start_date=start_date, end_date=end_date, k=4, countries=None, current_user=current_user)
+    clustering_profile = clustering_res.get("profile", []) if isinstance(clustering_res, dict) else []
+    
+    # 3. Fetch Churn Data
+    churn_res = get_churn_prediction(start_date=start_date, end_date=end_date, current_user=current_user)
+    churn_data = churn_res if isinstance(churn_res, dict) else {}
+    
+    date_filter = ""
+    if start_date and end_date:
+        date_filter = f"{start_date} to {end_date}"
+        
+    try:
+        pdf_bytes = build_executive_pdf(
+            company_name=company_name,
+            kpi=kpi,
+            trend_data=trend_data,
+            clustering_profile=clustering_profile,
+            churn_data=churn_data,
+            date_filter=date_filter
+        )
+        
+        safe_name = "".join(c for c in company_name if c.isalnum() or c in (' ', '_', '-')).strip().replace(" ", "_")
+        filename = f"Executive_Summary_{safe_name}_{datetime.utcnow().strftime('%Y%m%d')}.pdf"
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"PDF Generation failed: {str(e)}")
+

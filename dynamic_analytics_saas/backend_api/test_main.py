@@ -155,3 +155,23 @@ def test_upload_endpoint_modes():
         assert res_replace.status_code == 200
         assert res_replace.json()["mode"] == "replace"
         assert "task_id" in res_replace.json()
+
+def test_executive_pdf_export_endpoint():
+    ts = int(time.time() * 1000)
+    test_email = f"pdf_test_{ts}@ragada.com"
+    client.post("/api/auth/register", json={
+        "company_name": f"PDF Enterprise {ts}",
+        "email": test_email,
+        "password": "Password123!"
+    })
+    token = client.post("/api/auth/login", data={"username": test_email, "password": "Password123!"}).json()["access_token"]
+    
+    response = client.get(
+        "/api/reports/executive_pdf",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
+    assert "Executive_Summary_" in response.headers["content-disposition"]
+

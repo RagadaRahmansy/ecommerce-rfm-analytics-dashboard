@@ -18,7 +18,9 @@ export default function Header({
   setShowTargetsModal,
   setShowUploadModal,
   setShowDocsModal,
-  handleLogout
+  handleLogout,
+  handleDownloadPdf,
+  isDownloadingPdf
 }) {
   return (
     <header className="fixed top-0 left-72 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 flex items-center justify-between px-space-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]">
@@ -59,6 +61,21 @@ export default function Header({
           </select>
           <span className="material-symbols-outlined text-[16px] text-on-surface-variant absolute right-1.5 pointer-events-none">expand_more</span>
         </div>
+
+        {/* 1-Click Executive PDF Export Button */}
+        <button
+          onClick={handleDownloadPdf}
+          disabled={isDownloadingPdf}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-label-md text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-50 flex-shrink-0"
+          title="Download Executive Summary PDF Report"
+        >
+          <span className="material-symbols-outlined text-[16px]">
+            {isDownloadingPdf ? 'hourglass_top' : 'picture_as_pdf'}
+          </span>
+          <span className="hidden md:inline">
+            {isDownloadingPdf ? 'Generating...' : 'Export PDF'}
+          </span>
+        </button>
 
         {/* Theme Toggle */}
         <button
