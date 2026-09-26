@@ -370,7 +370,7 @@ export default function App() {
   const handleDownloadPdf = async () => {
     try {
       setIsDownloadingPdf(true);
-      let params = {};
+      let queryStr = '';
       if (dateFilter) {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -390,17 +390,18 @@ export default function App() {
         } else if (dateFilter === 'ytd') {
           start_date = `${yyyy}-01-01`;
         }
-        params = { start_date, end_date };
+        queryStr = `?start_date=${start_date}&end_date=${end_date}`;
       }
 
-      const res = await axios.get(`${API_BASE}/reports/executive_pdf`, {
-        params,
-        responseType: 'blob'
+      const response = await fetch(`${API_BASE}/reports/executive_pdf${queryStr}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
-      // If backend returned an error wrapped in a blob
-      if (res.data && res.data.type === 'application/json') {
-        const text = await res.data.text();
+      if (!response.ok) {
+        const text = await response.text();
         let errMsg = "Failed to generate PDF report.";
         try {
           const parsed = JSON.parse(text);
@@ -410,7 +411,7 @@ export default function App() {
         return;
       }
 
-      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -493,7 +494,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <div className="ml-72 flex-1 flex flex-col min-h-screen">
+      <div className="ml-72 print:ml-0 flex-1 flex flex-col min-h-screen">
         {/* Global Navigation Header */}
         <Header
           activeTab={activeTab}
@@ -519,7 +520,7 @@ export default function App() {
         />
 
         {/* Main Tab View Wrapped in Error Boundaries */}
-        <main className="flex-1 mt-16 p-space-xl overflow-y-auto max-w-[1700px] w-full mx-auto">
+        <main className="flex-1 mt-16 print:mt-0 p-space-xl print:p-0 overflow-y-auto print:overflow-visible max-w-[1700px] print:max-w-none w-full mx-auto">
           {activeTab === 'overview' && (
             <ErrorBoundary name="Executive Overview View">
               <OverviewView
