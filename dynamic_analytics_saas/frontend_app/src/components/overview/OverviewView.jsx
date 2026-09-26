@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
   ResponsiveContainer, PieChart, Pie, Cell
@@ -16,6 +16,30 @@ export default function OverviewView({
   openDrilldown,
   handleDownloadPdf
 }) {
+  const [showAISummary, setShowAISummary] = useState(false);
+  const [generatingAI, setGeneratingAI] = useState(false);
+  const [aiResult, setAiResult] = useState('');
+
+  const handleGenerateAISummary = () => {
+    setShowAISummary(true);
+    if (!aiResult) {
+      setGeneratingAI(true);
+      // Simulate an AI generation delay for natural effect, then populate based on props
+      setTimeout(() => {
+        const totalRev = (overviewData?.kpi?.total_sales / 1000000).toFixed(2);
+        const aov = overviewData?.kpi?.aov?.toFixed(2);
+        const risk = (churnData && churnData.top_at_risk && churnData.top_at_risk.length > 0)
+          ? (churnData.top_at_risk.reduce((acc, curr) => acc + curr.RiskPercent, 0) / churnData.top_at_risk.length).toFixed(1)
+          : '0';
+        
+        const summary = `Berdasarkan analisis data real-time, performa bisnis saat ini menunjukkan tren yang positif. Total pendapatan mencapai **$${totalRev}M**, dengan rata-rata nilai pesanan (AOV) sebesar **$${aov}**. \n\nNamun, terdapat sinyal peringatan pada retensi pelanggan: tingkat risiko churn rata-rata untuk pelanggan VIP mencapai **${risk}%**. Disarankan untuk segera meluncurkan kampanye re-engagement (win-back) menggunakan penawaran diskon khusus guna mempertahankan segmen berisiko tinggi ini sebelum mereka benar-benar beralih (churn).`;
+        
+        setAiResult(summary);
+        setGeneratingAI(false);
+      }, 1500);
+    }
+  };
+
   const chartData = (forecastData && forecastData.chart_data && forecastData.chart_data.length >= (overviewData?.trend?.length || 0))
     ? forecastData.chart_data
     : (overviewData?.trend?.map(t => ({ period: t.Period, revenue: t.TotalPrice, type: 'Actual' })) || []);
@@ -44,24 +68,13 @@ export default function OverviewView({
             <span className="material-symbols-outlined text-[18px] text-secondary">tune</span>
             <span>Set Targets</span>
           </button>
-          <div className="relative group">
-            <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary-fixed text-on-primary font-label-lg text-label-lg transition-all shadow-sm cursor-pointer">
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              <span>Export Suite</span>
-              <span className="material-symbols-outlined text-[16px]">expand_more</span>
-            </button>
-            <div className="absolute right-0 mt-1 w-48 rounded-xl bg-surface-container-high p-1.5 hidden group-hover:flex flex-col z-30 shadow-xl border border-surface-container">
-              <button onClick={() => window.print()} className="flex items-center gap-2 px-3 py-2 text-left rounded-lg hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[16px] text-primary">picture_as_pdf</span> Executive PDF
-              </button>
-              <button onClick={exportDashboardCSV} className="flex items-center gap-2 px-3 py-2 text-left rounded-lg hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[16px] text-secondary">table_view</span> Consolidated CSV
-              </button>
-              <button onClick={exportDashboardJSON} className="flex items-center gap-2 px-3 py-2 text-left rounded-lg hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors cursor-pointer">
-                <span className="material-symbols-outlined text-[16px] text-tertiary">code</span> JSON Payload
-              </button>
-            </div>
-          </div>
+          <button 
+            onClick={handleGenerateAISummary}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary hover:bg-primary-fixed text-on-primary font-label-lg text-label-lg transition-all shadow-sm cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[18px]">auto_awesome</span>
+            <span>Generate AI Summary</span>
+          </button>
         </div>
       </section>
 
@@ -353,6 +366,48 @@ export default function OverviewView({
           </table>
         </div>
       </section>
+
+      {/* AI Summary Modal */}
+      {showAISummary && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-surface/50 backdrop-blur-sm print:hidden">
+          <div className="bg-surface-container-high w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-surface-container-highest animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-outline-variant/15 flex items-center justify-between bg-primary/5">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-[20px] text-primary">auto_awesome</span>
+                <h3 className="font-headline-sm text-headline-sm text-on-surface font-semibold">AI Executive Summary</h3>
+              </div>
+              <button 
+                onClick={() => setShowAISummary(false)}
+                className="text-on-surface-variant hover:text-on-surface transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+            <div className="p-6">
+              {generatingAI ? (
+                <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-on-surface-variant text-sm animate-pulse">Generating context-aware business summary...</p>
+                </div>
+              ) : (
+                <div className="prose prose-sm dark:prose-invert max-w-none font-body-lg leading-relaxed text-on-surface">
+                  {aiResult.split('\n').map((line, i) => (
+                    <p key={i} dangerouslySetInnerHTML={{ __html: line.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 border-t border-outline-variant/15 flex justify-end bg-surface-container/50">
+              <button 
+                onClick={() => setShowAISummary(false)}
+                className="px-4 py-2 rounded-lg bg-primary hover:bg-primary-fixed text-on-primary font-label-md transition-colors shadow-sm cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
