@@ -397,15 +397,33 @@ export default function App() {
         params,
         responseType: 'blob'
       });
-      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+
+      // If backend returned an error wrapped in a blob
+      if (res.data && res.data.type === 'application/json') {
+        const text = await res.data.text();
+        let errMsg = "Failed to generate PDF report.";
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed.detail) errMsg = parsed.detail;
+        } catch (e) {}
+        alert(errMsg);
+        return;
+      }
+
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       const safeName = (userProfile?.company_name || 'Ragada_Analytics').replace(/[^a-zA-Z0-9_-]/g, '_');
       link.setAttribute('download', `Executive_Summary_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`);
       document.body.appendChild(link);
       link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+      
+      // Delay revoking the object URL so the browser download manager can finish writing the file
+      setTimeout(() => {
+        link.remove();
+        window.URL.revokeObjectURL(url);
+      }, 3000);
     } catch (err) {
       console.error("Failed to download PDF report:", err);
       alert("Failed to generate PDF report. Please try again.");

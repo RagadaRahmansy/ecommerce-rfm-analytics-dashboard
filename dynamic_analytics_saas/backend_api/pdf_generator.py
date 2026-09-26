@@ -9,54 +9,37 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 from reportlab.pdfgen import canvas
 
-class NumberedCanvas(canvas.Canvas):
-    """Two-pass canvas to dynamically compute and draw total page numbers and headers."""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._saved_page_states = []
-
-    def showPage(self):
-        self._saved_page_states.append(dict(self.__dict__))
-        self._startPage()
-
-    def save(self):
-        num_pages = len(self._saved_page_states)
-        for state in self._saved_page_states:
-            self.__dict__.update(state)
-            self.draw_page_decorations(num_pages)
-            super().showPage()
-        super().save()
-
-    def draw_page_decorations(self, page_count):
-        self.saveState()
-        self.setFont("Helvetica-Bold", 7)
-        self.setFillColor(colors.HexColor("#475569"))
-        
-        # Header banner
-        self.drawString(36, 810, "RAGADA ANALYTICS")
-        self.setFont("Helvetica", 7)
-        self.drawString(125, 810, "— EXECUTIVE REVENUE & CUSTOMER INTELLIGENCE REPORT")
-        self.setFont("Helvetica-Bold", 7)
-        self.setFillColor(colors.HexColor("#DC2626"))
-        self.drawRightString(559, 810, "STRICTLY CONFIDENTIAL")
-        
-        # Header separator line
-        self.setStrokeColor(colors.HexColor("#CBD5E1"))
-        self.setLineWidth(0.6)
-        self.line(36, 804, 559, 804)
-        
-        # Footer separator line
-        self.setStrokeColor(colors.HexColor("#E2E8F0"))
-        self.setLineWidth(0.5)
-        self.line(36, 42, 559, 42)
-        
-        # Footer text
-        self.setFont("Helvetica", 7.5)
-        self.setFillColor(colors.HexColor("#64748B"))
-        self.drawString(36, 30, "Generated automatically by Ragada Analytics Platform • Enterprise SaaS Engine")
-        page_str = f"Page {self._pageNumber} of {page_count}"
-        self.drawRightString(559, 30, page_str)
-        self.restoreState()
+def add_page_decorations(canvas_obj, doc_obj):
+    """Draws running header and footer decorations natively without canvas state hacks."""
+    canvas_obj.saveState()
+    canvas_obj.setFont("Helvetica-Bold", 7)
+    canvas_obj.setFillColor(colors.HexColor("#475569"))
+    
+    # Header banner
+    canvas_obj.drawString(36, 810, "RAGADA ANALYTICS")
+    canvas_obj.setFont("Helvetica", 7)
+    canvas_obj.drawString(125, 810, "— EXECUTIVE REVENUE & CUSTOMER INTELLIGENCE REPORT")
+    canvas_obj.setFont("Helvetica-Bold", 7)
+    canvas_obj.setFillColor(colors.HexColor("#DC2626"))
+    canvas_obj.drawRightString(559, 810, "STRICTLY CONFIDENTIAL")
+    
+    # Header separator line
+    canvas_obj.setStrokeColor(colors.HexColor("#CBD5E1"))
+    canvas_obj.setLineWidth(0.6)
+    canvas_obj.line(36, 804, 559, 804)
+    
+    # Footer separator line
+    canvas_obj.setStrokeColor(colors.HexColor("#E2E8F0"))
+    canvas_obj.setLineWidth(0.5)
+    canvas_obj.line(36, 42, 559, 42)
+    
+    # Footer text
+    canvas_obj.setFont("Helvetica", 7.5)
+    canvas_obj.setFillColor(colors.HexColor("#64748B"))
+    canvas_obj.drawString(36, 30, "Generated automatically by Ragada Analytics Platform • Enterprise SaaS Engine")
+    page_str = f"Page {doc_obj.page}"
+    canvas_obj.drawRightString(559, 30, page_str)
+    canvas_obj.restoreState()
 
 
 def build_executive_pdf(
@@ -413,7 +396,7 @@ def build_executive_pdf(
         churn_table.setStyle(TableStyle(c_style))
         story.append(churn_table)
 
-    # Build PDF with dynamic header and footer page numbers
-    doc.build(story, canvasmaker=NumberedCanvas)
+    # Build PDF with dynamic header and footer page decorations
+    doc.build(story, onFirstPage=add_page_decorations, onLaterPages=add_page_decorations)
     buffer.seek(0)
     return buffer.getvalue()
