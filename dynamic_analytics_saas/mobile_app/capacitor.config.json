@@ -1,0 +1,10 @@
+{
+  "appId": "com.ragada.analytics",
+  "appName": "Ragada Analytics",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  }
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ragada Analytics</string>
+    <string name="title_activity_main">Ragada Analytics</string>
+    <string name="package_name">com.ragada.analytics</string>
+    <string name="custom_url_scheme">com.ragada.analytics</string>
+</resources>
