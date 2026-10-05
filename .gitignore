@@ -93,3 +93,14 @@ Thumbs.db
 *~
 
 generate_paint_data.py
+
+# 7. Exclude Second Project (Separate Repository)
+ragada_supply_chain/
+
+# 8. Media, Keystores & Audio Artifacts
+*.keystore
+*.mid
+*.wav
+*.pdf
+Ragada_Analytics_Presentation.mp4
+temp_repo2/

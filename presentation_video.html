@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ragada Analytics — Executive Video Presentation</title>
+  <style>
+    :root {
+      --bg-base: #0b0e14;
+      --surface-1: #161922;
+      --surface-2: #202430;
+      --border: #2b3040;
+      --primary: #8083ff;
+      --cyan: #4cd7f6;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text: #ffffff;
+      --text-muted: #949db2;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    body {
+      background-color: var(--bg-base);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 20px;
+    }
+    /* Video Frame Container 16:9 Aspect Ratio */
+    .video-viewport {
+      width: 100%;
+      max-width: 1100px;
+      aspect-ratio: 16 / 9;
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 40px rgba(128, 131, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Screen Slide Container */
+    .slide-stage {
+      flex: 1;
+      position: relative;
+      padding: 40px 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    /* Slide Header */
+    .slide-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 15px;
+    }
+    .brand-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(128, 131, 255, 0.12);
+      border: 1px solid rgba(128, 131, 255, 0.3);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .slide-meta {
+      font-size: 12px;
+      color: var(--cyan);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Active Slide Content Animation */
+    .slide-content {
+      position: absolute;
+      top: 90px;
+      left: 50px;
+      right: 50px;
+      bottom: 40px;
+      display: none;
+      flex-direction: column;
+      animation: fadeInSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .slide-content.active {
+      display: flex;
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(12px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Slide Typography */
+    h1.hero-title {
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    p.hero-subtitle {
+      font-size: 17px;
+      color: var(--cyan);
+      margin-bottom: 24px;
+    }
+    h2.slide-title {
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    p.slide-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* Grid & Cards */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      flex: 1;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      flex: 1;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      flex: 1;
+    }
+
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-accent-top {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+    }
+
+    /* Subtitles Box */
+    .subtitles-banner {
+      position: absolute;
+      bottom: 45px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(11, 14, 20, 0.88);
+      border: 1px solid rgba(128, 131, 255, 0.25);
+      backdrop-filter: blur(8px);
+      padding: 8px 24px;
+      border-radius: 20px;
+      color: #dfe2f1;
+      font-size: 13px;
+      max-width: 85%;
+      text-align: center;
+      line-height: 1.4;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Video Player Controls Bar */
+    .player-controls {
+      background: rgba(16, 19, 26, 0.95);
+      border-top: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 20;
+    }
+    .progress-track {
+      flex: 1;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .progress-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--cyan));
+      border-radius: 3px;
+      transition: width 0.1s linear;
+    }
+    .ctrl-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .ctrl-btn.primary {
+      background: var(--primary);
+      color: #fff;
+    }
+    .ctrl-btn.primary:hover {
+      background: #6a6ef5;
+    }
+    .time-label {
+      font-family: monospace;
+      font-size: 13px;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+
+    /* Voiceover badge toggle */
+    .voice-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .voice-toggle.active {
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* Scene Index Selector */
+    .scene-navigator {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      max-width: 1100px;
+      width: 100%;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+    .scene-pill {
+      background: var(--surface-1);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .scene-pill:hover {
+      border-color: var(--primary);
+      color: #fff;
+    }
+    .scene-pill.active {
+      background: rgba(128, 131, 255, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* Live Chart Mock */
+    .chart-container {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      gap: 14px;
+      padding-top: 20px;
+    }
+    .chart-bar-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      transition: height 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 16:9 HD Video Presentation Viewport -->
+  <div class="video-viewport" id="videoViewport">
+    <div class="slide-stage" id="slideStage">
+      <!-- Top Slide Header -->
+      <div class="slide-header">
+        <div class="brand-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          Ragada Analytics
+        </div>
+        <div class="slide-meta" id="slideMeta">SCENE 1 OF 7 • PLATFORM VISION</div>
+      </div>
+
+      <!-- Slide 1: Platform Vision -->
+      <div class="slide-content active" id="slide-0">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--emerald); text-transform: uppercase; letter-spacing: 1px;">Enterprise Telemetry Suite v2.4</span>
+          <h1 class="hero-title">Ragada Analytics Enterprise</h1>
+          <p class="hero-subtitle">Next-Generation Predictive RFM Telemetry & Real-Time Business Intelligence</p>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--primary);"></div>
+            <div>
+              <span style="font-size: 12px; color: var(--primary); font-weight: 700;">REAL-TIME SPEED</span>
+              <h3 style="font-size: 18px; margin: 8px 0 4px 0;">Sub-8ms Ingestion</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Redis-accelerated query pipelines handling high-velocity transactions across multi-channel sales.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--cyan); font-weight: 600;">100% Ingestion Integrity</div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--emerald);"></div>
+            <div>
+              <span style="font-size: 12px; color: var(--emerald); font-weight: 700;">AI CLUSTERING</span>
+              <h3 style="font-size: 18px; margin: 8px 0 4px 0;">Behavioral RFM Engine</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Automated Recency, Frequency & Monetary segmentation classifying customer value clusters instantly.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--emerald); font-weight: 600;">Actionable Playbooks</div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--cyan);"></div>
+            <div>
+              <span style="font-size: 12px; color: var(--cyan); font-weight: 700;">SECURITY HARDENED</span>
+              <h3 style="font-size: 18px; margin: 8px 0 4px 0;">Zero-Trust Docker Stack</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Nginx reverse proxy, internal rate limiting, and zero third-party telemetry keeping customer records sovereign.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--primary); font-weight: 600;">Private DB Boundary</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2: Architecture & Security -->
+      <div class="slide-content" id="slide-1">
+        <div>
+          <h2 class="slide-title">Enterprise Infrastructure & Zero-Trust Security</h2>
+          <p class="slide-desc">Dockerized microservice mesh isolated from external tracking with strict OWASP safeguards</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--cyan);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--cyan); font-weight: 700;">PORT 5174 • NGINX ALPINES</span>
+              <h3 style="font-size: 17px; margin: 6px 0;">Hardened Reverse Proxy Gateway</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Dual rate-limiting zones (10 req/min for auth, 120 req/min for API). Anti-tamper security headers, CSP, and Gzip compression.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; color: var(--emerald);">
+              X-Frame-Options: SAMEORIGIN • XSS-Protection: 1
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--primary);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--primary); font-weight: 700;">PORT 8001 • FASTAPI ASYNC</span>
+              <h3 style="font-size: 17px; margin: 6px 0;">High-Throughput Analytics Engine</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Asynchronous Python backend with JWT authorization, Scikit-learn churn models, and automatic health monitoring.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 8px; border-radius: 6px; font-family: monospace; font-size: 11px; color: var(--cyan);">
+              Live Check: /api/health/live • Status: 200 OK
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--emerald);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--emerald); font-weight: 700;">ISOLATED NETWORK • DOCKER BRIDGE</span>
+              <h3 style="font-size: 17px; margin: 6px 0;">PostgreSQL 15 & Redis 7 Cache</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Database port 5432 is strictly unexposed to the public host. Redis memory cache ensures sub-8ms aggregation response.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--emerald);">Zero Public Port Exposure for Databases</div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--amber);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--amber); font-weight: 700;">DISTRIBUTED QUEUE • CELERY</span>
+              <h3 style="font-size: 17px; margin: 6px 0;">Background Analytics Pipeline</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Decoupled worker processes high-volume CSV uploads, multi-year trend forecasts, and generates executive PDF reports.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--amber);">Celery Worker + Redis Broker v7.0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: Executive Cockpit -->
+      <div class="slide-content" id="slide-2">
+        <div>
+          <h2 class="slide-title">Executive Cockpit & Live Business Telemetry</h2>
+          <p class="slide-desc">Real-time consolidated KPI strip monitoring total turnover, volume velocity, and churn exposure</p>
+        </div>
+        <div class="grid-4" style="flex: 0 0 110px; margin-bottom: 16px;">
+          <div class="card">
+            <span style="font-size: 11px; color: var(--text-muted);">TOTAL REVENUE</span>
+            <div style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0;">$1,845,210</div>
+            <span style="font-size: 11px; color: var(--primary); font-weight: 600;">$37.9M Runrate ARR</span>
+          </div>
+          <div class="card">
+            <span style="font-size: 11px; color: var(--text-muted);">TOTAL TRANSACTIONS</span>
+            <div style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0;">24,960</div>
+            <span style="font-size: 11px; color: var(--cyan); font-weight: 600;">4.8 items / order</span>
+          </div>
+          <div class="card">
+            <span style="font-size: 11px; color: var(--text-muted);">ACTIVE ACCOUNTS</span>
+            <div style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0;">4,316</div>
+            <span style="font-size: 11px; color: var(--emerald); font-weight: 600;">98.4% Retention</span>
+          </div>
+          <div class="card">
+            <span style="font-size: 11px; color: var(--text-muted);">AVG CHURN RISK</span>
+            <div style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0;">18.4%</div>
+            <span style="font-size: 11px; color: var(--emerald); font-weight: 600;">Healthy Status</span>
+          </div>
+        </div>
+        <div class="card" style="flex: 1; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 13px; font-weight: 700; color: #fff;">Consolidated Monthly Revenue & Runrate Trajectory</span>
+            <span style="font-size: 11px; color: var(--cyan); font-family: monospace;">LATENCY: 6ms • REDIS CACHED</span>
+          </div>
+          <div class="chart-container">
+            <div class="chart-bar-group"><div class="bar" style="height: 35%; background: var(--primary);"></div><span style="font-size: 10px; color: var(--text-muted);">Q1</span></div>
+            <div class="chart-bar-group"><div class="bar" style="height: 48%; background: var(--primary);"></div><span style="font-size: 10px; color: var(--text-muted);">Q2</span></div>
+            <div class="chart-bar-group"><div class="bar" style="height: 62%; background: var(--primary);"></div><span style="font-size: 10px; color: var(--text-muted);">Q3</span></div>
+            <div class="chart-bar-group"><div class="bar" style="height: 85%; background: var(--cyan);"></div><span style="font-size: 10px; color: var(--text-muted);">Q4</span></div>
+            <div class="chart-bar-group"><div class="bar" style="height: 94%; background: var(--emerald);"></div><span style="font-size: 10px; color: var(--text-muted);">Q1 '27</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4: Dual-Axis Revenue & Order Volume -->
+      <div class="slide-content" id="slide-3">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--cyan); text-transform: uppercase;">NEW FEATURE HIGHLIGHT</span>
+          <h2 class="slide-title">Dual-Axis Revenue & Order Volume Dynamic</h2>
+          <p class="slide-desc">Simultaneous cross-correlation between financial turnover ($M) and transactional capacity (k orders)</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--primary);"></div>
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div>
+                <span style="font-size: 11px; color: var(--primary); font-weight: 700;">DUAL METRIC CORRELATION</span>
+                <h3 style="font-size: 16px; margin: 4px 0;">Unified Left & Right Y-Axes</h3>
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Evaluates whether revenue surges are sparked by larger basket sizes (Average Order Value) or raw transaction volume.</p>
+              </div>
+              <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px;">
+                <div style="font-size: 11px; color: var(--cyan); font-weight: 700; margin-bottom: 4px;">INTERACTIVE VIEW MODES</div>
+                <div style="display: flex; gap: 8px; margin-top: 6px;">
+                  <span style="background: var(--primary); color: #fff; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 700;">Dual-Axis</span>
+                  <span style="background: rgba(255,255,255,0.08); color: var(--text-muted); padding: 3px 8px; border-radius: 4px; font-size: 10px;">Revenue Only</span>
+                  <span style="background: rgba(255,255,255,0.08); color: var(--text-muted); padding: 3px 8px; border-radius: 4px; font-size: 10px;">Orders Only</span>
+                </div>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: var(--emerald); font-weight: 600;">Zero-Flicker Dynamic Re-rendering</div>
+          </div>
+          <div class="card" style="background: #11141c; justify-content: center; align-items: center; padding: 24px;">
+            <div style="width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                <span style="color: var(--primary); font-weight: 700;">Left Axis: Revenue ($M)</span>
+                <span style="color: var(--cyan); font-weight: 700;">Right Axis: Volume (k)</span>
+              </div>
+              <div class="chart-container" style="height: 140px;">
+                <div class="chart-bar-group"><div class="bar" style="height: 40%; background: var(--cyan);"></div><span style="font-size: 9px; color: var(--text-muted);">Jan</span></div>
+                <div class="chart-bar-group"><div class="bar" style="height: 55%; background: var(--cyan);"></div><span style="font-size: 9px; color: var(--text-muted);">Feb</span></div>
+                <div class="chart-bar-group"><div class="bar" style="height: 48%; background: var(--cyan);"></div><span style="font-size: 9px; color: var(--text-muted);">Mar</span></div>
+                <div class="chart-bar-group"><div class="bar" style="height: 70%; background: var(--cyan);"></div><span style="font-size: 9px; color: var(--text-muted);">Apr</span></div>
+                <div class="chart-bar-group"><div class="bar" style="height: 82%; background: var(--cyan);"></div><span style="font-size: 9px; color: var(--text-muted);">May</span></div>
+                <div class="chart-bar-group"><div class="bar" style="height: 95%; background: var(--cyan);"></div><span style="font-size: 9px; color: var(--text-muted);">Jun</span></div>
+              </div>
+              <div style="text-align: center; font-size: 11px; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
+                Active ComposedChart • Gradient Fill Area + Rounded Column Bars
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5: RFM Behavioral Matrix -->
+      <div class="slide-content" id="slide-4">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--emerald); text-transform: uppercase;">NEW FEATURE HIGHLIGHT</span>
+          <h2 class="slide-title">RFM Behavioral Matrix & Strategic Action Engine</h2>
+          <p class="slide-desc">Multi-dimensional value clustering with targeted revenue expansion playbooks</p>
+        </div>
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--emerald);"></div>
+            <div>
+              <span style="font-size: 10px; font-family: monospace; background: rgba(16, 185, 129, 0.2); color: var(--emerald); padding: 2px 6px; border-radius: 4px;">R5-F5-M5</span>
+              <h3 style="font-size: 15px; margin: 8px 0 2px 0;">Champions VIP</h3>
+              <div style="font-size: 13px; font-weight: 700; color: var(--emerald);">38% Base • $701k</div>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">Highest transactional frequency and order value.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px; font-size: 10px; color: #fff;">
+              🎯 VIP concierge & exclusive early access.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--primary);"></div>
+            <div>
+              <span style="font-size: 10px; font-family: monospace; background: rgba(128, 131, 255, 0.2); color: var(--primary); padding: 2px 6px; border-radius: 4px;">R4-F4-M4</span>
+              <h3 style="font-size: 15px; margin: 8px 0 2px 0;">Loyal Customers</h3>
+              <div style="font-size: 13px; font-weight: 700; color: var(--primary);">29% Base • $535k</div>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">Predictable purchasing cycles and strong retention.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px; font-size: 10px; color: #fff;">
+              🎯 Tiered bundles & AI cross-sell recommendations.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--amber);"></div>
+            <div>
+              <span style="font-size: 10px; font-family: monospace; background: rgba(245, 158, 11, 0.2); color: var(--amber); padding: 2px 6px; border-radius: 4px;">R3-F2-M3</span>
+              <h3 style="font-size: 15px; margin: 8px 0 2px 0;">Needs Attention</h3>
+              <div style="font-size: 13px; font-weight: 700; color: var(--amber);">19% Base • $350k</div>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">No purchases in 30-60 days. Risk of drifting.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px; font-size: 10px; color: #fff;">
+              🎯 Automated personalized re-order incentive.
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--rose);"></div>
+            <div>
+              <span style="font-size: 10px; font-family: monospace; background: rgba(244, 63, 94, 0.2); color: var(--rose); padding: 2px 6px; border-radius: 4px;">R1-F4-M4</span>
+              <h3 style="font-size: 15px; margin: 8px 0 2px 0;">At-Risk Inactive</h3>
+              <div style="font-size: 13px; font-weight: 700; color: var(--rose);">14% Base • $258k</div>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.4;">High previous spend, inactive >60 days.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 6px; border-radius: 6px; font-size: 10px; color: #fff;">
+              🎯 High-urgency win-back discount campaign.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6: Churn Radar & Anomaly Prevention -->
+      <div class="slide-content" id="slide-5">
+        <div>
+          <h2 class="slide-title">Proactive Churn Prevention & Isolated Forest Radar</h2>
+          <p class="slide-desc">Machine Learning anomaly classification detecting churn risk patterns before accounts lapse</p>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--rose);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--rose); font-weight: 700;">PREDICTIVE INTELLIGENCE</span>
+              <h3 style="font-size: 17px; margin: 6px 0;">Isolated Forest Model v4.8</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;">Evaluates deviations across transactional intervals. Automatically triggers webhooks and CRM notifications when churn probability exceeds 60%.</p>
+            </div>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+              <div style="font-size: 11px; color: var(--amber); font-weight: 700;">RADAR EVENT:</div>
+              <div style="font-size: 12px; color: #fff; margin-top: 2px;">Abnormal 42% basket drop in Segment 3 accounts detected.</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--cyan);"></div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 11px; color: var(--cyan); font-weight: 700;">REAL-TIME AT-RISK MONITOR</span>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span>CUST-9842</span>
+                <span style="color: var(--rose); font-weight: 700;">88.4% Churn</span>
+                <span style="color: var(--cyan); font-mono;">$14,290</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.08);">
+                <span>CUST-1049</span>
+                <span style="color: var(--rose); font-weight: 700;">76.1% Churn</span>
+                <span style="color: var(--cyan); font-mono;">$9,450</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; padding: 6px 0;">
+                <span>CUST-4412</span>
+                <span style="color: var(--amber); font-weight: 700;">64.8% Churn</span>
+                <span style="color: var(--cyan); font-mono;">$18,800</span>
+              </div>
+            </div>
+            <div style="font-size: 11px; color: var(--emerald); font-weight: 600;">1-Click Win-Back Webhook Enabled</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7: Complete Ecosystem & Summary -->
+      <div class="slide-content" id="slide-6">
+        <div>
+          <span style="font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase;">UNIFIED BUSINESS SUITE</span>
+          <h1 class="hero-title" style="font-size: 32px;">The Complete Ragada Ecosystem</h1>
+          <p class="hero-subtitle">Cross-platform synergy across Web SaaS, Mobile APK & Offline POS Kasir</p>
+        </div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--primary);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--primary); font-weight: 700;">ENTERPRISE SAAS</span>
+              <h3 style="font-size: 16px; margin: 6px 0;">Web Analytics Cockpit</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Multi-tenant dashboard, Dual-Axis metrics, dynamic forecasting, and automated executive PDF generator.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--primary); font-family: monospace;">dynamic_analytics_saas</div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--emerald);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--emerald); font-weight: 700;">MOBILE EXCELLENCE</span>
+              <h3 style="font-size: 16px; margin: 6px 0;">Android Native Release</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Production signed APK with full Vivo Funtouch OS, Xiaomi, and Samsung compatibility.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--emerald); font-family: monospace;">Ragada_Analytics_Release.apk</div>
+          </div>
+          <div class="card">
+            <div class="card-accent-top" style="background: var(--cyan);"></div>
+            <div>
+              <span style="font-size: 11px; color: var(--cyan); font-weight: 700;">POINT OF SALE</span>
+              <h3 style="font-size: 16px; margin: 6px 0;">Offline-First Kasir POS</h3>
+              <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Ultra-fast barcode scanning, customized inventory catalog, and instant thermal receipt printing.</p>
+            </div>
+            <div style="font-size: 11px; color: var(--cyan); font-family: monospace;">ragada_pos_system</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Subtitles Voiceover Box -->
+      <div class="subtitles-banner" id="subtitleText">
+        Selamat datang di presentasi Ragada Analytics Enterprise Platform...
+      </div>
+    </div>
+
+    <!-- Bottom Video Controls -->
+    <div class="player-controls">
+      <button class="ctrl-btn primary" id="playBtn" title="Play / Pause">
+        <svg id="playIcon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+      </button>
+      <button class="ctrl-btn" id="prevBtn" title="Previous Slide">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      </button>
+      <button class="ctrl-btn" id="nextBtn" title="Next Slide">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+      </button>
+
+      <div class="time-label" id="timeDisplay">00:00 / 01:00</div>
+
+      <div class="progress-track" id="progressTrack">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <div class="voice-toggle active" id="voiceToggle" title="Toggle Audio Narration">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+        <span id="voiceLabel">Voice: ON</span>
+      </div>
+
+      <button class="ctrl-btn" id="fullScreenBtn" title="Fullscreen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Scene Index Selector Pills -->
+  <div class="scene-navigator" id="sceneNav">
+    <div class="scene-pill active" onclick="jumpToScene(0)">1. Vision</div>
+    <div class="scene-pill" onclick="jumpToScene(1)">2. Zero-Trust Architecture</div>
+    <div class="scene-pill" onclick="jumpToScene(2)">3. Executive Cockpit</div>
+    <div class="scene-pill" onclick="jumpToScene(3)">4. Dual-Axis Chart</div>
+    <div class="scene-pill" onclick="jumpToScene(4)">5. RFM Matrix</div>
+    <div class="scene-pill" onclick="jumpToScene(5)">6. Churn Radar</div>
+    <div class="scene-pill" onclick="jumpToScene(6)">7. Complete Ecosystem</div>
+  </div>
+
+  <script>
+    const scenes = [
+      {
+        duration: 8,
+        meta: "SCENE 1 OF 7 • PLATFORM VISION",
+        speechId: "Selamat datang di presentasi Ragada Analytics Enterprise. Platform Business Intelligence dan analisis RFM perilaku pelanggan dengan telemetri finansial real-time.",
+        speechEn: "Welcome to Ragada Analytics Enterprise. Next-generation customer behavioral intelligence and predictive financial telemetry."
+      },
+      {
+        duration: 9,
+        meta: "SCENE 2 OF 7 • ZERO-TRUST ARCHITECTURE",
+        speechId: "Arsitektur Zero-Trust dengan isolasi kontainer Docker. Nginx reverse proxy dilengkapi rate limiting, database PostgreSQL yang terlindungi secara privat, dan antrean asinkron Celery.",
+        speechEn: "Hardened zero-trust architecture. Docker containers, Nginx reverse proxy with granular rate limiting, and private database boundaries."
+      },
+      {
+        duration: 9,
+        meta: "SCENE 3 OF 7 • EXECUTIVE COCKPIT",
+        speechId: "Cockpit eksekutif menampilkan metrik kritis secara langsung: omset 1,84 juta dollar, 24 ribu transaksi, dan latensi query sub-8 milidetik berbasis Redis in-memory cache.",
+        speechEn: "The executive cockpit delivers real-time business telemetry: 1.84 million dollars in revenue, 24 thousand orders, and sub-8ms Redis query response."
+      },
+      {
+        duration: 10,
+        meta: "SCENE 4 OF 7 • DUAL-AXIS REVENUE & VOLUME",
+        speechId: "Fitur baru grafik Dual-Axis menggabungkan kurva omset pendapatan dan batang volume transaksi dengan tombol pengalih instan Dual-Axis, Revenue Only, dan Orders Only.",
+        speechEn: "Our new Dual-Axis dynamic chart correlates financial turnover with transactional capacity, featuring instant view mode toggling."
+      },
+      {
+        duration: 10,
+        meta: "SCENE 5 OF 7 • RFM BEHAVIORAL MATRIX",
+        speechId: "Matriks RFM memetakan basis pelanggan ke dalam 4 kluster strategis: Champions VIP, Loyal Customers, Needs Attention, dan At-Risk, lengkap dengan playbook tindakan bisnis terarah.",
+        speechEn: "The RFM behavioral matrix segments customers into Champions, Loyal, Needs Attention, and At-Risk clusters with dedicated strategic action playbooks."
+      },
+      {
+        duration: 8,
+        meta: "SCENE 6 OF 7 • AI CHURN RADAR",
+        speechId: "Deteksi anomali pintar berbasis Isolated Forest mengidentifikasi akun berisiko tinggi sebelum churn terjadi, memberikan peringatan dini untuk mempertahankan omset.",
+        speechEn: "Isolated Forest machine learning radar flags at-risk accounts before they churn, triggering automated retention webhooks."
+      },
+      {
+        duration: 8,
+        meta: "SCENE 7 OF 7 • UNIFIED ECOSYSTEM",
+        speechId: "Ekosistem lengkap yang terdiri dari Web SaaS, aplikasi Android native APK siap rilis, dan Point of Sale kasir toko offline berkecepatan tinggi.",
+        speechEn: "The complete Ragada ecosystem: Web SaaS analytics, native Android APK, and high-speed offline Point of Sale system."
+      }
+    ];
+
+    let currentScene = 0;
+    let isPlaying = false;
+    let isVoiceOn = true;
+    let timer = null;
+    let currentSeconds = 0;
+    const totalDuration = scenes.reduce((acc, s) => acc + s.duration, 0);
+
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const progressFill = document.getElementById('progressFill');
+    const timeDisplay = document.getElementById('timeDisplay');
+    const slideMeta = document.getElementById('slideMeta');
+    const subtitleText = document.getElementById('subtitleText');
+    const voiceToggle = document.getElementById('voiceToggle');
+    const voiceLabel = document.getElementById('voiceLabel');
+    const scenePills = document.querySelectorAll('.scene-pill');
+
+    function formatTime(s) {
+      const mins = Math.floor(s / 60);
+      const secs = Math.floor(s % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function speakCurrentScene() {
+      if (!isVoiceOn || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const text = scenes[currentScene].speechId;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'id-ID';
+      utterance.rate = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function showScene(idx) {
+      currentScene = idx;
+      document.querySelectorAll('.slide-content').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+      scenePills.forEach((p, i) => p.classList.toggle('active', i === idx));
+      slideMeta.textContent = scenes[idx].meta;
+      subtitleText.textContent = scenes[idx].speechId;
+      speakCurrentScene();
+    }
+
+    function jumpToScene(idx) {
+      let accumulated = 0;
+      for (let i = 0; i < idx; i++) accumulated += scenes[i].duration;
+      currentSeconds = accumulated;
+      showScene(idx);
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const pct = (currentSeconds / totalDuration) * 100;
+      progressFill.style.width = `${pct}%`;
+      timeDisplay.textContent = `${formatTime(currentSeconds)} / ${formatTime(totalDuration)}`;
+    }
+
+    function step() {
+      currentSeconds += 0.5;
+      updateProgress();
+
+      let accum = 0;
+      for (let i = 0; i < scenes.length; i++) {
+        accum += scenes[i].duration;
+        if (currentSeconds <= accum) {
+          if (currentScene !== i) {
+            showScene(i);
+          }
+          break;
+        }
+      }
+
+      if (currentSeconds >= totalDuration) {
+        pause();
+        currentSeconds = 0;
+        showScene(0);
+        updateProgress();
+      }
+    }
+
+    function play() {
+      isPlaying = true;
+      playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+      timer = setInterval(step, 500);
+      speakCurrentScene();
+    }
+
+    function pause() {
+      isPlaying = false;
+      playIcon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
+      clearInterval(timer);
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (isPlaying) pause();
+      else play();
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentScene > 0) jumpToScene(currentScene - 1);
+    });
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentScene < scenes.length - 1) jumpToScene(currentScene + 1);
+    });
+
+    voiceToggle.addEventListener('click', () => {
+      isVoiceOn = !isVoiceOn;
+      voiceToggle.classList.toggle('active', isVoiceOn);
+      voiceLabel.textContent = isVoiceOn ? "Voice: ON" : "Voice: OFF";
+      if (!isVoiceOn && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      } else if (isVoiceOn) {
+        speakCurrentScene();
+      }
+    });
+
+    document.getElementById('fullScreenBtn').addEventListener('click', () => {
+      const vp = document.getElementById('videoViewport');
+      if (!document.fullscreenElement) {
+        vp.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    document.getElementById('progressTrack').addEventListener('click', (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const pct = clickX / rect.width;
+      currentSeconds = pct * totalDuration;
+      let accum = 0;
+      for (let i = 0; i < scenes.length; i++) {
+        accum += scenes[i].duration;
+        if (currentSeconds <= accum) {
+          showScene(i);
+          break;
+        }
+      }
+      updateProgress();
+    });
+
+    // Start with Scene 0
+    showScene(0);
+    updateProgress();
+  </script>
+</body>
+</html>
