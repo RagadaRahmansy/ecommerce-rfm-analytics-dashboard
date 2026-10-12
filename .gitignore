@@ -91,11 +91,17 @@ Thumbs.db
 *.swp
 *.swo
 *~
+~$*
 
 generate_paint_data.py
 
-# 7. Exclude Second Project (Separate Repository)
+# 7. Exclude Unrelated / Separate Projects
 ragada_supply_chain/
+ragada_pos_system/
+repo_to_scan/
+temp_repo2/
+ollama_bin/
+portfolio/
 
 # 8. Media, Keystores & Audio Artifacts
 *.keystore
@@ -103,4 +109,17 @@ ragada_supply_chain/
 *.wav
 *.pdf
 Ragada_Analytics_Presentation.mp4
-temp_repo2/
+brazilian_bass_*.py
+dj_vibe_*.py
+dont_stop_*.py
+generate_edm_*.py
+napom_*.py
+vibe_dj_*.html
+index.html
+
+# 9. Personal Career & Administrative Documents
+*.docx
+generate_cv_*.py
+generate_surat_*.py
+create_word_cv.py
+cv_ragada_*.html
