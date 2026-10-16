@@ -1660,6 +1660,281 @@ Correlation != Causation -> Controlled Experiment` },
       }
     }
 
+    function buildSqlLogicSteps(ch) {
+      const raw = (ch.solution || '').trim();
+      const steps = [];
+
+      // 1. Check CTE (WITH ... AS)
+      const cteMatches = [...raw.matchAll(/\b(\w+)\s+AS\s*\(/gi)];
+      if (/^\s*WITH\b/i.test(raw) && cteMatches.length) {
+        const cteNames = cteMatches.map((m) => m[1]).join(', ');
+        steps.push({
+          badge: 'TAHAP 1 · CTE STAGING',
+          color: 'indigo',
+          title: `Pembentukan Tabel Sementara (WITH ${cteNames})`,
+          code: `WITH ${cteNames} AS ( ... )`,
+          desc: `Mesin SQL mengeksekusi blok CTE (${cteNames}) terlebih dahulu untuk menyederhanakan agregasi bertingkat atau mempersiapkan metrik dasar sebelum diolah oleh query utama.`
+        });
+      }
+
+      // 2. FROM & JOIN (Source Tables & Relationships)
+      const fromMatches = [...raw.matchAll(/\bFROM\s+([a-zA-Z_][\w]*(?:\s+[a-zA-Z_][\w]*)?)/gi)].map((m) => m[1].trim());
+      const joinMatches = [...raw.matchAll(/\b((?:LEFT\s+|INNER\s+)?JOIN\s+[a-zA-Z_][\w]*(?:\s+[a-zA-Z_][\w]*)?\s+ON\s+[^\n]+?)(?=\s+(?:LEFT|INNER|JOIN|WHERE|GROUP|HAVING|ORDER|LIMIT|$))/gi)].map((m) => m[1].trim());
+      if (fromMatches.length) {
+        const baseTbl = fromMatches[fromMatches.length - 1];
+        const joinCode = joinMatches.length ? `${ `FROM ${baseTbl}\n` + joinMatches.join('\n') }` : `FROM ${baseTbl}`;
+        steps.push({
+          badge: `TAHAP ${steps.length + 1} · FROM & JOIN`,
+          color: 'blue',
+          title: joinMatches.length ? 'Penggabungan Relasi Antar-Tabel (Relational Join)' : 'Pengambilan Tabel Sumber (Source Scan)',
+          code: joinCode,
+          desc: joinMatches.length
+            ? (/LEFT\s+JOIN/i.test(joinCode)
+              ? 'Menggunakan LEFT JOIN agar seluruh baris dari tabel kiri tetap dipertahankan meskipun tidak memiliki pasangan di tabel kanan (penting untuk mendeteksi nilai 0 atau Anti-Join NULL).'
+              : 'Menghubungkan baris-baris antar tabel menggunakan kunci relasi Primary Key = Foreign Key sehingga atribut dimensi dan transaksi menyatu.')
+            : `Membaca data dasar langsung dari tabel ${baseTbl} sebagai sumber evaluasi.`
+        });
+      }
+
+      // 3. WHERE (Row-level filtering before aggregation)
+      const whereMatch = /\bWHERE\s+([\s\S]+?)(?=\bGROUP\s+BY\b|\bHAVING\b|\bORDER\s+BY\b|\bLIMIT\b|\)\s*$|$)/i.exec(raw);
+      if (whereMatch) {
+        const whereClause = whereMatch[1].trim().replace(/\s+/g, ' ');
+        steps.push({
+          badge: `TAHAP ${steps.length + 1} · WHERE FILTER`,
+          color: 'amber',
+          title: 'Penyaringan Baris Awal (Pre-Aggregation Filter)',
+          code: `WHERE ${whereClause}`,
+          desc: /IS\s+NULL/i.test(whereClause)
+            ? 'Menyaring hanya baris yang tidak memiliki kecocokan di tabel kanan (pola Anti-Join WHERE key IS NULL).'
+            : /SELECT\b/i.test(whereClause)
+              ? 'Menyaring baris dengan membandingkan nilai setiap baris terhadap hasil perhitungan Subquery.'
+              : 'Menyaring baris transaksi mentah SEBELUM pengelompokan atau perhitungan agregat dijalankan, sehingga hanya baris yang memenuhi syarat yang dihitung.'
+        });
+      }
+
+      // 4. GROUP BY (Dimensional bucketing)
+      const groupMatch = [...raw.matchAll(/\bGROUP\s+BY\s+([^\n;]+?)(?=\s*(?:\bHAVING\b|\bORDER\s+BY\b|\bLIMIT\b|\)|$))/gi)];
+      if (groupMatch.length) {
+        const grpCols = groupMatch.map((m) => m[1].trim()).join(' → ');
+        steps.push({
+          badge: `TAHAP ${steps.length + 1} · GROUP BY`,
+          color: 'purple',
+          title: 'Pengelompokan Dimensi (Row Bucketing)',
+          code: `GROUP BY ${grpCols}`,
+          desc: `Melebur baris-baris detail menjadi satu baris ringkasan unik untuk setiap kelompok (${grpCols}) agar fungsi agregat seperti SUM, COUNT, atau AVG dapat dihitung per grup.`
+        });
+      }
+
+      // 5. HAVING (Post-aggregation filter)
+      const havingMatch = /\bHAVING\s+([^\n;]+?)(?=\s*(?:\bORDER\s+BY\b|\bLIMIT\b|\)|$))/i.exec(raw);
+      if (havingMatch) {
+        const havCode = havingMatch[1].trim();
+        steps.push({
+          badge: `TAHAP ${steps.length + 1} · HAVING FILTER`,
+          color: 'amber',
+          title: 'Penyaringan Pasca-Agregasi (Group-Level Filter)',
+          code: `HAVING ${havCode}`,
+          desc: 'Menyaring grup hasil GROUP BY berdasarkan nilai fungsi agregat. Klausa WHERE tidak bisa memfilter fungsi agregat, sehingga evaluasi ini wajib dilakukan di HAVING.'
+        });
+      }
+
+      // 6. WINDOW FUNCTIONS (OVER (...))
+      const winMatch = [...raw.matchAll(/\b(DENSE_RANK|RANK|ROW_NUMBER|LAG|LEAD|SUM|AVG|COUNT)\s*\([^)]*\)\s+OVER\s*\(([^)]+)\)/gi)];
+      if (winMatch.length) {
+        const winSnippets = winMatch.map((m) => `${m[1].toUpperCase()}(...) OVER (${m[2].trim().replace(/\s+/g, ' ')})`).join('\n');
+        steps.push({
+          badge: `TAHAP ${steps.length + 1} · WINDOW OVER()`,
+          color: 'indigo',
+          title: 'Kalkulasi Fungsi Window Analitik',
+          code: winSnippets,
+          desc: 'Menghitung metrik analitik lintas baris (peringkat, nilai baris sebelumnya via LAG, moving average, atau proporsi total) di dalam partisi tanpa menghilangkan detail baris.'
+        });
+      }
+
+      // 7. SELECT (Projection & Metric Formula)
+      steps.push({
+        badge: `TAHAP ${steps.length + 1} · SELECT PROJECTION`,
+        color: 'emerald',
+        title: `Proyeksi & Kalkulasi Kolom Output (${ch.columns.join(', ')})`,
+        code: `SELECT ${ch.columns.join(', ')}`,
+        desc: /CASE\s+WHEN/i.test(raw)
+          ? `Mengevaluasi percabangan kondisional CASE WHEN serta rumus metrik untuk menghasilkan ${ch.columns.length} kolom output sesuai skema target.`
+          : `Mengevaluasi ekspresi matematika/agregasi dan menamai alias kolom akhir menjadi: ${ch.columns.join(', ')}.`
+      });
+
+      // 8. ORDER BY & LIMIT
+      const orderMatch = [...raw.matchAll(/\bORDER\s+BY\s+([^\n;]+)/gi)];
+      if (orderMatch.length) {
+        const ordCode = orderMatch[orderMatch.length - 1][1].trim();
+        steps.push({
+          badge: `TAHAP ${steps.length + 1} · ORDER & LIMIT`,
+          color: 'slate',
+          title: 'Pengurutan & Pemangkasan Hasil Akhir',
+          code: `ORDER BY ${ordCode}`,
+          desc: 'Mengurutkan baris output akhir sesuai prioritas analisis bisnis (dan membatasi baris teratas jika menggunakan LIMIT).'
+        });
+      }
+
+      return steps;
+    }
+
+    function buildPyLogicSteps(ch) {
+      const raw = (ch.solution || '').trim();
+      const lines = raw.split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
+      const steps = [];
+
+      // Step 1: Source dataset or function signature
+      if (ch.dataset === 'sales') {
+        steps.push({
+          badge: 'TAHAP 1 · DATAFRAME INPUT',
+          color: 'blue',
+          title: 'Inisialisasi Sumber Data Transaksi',
+          code: raw.includes('df_raw') ? 'df_raw (Data Mentah + Duplikat/Missing/Spasi)' : raw.includes('customers') ? 'df (Transaksi) + customers (Profil Pelanggan)' : 'df (DataFrame Penjualan Bersih)',
+          desc: 'Memuat struktur DataFrame pandas ke memori sebagai fondasi pemrosesan vektorisasi tanpa loop manual.'
+        });
+      }
+
+      lines.forEach((line) => {
+        let title = 'Transformasi & Kalkulasi Vektorisasi';
+        let badge = `TAHAP ${steps.length + 1} · TRANSFORM`;
+        let color = 'indigo';
+        let desc = 'Mengeksekusi operasi pada kolom/baris secara tervektorisasi untuk menjaga performa dan akurasi tipe data.';
+
+        if (/^def\s+/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · DEFINISI FUNGSI`;
+          color = 'blue';
+          title = 'Deklarasi Signature Fungsi & Parameter';
+          desc = 'Menerima input struktur data (list/string/int) yang akan diuji terhadap berbagai skenario test case.';
+        } else if (/drop_duplicates|str\.strip|str\.title|str\.lower|fillna/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · DATA SANITIZATION`;
+          color = 'amber';
+          title = 'Pembersihan Data, Deduplikasi & Imputasi';
+          desc = 'Menghapus rekaman ganda, menormalisasi spasi/huruf string, atau mengisi nilai kosong (NaN) menggunakan statistik seperti median agar distribusi tidak bias.';
+        } else if (/to_datetime|\.dt\./.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · TIME-SERIES EXTRACTION`;
+          color = 'purple';
+          title = 'Konversi Waktu & Ekstraksi Periode Kalender';
+          desc = 'Mengubah teks tanggal menjadi tipe datetime64 dan mengekstrak komponen waktu (bulan, hari, atau periode) melalui accessor .dt.';
+        } else if (/quantile|iqr|std\(|mean\(/.test(line) && !/groupby/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · STATISTICAL BOUNDS`;
+          color = 'amber';
+          title = 'Perhitungan Parameter Statistik (Kuartil / IQR / Z-Score)';
+          desc = 'Menghitung batas kuartil (Q1, Q3), rentang interkuartil (IQR), atau simpangan baku sebagai ambang batas deteksi anomali/outlier.';
+        } else if (/np\.select/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · CONDITIONAL TIERING`;
+          color = 'indigo';
+          title = 'Klasifikasi Multi-Kondisi Vektorisasi (np.select)';
+          desc = 'Memetakan setiap baris ke dalam segmen kategori berdasarkan daftar kondisi logika secara berurutan tanpa iterasi baris.';
+        } else if (/pivot_table|melt\(/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · MATRIX RESHAPING`;
+          color = 'purple';
+          title = 'Restrukturisasi Dimensi Matriks (Pivot / Melt)';
+          desc = 'Mengubah orientasi tabel antara format Long (tidy) dan format Wide (matriks silang) beserta pengisian nilai kosong (fill_value=0).';
+        } else if (/\.merge\(/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · RELATIONAL MERGE`;
+          color = 'blue';
+          title = 'Penggabungan Dua DataFrame (.merge)';
+          desc = 'Menggabungkan tabel transaksi dan tabel dimensi pelanggan berdasarkan kunci customer_id (setara dengan JOIN pada SQL).';
+        } else if (/groupby\(/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · GROUPBY & AGGREGATION`;
+          color = 'purple';
+          title = /\.transform\(/.test(line) ? 'Agregasi Window Sejajar (.groupby + .transform)' : 'Pengelompokan & Agregasi Metrik (.groupby)';
+          desc = /\.transform\(/.test(line)
+            ? 'Menghitung total tingkat grup lalu menyebarkannya kembali sejajar dengan indeks baris asli untuk kalkulasi proporsi (%).'
+            : 'Mengelompokkan baris berdasarkan kolom dimensi dan menghitung metrik ringkasan (sum, count, nunique, mean) untuk setiap grup.';
+        } else if (/rolling\(|pct_change\(|cumsum\(/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · WINDOW SERIES`;
+          color = 'indigo';
+          title = 'Kalkulasi Time-Series Window (Rolling / Cumsum / MoM)';
+          desc = 'Menghitung rata-rata bergerak (.rolling), akumulasi berjalan (.cumsum), atau laju perubahan persentase antar-periode (.pct_change).';
+        } else if (/sort_values|reset_index/.test(line) || /^result\s*=/.test(line)) {
+          badge = `TAHAP ${steps.length + 1} · OUTPUT RESULT`;
+          color = 'emerald';
+          title = 'Penyusunan & Pengurutan Output Akhir (result)';
+          desc = 'Menyaring, mengurutkan baris sesuai spesifikasi soal, merapikan indeks (.reset_index(drop=True)), dan menyimpan hasil akhir ke variabel result.';
+        }
+
+        steps.push({
+          badge,
+          color,
+          title,
+          code: line,
+          desc
+        });
+      });
+
+      return steps;
+    }
+
+    function buildQueryLogicBreakdown(ch, isSqlMode, compact = false) {
+      const steps = isSqlMode ? buildSqlLogicSteps(ch) : buildPyLogicSteps(ch);
+      return `
+        <div class="logic-breakdown-card ${compact ? 'is-compact' : ''}">
+          <div class="lbc-header">
+            <div class="lbc-header-left">
+              <span class="lbc-eyebrow">${SVG.layers} VISUAL EXECUTION FLOW &amp; QUERY LOGIC</span>
+              <h3 class="lbc-title">Penggambaran Alur Eksekusi &amp; Bedah Logika ${isSqlMode ? 'Query SQL' : 'Pipeline Python'}</h3>
+              <p class="lbc-sub">Berikut adalah urutan bagaimana mesin ${isSqlMode ? 'SQLite mengeksekusi klausa query (Logical Query Processing Order)' : 'Python & pandas mentransformasikan data tahap demi tahap'} hingga menghasilkan output yang terverifikasi:</p>
+            </div>
+            ${!compact ? `<button type="button" class="btn btn-secondary btn-xs" id="btnExpandLogicModal">Perbesar Visualisasi ↗</button>` : ''}
+          </div>
+
+          <!-- Horizontal Visual Pipeline Strip -->
+          <div class="lbc-pipeline-strip">
+            ${steps.map((st, i) => `
+              <div class="lbc-pipe-node tone-${st.color}">
+                <span class="lbc-pipe-num">${i + 1}</span>
+                <span class="lbc-pipe-label">${esc(st.badge.split('·')[1]?.trim() || st.badge)}</span>
+              </div>
+              ${i < steps.length - 1 ? `<span class="lbc-pipe-arrow">→</span>` : ''}
+            `).join('')}
+          </div>
+
+          <!-- Detailed Step-by-Step Visual Cards -->
+          <div class="lbc-steps-grid">
+            ${steps.map((st, i) => `
+              <div class="lbc-step-card tone-${st.color}">
+                <div class="lbc-step-top">
+                  <span class="lbc-step-badge tone-${st.color}">${esc(st.badge)}</span>
+                  <strong class="lbc-step-title">${esc(st.title)}</strong>
+                </div>
+                <pre class="lbc-step-code"><code>${esc(st.code)}</code></pre>
+                <p class="lbc-step-desc">${esc(st.desc)}</p>
+                ${i < steps.length - 1 ? `<div class="lbc-step-connector">↓</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Core Architectural Summary Box -->
+          <div class="lbc-summary-box">
+            <div class="lbc-sum-head">
+              <span class="chip chip-focus">KONSEP INTI: ${esc(ch.concept.toUpperCase())}</span>
+              <span class="chip chip-ok">✓ TERVERIFIKASI</span>
+            </div>
+            <p class="lbc-sum-text"><strong>Intisari Arsitektur &amp; Logika Bisnis:</strong> ${esc(ch.explanation)}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function openLogicModal(ch, isSqlMode) {
+      modal(`
+        <div class="logic-modal-wrap">
+          ${buildQueryLogicBreakdown(ch, isSqlMode, true)}
+          <div class="sol-container-modal" style="margin-top:16px">
+            <div class="sol-header" style="margin-bottom:8px">
+              <span class="sol-title">Kode Solusi Referensi Utuh</span>
+            </div>
+            <pre class="sol-code">${esc(ch.solution)}</pre>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:16px">
+            <button class="btn btn-primary" data-close>Tutup Visualisasi</button>
+          </div>
+        </div>
+      `);
+    }
+
     async function submit() {
       if (busy) return;
       showConsole();
@@ -1670,14 +1945,34 @@ Correlation != Causation -> Controlled Experiment` },
         await ensureEngine();
         if (isSql) {
           const r = await SqlEngine.check(editor.get(), ch);
-          if (r.passed) setOutput(successVerdict(handleSolved(ch)) + sqlTable(r.user));
-          else setOutput(failVerdict(r.reason) + '<div class="out-label">Output Query Anda</div>' + sqlTable(r.user, 20)
-            + '<div class="out-label">Ekspektasi Output (5 baris pertama)</div>' + sqlTable({ columns: r.expected.columns, values: r.expected.values.slice(0, 5) }));
+          if (r.passed) {
+            const solvedRes = handleSolved(ch);
+            drawTab();
+            setOutput(
+              successVerdict(solvedRes) +
+              buildQueryLogicBreakdown(ch, true, false) +
+              '<div class="out-label" style="margin-top:16px">Tabel Hasil Eksekusi Query Anda</div>' +
+              sqlTable(r.user)
+            );
+          } else {
+            setOutput(failVerdict(r.reason) + '<div class="out-label">Output Query Anda</div>' + sqlTable(r.user, 20)
+              + '<div class="out-label">Ekspektasi Output (5 baris pertama)</div>' + sqlTable({ columns: r.expected.columns, values: r.expected.values.slice(0, 5) }));
+          }
         } else {
           const r = await PyEngine.check(ch, editor.get());
           markPythonError(r);
-          if (r.passed) setOutput(successVerdict(handleSolved(ch)) + pyOutput(r));
-          else setOutput(failVerdict(r.reason) + pyOutput(r) + (r.expected?.type !== 'none' ? `<div class="out-label">Ekspektasi Output</div>${pyValue(r.expected)}` : ''));
+          if (r.passed) {
+            const solvedRes = handleSolved(ch);
+            drawTab();
+            setOutput(
+              successVerdict(solvedRes) +
+              buildQueryLogicBreakdown(ch, false, false) +
+              '<div class="out-label" style="margin-top:16px">Hasil Eksekusi Script Anda</div>' +
+              pyOutput(r)
+            );
+          } else {
+            setOutput(failVerdict(r.reason) + pyOutput(r) + (r.expected?.type !== 'none' ? `<div class="out-label">Ekspektasi Output</div>${pyValue(r.expected)}` : ''));
+          }
         }
       } catch (err) {
         setOutput(executionError(err));
@@ -1711,7 +2006,12 @@ Correlation != Causation -> Controlled Experiment` },
       }
       const gainText = res.gained ? `+${res.gained} XP${res.dailyBonus ? ' (Termasuk Daily Bonus)' : ''}` : 'Telah Terverifikasi';
       return `<div class="verdict success"><div class="verdict-icon">✓</div>
-        <div class="verdict-text"><h4>Verification Passed · ${esc(gainText)}</h4><p>${esc(ch.explanation)}</p></div>${nextBtn}</div>`;
+        <div class="verdict-text"><h4>Verification Passed · ${esc(gainText)}</h4><p>${esc(ch.explanation)}</p></div>
+        <div class="verdict-actions">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnVerdictLogic">Bedah Logika Query</button>
+          ${nextBtn}
+        </div>
+      </div>`;
     }
 
     function failVerdict(reason) {
@@ -1730,6 +2030,10 @@ Correlation != Causation -> Controlled Experiment` },
           chapterCode: `BAB 0${nextCh.chapter}`,
           returnHash: `#/${key}/${nextCh.id}`
         });
+        return;
+      }
+      if (e.target.closest('#btnVerdictLogic') || e.target.closest('#btnExpandLogicModal')) {
+        openLogicModal(ch, isSql);
       }
     });
 
@@ -1762,6 +2066,10 @@ Correlation != Causation -> Controlled Experiment` },
       const body = $('#tabBody');
       const s = S();
       $('#hintTab').textContent = hintLabel();
+      const solTabBtn = $('#tabs [data-tab="solution"]');
+      if (solTabBtn) {
+        solTabBtn.innerHTML = `Solusi &amp; Logika ${(!Store.isPro() && !s.completed[id]) ? SVG.lock : ''}`;
+      }
       if (activeTab === 'info') {
         if (isSql) {
           body.innerHTML = `<div class="schema">${SqlEngine.SCHEMA.map((tb) => `
@@ -1787,12 +2095,12 @@ Correlation != Causation -> Controlled Experiment` },
             return `<div class="hint dim">Petunjuk ${i + 1} (Terkunci)</div>`;
           }).join('')}`;
       } else {
-        // Official Reference Solution requires Pro Membership or completed status
+        // Official Reference Solution & Visual Logic requires Pro Membership or completed status
         if (!Store.isPro() && !s.completed[id]) {
           body.innerHTML = `
             <div class="card-inset" style="text-align:center;padding:20px 16px">
-              <div style="margin-bottom:8px;color:#4F46E5">${SVG.lock} <strong>SOLUSI REFERENSI KHUSUS PRO MEMBER</strong></div>
-              <p class="muted small" style="margin-bottom:14px">Selesaikan modul ini secara mandiri untuk membuka kunci jawaban, atau tingkatkan ke Pro Membership untuk akses instan ke seluruh solusi referensi dan penjelasan arsitektur.</p>
+              <div style="margin-bottom:8px;color:#4F46E5">${SVG.lock} <strong>SOLUSI &amp; BEDAH LOGIKA KHUSUS PRO MEMBER</strong></div>
+              <p class="muted small" style="margin-bottom:14px">Selesaikan modul ini secara mandiri untuk membuka visualisasi alur logika query dan kunci jawaban, atau tingkatkan ke Pro Membership untuk akses instan di seluruh modul.</p>
               <button class="btn btn-focus btn-sm" id="btnUnlockSolution">Upgrade ke Pro Membership</button>
             </div>
           `;
@@ -1802,9 +2110,13 @@ Correlation != Causation -> Controlled Experiment` },
           <div class="solution-container">
             <div class="sol-header">
               <span class="sol-title">Solusi Referensi Terverifikasi</span>
-              <button class="btn-copy-sol" id="copySol">Salin ke Editor</button>
+              <div style="display:flex;gap:6px">
+                <button class="btn-copy-sol" id="btnOpenLogicModalTab">Visualisasi Penuh ↗</button>
+                <button class="btn-copy-sol" id="copySol">Salin ke Editor</button>
+              </div>
             </div>
             <pre class="sol-code">${esc(ch.solution)}</pre>
+            ${buildQueryLogicBreakdown(ch, isSql, true)}
             ${isSql ? `
             <div class="schema-relations">
               <div class="rel-title">RELASI SKEMA UTAMA:</div>
@@ -1827,10 +2139,14 @@ Correlation != Causation -> Controlled Experiment` },
     $('#tabBody').addEventListener('click', async (e) => {
       if (e.target.closest('#btnUnlockSolution')) {
         openPaywallModal({
-          title: `Solusi Referensi: ${ch.title}`,
+          title: `Solusi & Logika: ${ch.title}`,
           chapterCode: `BAB 0${ch.chapter}`,
           returnHash: `#/${key}/${ch.id}`
         });
+        return;
+      }
+      if (e.target.closest('#btnOpenLogicModalTab')) {
+        openLogicModal(ch, isSql);
         return;
       }
       const preview = e.target.closest('[data-preview]');
