@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DataDojo — Platform Latihan Interview & Live Coding Data Analyst</title>
+  
+  <!-- Fonts: Hanken Grotesk (Display) & JetBrains Mono (Primary Body / Execution) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- CodeMirror Editor CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+
+  <!-- sql.js (SQLite WebAssembly) CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-wasm.js"></script>
+
+  <!-- Stylesheet (cache-busted to v7) -->
+  <link rel="stylesheet" href="css/style.css?v=7">
+</head>
+<body>
+  <!-- Confetti Canvas -->
+  <canvas id="confetti"></canvas>
+
+  <!-- Topbar Sticky Header (Spans 100% width) -->
+  <header class="topbar" id="topbar"></header>
+
+  <!-- Main App Layout (Sidebar + Canvas) -->
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <nav class="nav-menu">
+        <span class="nav-section-title">Overview</span>
+        <a href="#/dashboard" class="nav-link" data-section="dashboard">
+          <span class="nav-icon">▤</span>
+          <span>Dashboard</span>
+        </a>
+
+        <span class="nav-section-title">Live Coding Labs</span>
+        <a href="#/sql" class="nav-link active" data-section="sql">
+          <span class="nav-icon">&gt;_</span>
+          <span>SQL Lab</span>
+        </a>
+        <a href="#/python" class="nav-link" data-section="python">
+          <span class="nav-icon">&lt;/&gt;</span>
+          <span>Python Lab</span>
+        </a>
+
+        <span class="nav-section-title">Interview Hub</span>
+        <a href="#/quiz" class="nav-link" data-section="quiz">
+          <span class="nav-icon">📊</span>
+          <span>Power BI & DAX</span>
+        </a>
+        <a href="#/interview" class="nav-link" data-section="interview">
+          <span class="nav-icon">🎤</span>
+          <span>Flashcard Interview</span>
+        </a>
+        <a href="#/mock" class="nav-link" data-section="mock">
+          <span class="nav-icon">⏱️</span>
+          <span>Mock Interview</span>
+        </a>
+
+        <span class="nav-section-title">Kompetisi</span>
+        <a href="#/leaderboard" class="nav-link" data-section="leaderboard">
+          <span class="nav-icon">🏆</span>
+          <span>Leaderboard</span>
+        </a>
+        <a href="#/profile" class="nav-link" data-section="profile">
+          <span class="nav-icon">👤</span>
+          <span>Profil &amp; Badges</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sqlite-status">
+          <span class="status-dot">●</span>
+          <span>SQLite 3.45</span>
+          <span class="latency">24ms</span>
+        </div>
+        <div class="quick-tip-box">
+          <strong>💡 Tip Hari Ini:</strong>
+          <span>Manfaatkan <code class="tag-code">EXPLAIN QUERY PLAN</code> untuk optimasi join.</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Dynamic SPA View Content -->
+    <main class="view-container" id="view"></main>
+  </div>
+
+  <!-- Floating Toast Notifications -->
+  <div id="toasts"></div>
+
+  <!-- Modal / Dialog Root -->
+  <div id="modal-root"></div>
+
+  <!-- Application Logic Scripts (Strict Load Order) -->
+  <script src="js/data/sql-challenges.js"></script>
+  <script src="js/data/python-challenges.js"></script>
+  <script src="js/data/quiz-bank.js"></script>
+  <script src="js/data/interview-cards.js"></script>
+  <script src="js/engines/sql-engine.js"></script>
+  <script src="js/engines/python-engine.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

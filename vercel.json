@@ -1,0 +1,10 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/", "destination": "/datadojo/index.html" },
+    { "source": "/css/(.*)", "destination": "/datadojo/css/$1" },
+    { "source": "/js/(.*)", "destination": "/datadojo/js/$1" },
+    { "source": "/img/(.*)", "destination": "/datadojo/img/$1" },
+    { "source": "/((?!api/).*)", "destination": "/datadojo/$1" }
+  ]
+}

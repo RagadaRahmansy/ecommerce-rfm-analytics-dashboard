@@ -33,6 +33,8 @@ shared_tmp/
 *.jpeg
 *.webp
 *.mp4
+!datadojo/**
+temp_profile/
 project_data.json
 screen_data.json
 tools_list.json
@@ -115,7 +117,7 @@ dont_stop_*.py
 generate_edm_*.py
 napom_*.py
 vibe_dj_*.html
-index.html
+/index.html
 
 # 9. Personal Career & Administrative Documents
 *.docx
@@ -123,3 +125,7 @@ generate_cv_*.py
 generate_surat_*.py
 create_word_cv.py
 cv_ragada_*.html
+
+# 10. Explicitly allow all datadojo project files
+!datadojo/**
+
