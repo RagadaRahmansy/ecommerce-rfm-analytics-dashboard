@@ -128,4 +128,6 @@ cv_ragada_*.html
 
 # 10. Explicitly allow all datadojo project files
 !datadojo/**
+!datadojo-enterprise/**
+
 
