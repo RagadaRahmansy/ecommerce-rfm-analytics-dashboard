@@ -58,8 +58,8 @@
       name: 'SQL Curriculum Lab',
       code: 'SQL-345',
       color: '#18181B',
-      mode: 'text/x-sqlite',
-      lang: 'SQLite 3.45 WASM',
+      mode: 'text/x-mysql',
+      lang: 'MySQL 8.0 Engine',
       chapters: window.SQL_CHAPTERS,
       items: window.SQL_CHALLENGES,
       desc: 'Kurikulum SQL terstruktur dalam 4 Bab: dari seleksi skalar dasar (Bab 1 Gratis) hingga relational join multi-tabel, metrik kondisional, dan fungsi window analitik (Bab 2–4 Pro).'
@@ -499,7 +499,7 @@ Correlation != Causation -> Controlled Experiment` },
             </div>
             <ul class="pwm-list">
               <li class="included">${SVG.check} <span>Bab 1: Materi Dasar (SQL, Python, BI, Interview)</span></li>
-              <li class="included">${SVG.check} <span>SQLite &amp; Pyodide In-Browser IDE</span></li>
+              <li class="included">${SVG.check} <span>MySQL 8.0 &amp; Pyodide In-Browser IDE</span></li>
               <li class="excluded"><span>✕</span> <span>Bab 2: Relational Joins &amp; Data Sanitization</span></li>
               <li class="excluded"><span>✕</span> <span>Bab 3: Conditional Metrics &amp; Time-Series</span></li>
               <li class="excluded"><span>✕</span> <span>Bab 4: Window Functions &amp; Matrix Pivoting</span></li>
@@ -1086,7 +1086,7 @@ Correlation != Causation -> Controlled Experiment` },
               <span class="hero-chip-hot">4-CHAPTER SYSTEM</span>
             </div>
             <h1>Platform Asesmen &amp; Kurikulum <br><span>Data Analyst Standar Industri</span></h1>
-            <p>Kurikulum terstruktur dari <strong>Bab 1 (Materi Dasar — Gratis)</strong> hingga <strong>Bab 4 (Materi Enterprise — Pro Membership)</strong>. Eksekusi query SQLite WebAssembly dan Python pandas secara langsung di browser dengan evaluasi otomatis presisi tinggi.</p>
+            <p>Kurikulum terstruktur dari <strong>Bab 1 (Materi Dasar — Gratis)</strong> hingga <strong>Bab 4 (Materi Enterprise — Pro Membership)</strong>. Eksekusi query MySQL 8.0 dan Python pandas secara langsung di browser dengan evaluasi otomatis presisi tinggi.</p>
             
             <div class="hero-actions">
               ${next
@@ -1098,7 +1098,7 @@ Correlation != Causation -> Controlled Experiment` },
 
             <div class="hero-highlights">
               <div class="hh-item"><span class="hh-icon">${SVG.layers}</span><span>Kurikulum Terkelompok (Bab 1–4)</span></div>
-              <div class="hh-item"><span class="hh-icon">${SVG.terminal}</span><span>SQLite 3.45 &amp; Pyodide WASM Runtime</span></div>
+              <div class="hh-item"><span class="hh-icon">${SVG.terminal}</span><span>MySQL 8.0 &amp; Pyodide WASM Runtime</span></div>
               <div class="hh-item"><span class="hh-icon">${SVG.shield}</span><span>Standar Asesmen Teknis Korporat</span></div>
             </div>
           </div>
@@ -1109,7 +1109,7 @@ Correlation != Causation -> Controlled Experiment` },
               <div class="hero-visual-overlay"></div>
               <div class="floating-tag tag-top">
                 <span class="ft-dot green"></span>
-                <strong>SQLite + Pyodide</strong>
+                <strong>MySQL 8.0 + Pyodide</strong>
                 <small>Client-Side Execution Engine</small>
               </div>
               <div class="floating-tag tag-bottom">
@@ -1209,7 +1209,7 @@ Correlation != Causation -> Controlled Experiment` },
           </div>
           <div class="daily-body">
             <div class="chips">
-              <span class="chip">${daily.track === 'sql' ? 'SQLite' : 'Python'} · BAB 0${daily.chapter}</span>
+              <span class="chip">${daily.track === 'sql' ? 'MySQL' : 'Python'} · BAB 0${daily.chapter}</span>
               ${diffChip(daily.difficulty)}
               <span class="chip chip-focus">+${DAILY_BONUS_XP} XP Bonus</span>
             </div>
@@ -1582,7 +1582,7 @@ Correlation != Causation -> Controlled Experiment` },
     async function ensureEngine() {
       if (isSql) {
         await SqlEngine.load();
-        setStatus('SQLite 3.45 Ready', 'ok');
+        setStatus('MySQL 8.0 Ready', 'ok');
         return;
       }
       if (!PyEngine.isReady()) setOutput(loadingBox('Menginisialisasi runtime Python & pandas…'));
@@ -1626,7 +1626,7 @@ Correlation != Causation -> Controlled Experiment` },
           errDisplay = `${errDisplay} at line ${errLine}`;
         }
         return `<div class="exec-error">
-            <div class="exec-error-head"><strong>Query Execution Failed</strong><span class="exec-error-badge">SQLITE_ERROR [1]</span></div>
+            <div class="exec-error-head"><strong>Query Execution Failed</strong><span class="exec-error-badge">MYSQL_ERROR [1064]</span></div>
             <pre class="exec-log">${esc(errDisplay)}${errLine ? `\n--> Line ${errLine}: ${esc(lineText)}\n    ^^^^` : ''}</pre>
             ${diag.hint ? `<div class="diag"><strong>Diagnostik Skema:</strong> ${diag.hint}</div>` : ''}
           </div>`;
@@ -1874,8 +1874,8 @@ Correlation != Causation -> Controlled Experiment` },
           <div class="lbc-header">
             <div class="lbc-header-left">
               <span class="lbc-eyebrow">${SVG.layers} VISUAL EXECUTION FLOW &amp; QUERY LOGIC</span>
-              <h3 class="lbc-title">Penggambaran Alur Eksekusi &amp; Bedah Logika ${isSqlMode ? 'Query SQL' : 'Pipeline Python'}</h3>
-              <p class="lbc-sub">Berikut adalah urutan bagaimana mesin ${isSqlMode ? 'SQLite mengeksekusi klausa query (Logical Query Processing Order)' : 'Python & pandas mentransformasikan data tahap demi tahap'} hingga menghasilkan output yang terverifikasi:</p>
+              <h3 class="lbc-title">Penggambaran Alur Eksekusi &amp; Bedah Logika ${isSqlMode ? 'Query MySQL' : 'Pipeline Python'}</h3>
+              <p class="lbc-sub">Berikut adalah urutan bagaimana mesin ${isSqlMode ? 'MySQL 8.0 mengeksekusi klausa query (Logical Query Processing Order)' : 'Python & pandas mentransformasikan data tahap demi tahap'} hingga menghasilkan output yang terverifikasi:</p>
             </div>
             ${!compact ? `<button type="button" class="btn btn-secondary btn-xs" id="btnExpandLogicModal">Perbesar Visualisasi ↗</button>` : ''}
           </div>
@@ -2762,7 +2762,7 @@ Correlation != Causation -> Controlled Experiment` },
                   <li class="inc">${SVG.check} <span><strong>Bab 1 Python</strong>: Vectorized Column, Boolean Filter &amp; GroupBy (4 Modul)</span></li>
                   <li class="inc">${SVG.check} <span><strong>Bab 1 Power BI &amp; Quiz</strong>: Dasar Star Schema &amp; DAX (15 Soal Dasar)</span></li>
                   <li class="inc">${SVG.check} <span><strong>Bab 1 Interview Playbook</strong>: 5 Skenario Fondasi Peran &amp; EDA</span></li>
-                  <li class="inc">${SVG.check} <span>Akses SQLite 3.45 &amp; Pyodide In-Browser Runtime</span></li>
+                  <li class="inc">${SVG.check} <span>Akses MySQL 8.0 &amp; Pyodide In-Browser Runtime</span></li>
                   <li class="exc"><span>✕</span> <span>Bab 2, Bab 3 &amp; Bab 4 (49 Modul Coding Pro, 50 Quiz &amp; 35 Interview)</span></li>
                   <li class="exc"><span>✕</span> <span>Kunci Jawaban &amp; Solusi Referensi Resmi</span></li>
                   <li class="exc"><span>✕</span> <span>Full Timed Assessment Simulator (10 Soal Lintas Bab)</span></li>

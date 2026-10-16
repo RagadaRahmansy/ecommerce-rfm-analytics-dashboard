@@ -1,7 +1,7 @@
 /**
- * DataDojo Enterprise — SQL Assessment Curriculum (30 Modules: 3 Free + 27 Pro)
+ * DataDojo Enterprise — MySQL 8.0 Assessment Curriculum (30 Modules: 3 Free + 27 Pro)
  * Structured into 4 progressive chapters (Bab 1 Free Fundamentals, Bab 2–4 Pro Membership).
- * Automatic evaluation compares user query result against `solution` on the same in-memory SQLite instance.
+ * Automatic evaluation compares user query result against `solution` on the MySQL 8.0 execution engine.
  */
 window.SQL_CHAPTERS = [
   {
@@ -158,17 +158,18 @@ window.SQL_CHALLENGES = [
     title: 'Revenue Bulanan 2025',
     difficulty: 'medium',
     tag: 'Date',
-    concept: 'strftime, GROUP BY tanggal',
-    prompt: 'Buat laporan revenue bulanan (order `completed` saja). Tampilkan `month` dengan format `YYYY-MM` dan `revenue`, urutkan dari bulan terlama.\n\nRevenue = `quantity * price * (1 - discount)`.\n\n_Catatan: database ini SQLite, gunakan `strftime(\'%Y-%m\', kolom_tanggal)`._',
+    concept: 'DATE_FORMAT, GROUP BY tanggal',
+    prompt: 'Buat laporan revenue bulanan (order `completed` saja). Tampilkan `month` dengan format `YYYY-MM` dan `revenue`, urutkan dari bulan terlama.\n\nRevenue = `quantity * price * (1 - discount)`.\n\n_Catatan: gunakan fungsi MySQL 8.0 `DATE_FORMAT(kolom_tanggal, \'%Y-%m\')`._',
     columns: ['month', 'revenue'],
     ordered: true,
-    starter: "SELECT\n  strftime('%Y-%m', o.order_date) AS month,\n  -- revenue\nFROM orders o\n",
-    solution: "SELECT strftime('%Y-%m', o.order_date) AS month,\n       ROUND(SUM(oi.quantity * p.price * (1 - oi.discount)), 2) AS revenue\nFROM orders o\nJOIN order_items oi ON oi.order_id = o.order_id\nJOIN products p     ON p.product_id = oi.product_id\nWHERE o.status = 'completed'\nGROUP BY month\nORDER BY month;",
+    starter: "SELECT\n  DATE_FORMAT(o.order_date, '%Y-%m') AS month,\n  -- revenue\nFROM orders o\n",
+    solution: "SELECT DATE_FORMAT(o.order_date, '%Y-%m') AS month,\n       ROUND(SUM(oi.quantity * p.price * (1 - oi.discount)), 2) AS revenue\nFROM orders o\nJOIN order_items oi ON oi.order_id = o.order_id\nJOIN products p     ON p.product_id = oi.product_id\nWHERE o.status = 'completed'\nGROUP BY month\nORDER BY month;",
     hints: [
       'Join orders → order_items → products.',
-      'GROUP BY bisa memakai alias kolom di SQLite: GROUP BY month.'
+      'Gunakan DATE_FORMAT(o.order_date, \'%Y-%m\') untuk memformat tahun dan bulan.',
+      'GROUP BY bisa memakai alias kolom di MySQL: GROUP BY month.'
     ],
-    explanation: 'Di PostgreSQL gunakan DATE_TRUNC(\'month\', order_date), di MySQL DATE_FORMAT(order_date, \'%Y-%m\'). Menyebutkan perbedaan dialek menunjukkan pengalaman nyata.'
+    explanation: 'Di MySQL 8.0 gunakan DATE_FORMAT(order_date, \'%Y-%m\'). Di PostgreSQL setaranya adalah TO_CHAR(order_date, \'YYYY-MM\') atau DATE_TRUNC(\'month\', order_date).'
   },
   {
     id: 'sql-07',
@@ -443,17 +444,18 @@ window.SQL_CHALLENGES = [
     title: 'Performa Kuartalan (Q1–Q4) 2025',
     difficulty: 'medium',
     tag: 'Time Bucketing',
-    concept: 'CASE WHEN Date Quarter Bucketing',
-    prompt: 'Kelompokkan seluruh order berstatus `completed` ke dalam kuartal (`Q1`, `Q2`, `Q3`, `Q4`) berdasarkan bulan `order_date`:\n- Bulan 01–03 → `Q1`\n- Bulan 04–06 → `Q2`\n- Bulan 07–09 → `Q3`\n- Bulan 10–12 → `Q4`\n\nTampilkan `quarter`, `completed_orders` (`COUNT(DISTINCT o.order_id)`), dan `revenue` (bulatkan 2 desimal), urutkan berdasarkan `quarter` (`Q1` s/d `Q4`).',
+    concept: 'CONCAT, QUARTER() / Time Bucketing',
+    prompt: 'Kelompokkan seluruh order berstatus `completed` ke dalam kuartal (`Q1`, `Q2`, `Q3`, `Q4`) berdasarkan `order_date`.\n\nTampilkan `quarter` (format `Q1`, `Q2`, `Q3`, `Q4`), `completed_orders` (`COUNT(DISTINCT o.order_id)`), dan `revenue` (bulatkan 2 desimal), urutkan berdasarkan `quarter` (`Q1` s/d `Q4`).\n\n_Petunjuk MySQL: gunakan kombinasi fungsi `CONCAT(\'Q\', QUARTER(o.order_date))` atau percabangan `CASE WHEN`._',
     columns: ['quarter', 'completed_orders', 'revenue'],
     ordered: true,
-    starter: "SELECT\n  CASE\n    WHEN CAST(strftime('%m', o.order_date) AS INTEGER) <= 3 THEN 'Q1'\n    -- lanjutkan Q2, Q3, Q4\n  END AS quarter,\n  ...\n",
-    solution: "SELECT CASE\n         WHEN CAST(strftime('%m', o.order_date) AS INTEGER) <= 3 THEN 'Q1'\n         WHEN CAST(strftime('%m', o.order_date) AS INTEGER) <= 6 THEN 'Q2'\n         WHEN CAST(strftime('%m', o.order_date) AS INTEGER) <= 9 THEN 'Q3'\n         ELSE 'Q4'\n       END AS quarter,\n       COUNT(DISTINCT o.order_id) AS completed_orders,\n       ROUND(SUM(oi.quantity * p.price * (1 - oi.discount)), 2) AS revenue\nFROM orders o\nJOIN order_items oi ON oi.order_id = o.order_id\nJOIN products p     ON p.product_id = oi.product_id\nWHERE o.status = 'completed'\nGROUP BY quarter\nORDER BY quarter;",
+    starter: "SELECT\n  CONCAT('Q', QUARTER(o.order_date)) AS quarter,\n  -- completed_orders & revenue\nFROM orders o\n",
+    solution: "SELECT CONCAT('Q', QUARTER(o.order_date)) AS quarter,\n       COUNT(DISTINCT o.order_id) AS completed_orders,\n       ROUND(SUM(oi.quantity * p.price * (1 - oi.discount)), 2) AS revenue\nFROM orders o\nJOIN order_items oi ON oi.order_id = o.order_id\nJOIN products p     ON p.product_id = oi.product_id\nWHERE o.status = 'completed'\nGROUP BY quarter\nORDER BY quarter;",
     hints: [
-      "CAST(strftime('%m', o.order_date) AS INTEGER) mengubah bulan menjadi angka 1..12.",
-      'Gunakan CASE WHEN untuk memetakan 1..3 ke Q1, 4..6 ke Q2, 7..9 ke Q3, dan sisanya Q4.'
+      "Di MySQL 8.0, fungsi QUARTER(date) mengembalikan kuartal (1..4) secara bawaan.",
+      "Gabungkan prefix 'Q' menggunakan CONCAT('Q', QUARTER(o.order_date)).",
+      'Filter order berstatus completed dan kelompokkan dengan GROUP BY quarter.'
     ],
-    explanation: 'Di SQLite tidak ada fungsi QUARTER() bawaan, sehingga transformasi bulan dengan CASE WHEN atau perhitungan integer ((bulan-1)/3 + 1) menjadi keterampilan penting.'
+    explanation: 'MySQL 8.0 menyediakan fungsi bawaan QUARTER(date) dan CONCAT() yang sangat ringkas untuk time bucketing tanpa memerlukan CASE WHEN yang panjang.'
   },
   {
     id: 'sql-24',
@@ -509,14 +511,14 @@ window.SQL_CHALLENGES = [
     difficulty: 'hard',
     tag: 'Window Function',
     concept: 'SUM() OVER (ORDER BY)',
-    prompt: 'Buat laporan revenue bulanan (order `completed`) beserta **akumulasi revenue (running total)** sejak awal tahun.\n\nTampilkan `month` (YYYY-MM), `revenue`, dan `running_total`, urutkan berdasarkan bulan.',
+    prompt: 'Buat laporan revenue bulanan (order `completed`) beserta **akumulasi revenue (running total)** sejak awal tahun.\n\nTampilkan `month` (format YYYY-MM dengan `DATE_FORMAT`), `revenue`, dan `running_total`, urutkan berdasarkan bulan.',
     columns: ['month', 'revenue', 'running_total'],
     ordered: true,
     starter: 'WITH monthly AS (\n  -- revenue per bulan\n)\nSELECT\n  month,\n  revenue,\n  -- running_total\nFROM monthly\n',
-    solution: "WITH monthly AS (\n  SELECT strftime('%Y-%m', o.order_date) AS month,\n         SUM(oi.quantity * p.price * (1 - oi.discount)) AS revenue\n  FROM orders o\n  JOIN order_items oi ON oi.order_id = o.order_id\n  JOIN products p     ON p.product_id = oi.product_id\n  WHERE o.status = 'completed'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(SUM(revenue) OVER (ORDER BY month), 2) AS running_total\nFROM monthly\nORDER BY month;",
+    solution: "WITH monthly AS (\n  SELECT DATE_FORMAT(o.order_date, '%Y-%m') AS month,\n         SUM(oi.quantity * p.price * (1 - oi.discount)) AS revenue\n  FROM orders o\n  JOIN order_items oi ON oi.order_id = o.order_id\n  JOIN products p     ON p.product_id = oi.product_id\n  WHERE o.status = 'completed'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(SUM(revenue) OVER (ORDER BY month), 2) AS running_total\nFROM monthly\nORDER BY month;",
     hints: [
       'Gunakan hasil soal Revenue Bulanan sebagai CTE.',
-      'SUM(revenue) OVER (ORDER BY month) menghasilkan akumulasi.'
+      'SUM(revenue) OVER (ORDER BY month) menghasilkan akumulasi berjalan.'
     ],
     explanation: 'Window function dengan ORDER BY secara default memakai frame RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW — itulah yang membuat running total.'
   },
@@ -529,11 +531,11 @@ window.SQL_CHALLENGES = [
     difficulty: 'hard',
     tag: 'Window Function',
     concept: 'LAG()',
-    prompt: 'Hitung **pertumbuhan revenue bulanan (MoM %)** untuk order `completed`.\n\n`growth_pct = (revenue_bulan_ini - revenue_bulan_lalu) * 100 / revenue_bulan_lalu`, dibulatkan 2 desimal. Bulan pertama bernilai NULL.\n\nTampilkan `month`, `revenue`, `growth_pct`, urutkan berdasarkan bulan.',
+    prompt: 'Hitung **pertumbuhan revenue bulanan (MoM %)** untuk order `completed`.\n\n`growth_pct = (revenue_bulan_ini - revenue_bulan_lalu) * 100 / revenue_bulan_lalu`, dibulatkan 2 desimal. Bulan pertama bernilai NULL.\n\nTampilkan `month` (format YYYY-MM), `revenue`, `growth_pct`, urutkan berdasarkan bulan.',
     columns: ['month', 'revenue', 'growth_pct'],
     ordered: true,
     starter: 'WITH monthly AS (\n  -- revenue per bulan\n)\nSELECT ...\n',
-    solution: "WITH monthly AS (\n  SELECT strftime('%Y-%m', o.order_date) AS month,\n         SUM(oi.quantity * p.price * (1 - oi.discount)) AS revenue\n  FROM orders o\n  JOIN order_items oi ON oi.order_id = o.order_id\n  JOIN products p     ON p.product_id = oi.product_id\n  WHERE o.status = 'completed'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND((revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0\n             / LAG(revenue) OVER (ORDER BY month), 2) AS growth_pct\nFROM monthly\nORDER BY month;",
+    solution: "WITH monthly AS (\n  SELECT DATE_FORMAT(o.order_date, '%Y-%m') AS month,\n         SUM(oi.quantity * p.price * (1 - oi.discount)) AS revenue\n  FROM orders o\n  JOIN order_items oi ON oi.order_id = o.order_id\n  JOIN products p     ON p.product_id = oi.product_id\n  WHERE o.status = 'completed'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND((revenue - LAG(revenue) OVER (ORDER BY month)) * 100.0\n             / LAG(revenue) OVER (ORDER BY month), 2) AS growth_pct\nFROM monthly\nORDER BY month;",
     hints: [
       'LAG(revenue) OVER (ORDER BY month) mengambil revenue bulan sebelumnya.',
       'Kalikan dengan 100.0 (bukan 100) agar tidak terjadi pembagian integer.'
@@ -589,16 +591,16 @@ window.SQL_CHALLENGES = [
     difficulty: 'hard',
     tag: 'Window Frame',
     concept: 'AVG() OVER (ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)',
-    prompt: 'Untuk memperhalus fluktuasi bulanan, hitung **rata-rata bergerak 3 bulan (`moving_avg_3m`)** atas revenue bulanan (order `completed`).\n\nFrame rata-rata bergerak mencakup bulan saat ini dan 2 bulan sebelumnya (`ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`). Bulatkan `revenue` dan `moving_avg_3m` ke 2 desimal.\n\nTampilkan `month`, `revenue`, dan `moving_avg_3m`, urutkan berdasarkan `month`.',
+    prompt: 'Untuk memperhalus fluktuasi bulanan, hitung **rata-rata bergerak 3 bulan (`moving_avg_3m`)** atas revenue bulanan (order `completed`).\n\nFrame rata-rata bergerak mencakup bulan saat ini dan 2 bulan sebelumnya (`ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`). Bulatkan `revenue` dan `moving_avg_3m` ke 2 desimal.\n\nTampilkan `month` (format YYYY-MM), `revenue`, dan `moving_avg_3m`, urutkan berdasarkan `month`.',
     columns: ['month', 'revenue', 'moving_avg_3m'],
     ordered: true,
     starter: 'WITH monthly AS (\n  -- revenue bulanan\n)\nSELECT\n  month,\n  ROUND(revenue, 2) AS revenue,\n  -- moving_avg_3m\nFROM monthly\n',
-    solution: "WITH monthly AS (\n  SELECT strftime('%Y-%m', o.order_date) AS month,\n         SUM(oi.quantity * p.price * (1 - oi.discount)) AS revenue\n  FROM orders o\n  JOIN order_items oi ON oi.order_id = o.order_id\n  JOIN products p     ON p.product_id = oi.product_id\n  WHERE o.status = 'completed'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(AVG(revenue) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS moving_avg_3m\nFROM monthly\nORDER BY month;",
+    solution: "WITH monthly AS (\n  SELECT DATE_FORMAT(o.order_date, '%Y-%m') AS month,\n         SUM(oi.quantity * p.price * (1 - oi.discount)) AS revenue\n  FROM orders o\n  JOIN order_items oi ON oi.order_id = o.order_id\n  JOIN products p     ON p.product_id = oi.product_id\n  WHERE o.status = 'completed'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(AVG(revenue) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 2) AS moving_avg_3m\nFROM monthly\nORDER BY month;",
     hints: [
       'Gunakan klausa frame eksplisit: AVG(revenue) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW).',
-      'Pada bulan ke-1 dan ke-2, SQLite otomatis merata-ratakan baris yang tersedia.'
+      'Pada bulan ke-1 dan ke-2, fungsi window MySQL otomatis merata-ratakan baris yang tersedia.'
     ],
-    explanation: 'Klausa ROWS BETWEEN sangat sering diujikan di wawancara Senior Data Analyst untuk menguji pemahaman perbedaan antara ROWS dan RANGE.'
+    explanation: 'Klausa ROWS BETWEEN sangat sering diujikan di wawancara Senior Data Analyst untuk menguji pemahaman perbedaan antara ROWS dan RANGE di MySQL 8.0.'
   },
   {
     id: 'sql-28',
@@ -608,17 +610,18 @@ window.SQL_CHALLENGES = [
     title: 'Rata-rata Jeda Hari Antar Order Pelanggan',
     difficulty: 'hard',
     tag: 'Retention Cohort',
-    concept: 'LAG(order_date) + JULIANDAY Diff',
-    prompt: 'Untuk pelanggan yang memiliki **minimal 3 order berstatus `completed`**, hitung rata-rata selisih hari antar order berurutan mereka (`avg_days_between_orders`, bulatkan 2 desimal).\n\n_Petunjuk SQLite:_ Gunakan `JULIANDAY(order_date) - JULIANDAY(prev_order_date)` untuk menghitung selisih hari.\n\nTampilkan `customer_id`, `name`, `completed_orders`, dan `avg_days_between_orders`, urutkan dari `avg_days_between_orders` terkecil (paling sering belanja).',
+    concept: 'LAG(order_date) + DATEDIFF',
+    prompt: 'Untuk pelanggan yang memiliki **minimal 3 order berstatus `completed`**, hitung rata-rata selisih hari antar order berurutan mereka (`avg_days_between_orders`, bulatkan 2 desimal).\n\n_Petunjuk MySQL:_ Gunakan fungsi `DATEDIFF(ot.order_date, ot.prev_date)` untuk menghitung selisih hari.\n\nTampilkan `customer_id`, `name`, `completed_orders`, dan `avg_days_between_orders`, urutkan dari `avg_days_between_orders` terkecil (paling sering belanja).',
     columns: ['customer_id', 'name', 'completed_orders', 'avg_days_between_orders'],
     ordered: true,
     starter: 'WITH ordered_tx AS (\n  SELECT o.customer_id, o.order_date,\n         LAG(o.order_date) OVER (PARTITION BY o.customer_id ORDER BY o.order_date, o.order_id) AS prev_date\n  FROM orders o\n  WHERE o.status = \'completed\'\n)\nSELECT ...\n',
-    solution: "WITH ordered_tx AS (\n  SELECT o.customer_id,\n         o.order_date,\n         LAG(o.order_date) OVER (PARTITION BY o.customer_id ORDER BY o.order_date, o.order_id) AS prev_date\n  FROM orders o\n  WHERE o.status = 'completed'\n)\nSELECT c.customer_id,\n       c.name,\n       COUNT(*) AS completed_orders,\n       ROUND(AVG(JULIANDAY(ot.order_date) - JULIANDAY(ot.prev_date)), 2) AS avg_days_between_orders\nFROM ordered_tx ot\nJOIN customers c ON c.customer_id = ot.customer_id\nGROUP BY c.customer_id, c.name\nHAVING COUNT(*) >= 3\nORDER BY avg_days_between_orders ASC;",
+    solution: "WITH ordered_tx AS (\n  SELECT o.customer_id,\n         o.order_date,\n         LAG(o.order_date) OVER (PARTITION BY o.customer_id ORDER BY o.order_date, o.order_id) AS prev_date\n  FROM orders o\n  WHERE o.status = 'completed'\n)\nSELECT c.customer_id,\n       c.name,\n       COUNT(*) AS completed_orders,\n       ROUND(AVG(DATEDIFF(ot.order_date, ot.prev_date)), 2) AS avg_days_between_orders\nFROM ordered_tx ot\nJOIN customers c ON c.customer_id = ot.customer_id\nGROUP BY c.customer_id, c.name\nHAVING COUNT(*) >= 3\nORDER BY avg_days_between_orders ASC;",
     hints: [
       'Gunakan LAG(o.order_date) OVER (PARTITION BY o.customer_id ORDER BY o.order_date, o.order_id) di CTE.',
+      'Gunakan DATEDIFF(ot.order_date, ot.prev_date) untuk menghitung selisih hari di MySQL.',
       'Fungsi AVG() secara otomatis mengabaikan baris order pertama yang prev_date-nya NULL.'
     ],
-    explanation: 'Inter-purchase time (rata-rata hari antar transaksi) adalah indikator prediktif utama untuk mendeteksi risiko churn pelanggan.'
+    explanation: 'Di MySQL 8.0, DATEDIFF(t1, t2) langsung mengembalikan selisih dalam hari integer tanpa memerlukan konversi epoch atau JULIANDAY.'
   },
   {
     id: 'sql-29',
