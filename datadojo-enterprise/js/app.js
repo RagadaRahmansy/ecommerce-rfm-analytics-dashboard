@@ -929,7 +929,7 @@ Correlation != Causation -> Controlled Experiment` },
 
     const problem = topbarProblem
       ? `<div class="tb-problem">
-          <span class="tb-problem-idx">BAB 0${topbarProblem.chapter} · Modul ${topbarProblem.index}/${topbarProblem.total}</span>
+          <span class="tb-problem-idx">BAB 0${topbarProblem.chapter} · ${topbarProblem.index}/${topbarProblem.total}</span>
           <span class="tb-sep">•</span>
           <strong class="tb-title">${esc(topbarProblem.title)}</strong>
           <span class="chip diff-${topbarProblem.difficulty}">${DIFF[topbarProblem.difficulty].label}</span>
@@ -945,25 +945,26 @@ Correlation != Causation -> Controlled Experiment` },
           <span class="brand-title">DataDojo</span>
           <span class="brand-badge ${pro ? 'brand-badge-pro' : ''}">ENTERPRISE</span>
         </a>
+        ${!topbarProblem ? `
         <div class="topbar-sep"></div>
         <nav class="crumbs" aria-label="Breadcrumb">
           <span class="crumb-parent">${esc(group)}</span>
           <span class="crumb-sep">/</span>
           <span class="crumb-current"><span class="crumb-dot">●</span> ${esc(page)}</span>
-        </nav>
+        </nav>` : ''}
       </div>
       ${problem}
       <div class="topbar-stats">
         <!-- Quick Commercial Plan Switcher Pill -->
         <div class="plan-switcher-pill" title="Simulasi Mode Lisensi (Klik untuk beralih Free vs Pro)">
-          <button type="button" class="psp-btn ${!pro ? 'active' : ''}" data-setplan="free">FREE (Bab 1)</button>
-          <button type="button" class="psp-btn ${pro ? 'active pro' : ''}" data-setplan="pro">${SVG.shield} PRO (Bab 1–4)</button>
+          <button type="button" class="psp-btn ${!pro ? 'active' : ''}" data-setplan="free">FREE · Bab 1</button>
+          <button type="button" class="psp-btn ${pro ? 'active pro' : ''}" data-setplan="pro">${SVG.shield} PRO · Bab 1–4</button>
         </div>
 
         <div class="metric metric-streak hide-sm" title="Konsistensi Harian">${SVG.flame}<strong>${streak || 1}d</strong></div>
         <div class="metric metric-xp" title="Total Experience Points">${SVG.zap}<strong>${s.xp || 185}</strong><small>XP</small></div>
-        <a href="#/profile" class="metric metric-level hide-sm" title="${esc(lvl.title)}">
-          <strong>${esc(lvl.code)}</strong><small>${esc(lvl.title)}</small>
+        <a href="#/profile" class="metric metric-level hide-md" title="${esc(lvl.title)}">
+          <strong>${esc(lvl.code)}</strong><small class="hide-xl">${esc(lvl.title)}</small>
         </a>
 
         <div class="tb-user-wrap">
@@ -1534,19 +1535,20 @@ Correlation != Causation -> Controlled Experiment` },
         </section>
 
         <section class="ide-work">
-          <div class="ide-toolbar">
-            <div class="ide-toolbar-left">
-              <span class="lang-pill"><span class="lang-dot">●</span> ${esc(t.lang)}</span>
-              <span class="kbd-shortcut hide-sm">Run: <kbd>Ctrl</kbd>+<kbd>Enter</kbd></span>
-              <span class="kbd-shortcut hide-sm">Verify: <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></span>
+          <div class="ide-editor-card">
+            <div class="ide-toolbar">
+              <div class="ide-toolbar-left">
+                <span class="lang-pill"><span class="lang-dot">●</span> ${esc(t.lang)}</span>
+                <span class="kbd-shortcut hide-xl" title="Tekan Ctrl+Enter untuk Run, atau Ctrl+Shift+Enter untuk Verify"><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Run</span>
+              </div>
+              <div class="ide-toolbar-right">
+                <button class="btn btn-secondary btn-sm" id="resetBtn" title="Kembalikan starter code">Reset</button>
+                <button class="btn btn-secondary btn-sm" id="runBtn" title="Jalankan kode (Ctrl + Enter)">${SVG.play} Run Code</button>
+                <button class="btn btn-focus btn-sm" id="submitBtn" title="Verifikasi jawaban (Ctrl + Shift + Enter)">${SVG.check} Submit &amp; Verify</button>
+              </div>
             </div>
-            <div class="ide-toolbar-right">
-              <button class="btn btn-secondary btn-sm" id="resetBtn" title="Kembalikan starter code">Reset</button>
-              <button class="btn btn-secondary btn-sm" id="runBtn">${SVG.play} Run Code</button>
-              <button class="btn btn-primary btn-sm" id="submitBtn">${SVG.check} Submit &amp; Verify</button>
-            </div>
+            <div class="ide-editor"><textarea id="code" spellcheck="false"></textarea></div>
           </div>
-          <div class="ide-editor"><textarea id="code" spellcheck="false"></textarea></div>
           <div class="ide-output">
             <div class="output-tabs" id="outTabs">
               <button class="otab active" data-out="console">Output Console</button>
