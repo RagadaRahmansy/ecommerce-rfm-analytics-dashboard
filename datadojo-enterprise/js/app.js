@@ -199,7 +199,7 @@ Correlation != Causation -> Controlled Experiment` },
       color: '#D97706',
       name: 'SQL Principal Architect',
       subtitle: 'Full 4-Chapter SQL Mastery',
-      desc: 'Selesaikan seluruh 15 studi kasus SQL dari Bab 1 hingga Bab 4',
+      desc: 'Selesaikan seluruh 30 studi kasus SQL dari Bab 1 hingga Bab 4',
       lore: 'Menguasai seluruh spektrum SQL: dari seleksi skalar, anti-join, subquery berkorelasi, hingga fungsi window analitik (DENSE_RANK, PARTITION BY, LAG).',
       xpReward: 150,
       progress: () => ({ current: trackDone('sql'), max: TRACKS.sql.items.length, unit: 'modul' }),
@@ -214,7 +214,7 @@ Correlation != Causation -> Controlled Experiment` },
       color: '#059669',
       name: 'Python Data Engineer',
       subtitle: 'Vectorized Pipeline Specialist',
-      desc: 'Selesaikan seluruh 12 studi kasus Python & pandas (Bab 1–4)',
+      desc: 'Selesaikan seluruh 26 studi kasus Python & pandas (Bab 1–4)',
       lore: 'Mampu mentransformasikan dataset transaksi mentah menjadi matriks analitik menggunakan vektorisasi pandas tanpa bottleneck iterasi manual.',
       xpReward: 150,
       progress: () => ({ current: trackDone('python'), max: TRACKS.python.items.length, unit: 'modul' }),
@@ -515,10 +515,10 @@ Correlation != Causation -> Controlled Experiment` },
             </div>
             <ul class="pwm-list">
               <li class="included pro-check">${SVG.check} <span><strong>Akses Penuh Bab 1, Bab 2, Bab 3 &amp; Bab 4</strong> (Semua Track)</span></li>
-              <li class="included pro-check">${SVG.check} <span><strong>27 Modul Live Coding</strong> SQL &amp; Python + Auto-Grader</span></li>
+              <li class="included pro-check">${SVG.check} <span><strong>56 Modul Live Coding</strong> (30 SQL &amp; 26 Python) + Auto-Grader</span></li>
+              <li class="included pro-check">${SVG.check} <span><strong>40 Skenario Interview Playbook</strong> &amp; 65 Soal Asesmen BI/DAX</span></li>
               <li class="included pro-check">${SVG.check} <span><strong>Official Reference Solutions</strong> &amp; Query Plan Analysis</span></li>
-              <li class="included pro-check">${SVG.check} <span><strong>Full Timed Assessment Simulator</strong> (Standar Rekrutmen)</span></li>
-              <li class="included pro-check">${SVG.check} <span><strong>Sertifikat Kompetensi Terverifikasi</strong> &amp; Kredensial</span></li>
+              <li class="included pro-check">${SVG.check} <span><strong>Full Timed Assessment Simulator</strong> &amp; Kredensial Terverifikasi</span></li>
             </ul>
           </div>
         </div>
@@ -1065,8 +1065,8 @@ Correlation != Causation -> Controlled Experiment` },
           <div class="esb-text">
             <strong>${pro ? 'Akses Penuh Kurikulum Enterprise (Bab 1 – Bab 4) Aktif' : 'Akses Gratis: Bab 1 (Materi Dasar) Terbuka · Bab 2–4 Membutuhkan Pro Membership'}</strong>
             <span>${pro
-              ? `Lisensi aktif (${esc(s.licenseKey || 'PRO-2026')}). Anda memiliki akses penuh ke seluruh 27 modul coding, solusi resmi, dan simulator.`
-              : 'Pelajari seluruh fondasi SQL, Python, Power BI, dan Interview di Bab 1 secara gratis. Upgrade ke Pro untuk membuka Bab 2, 3, dan 4.'}</span>
+              ? `Lisensi aktif (${esc(s.licenseKey || 'PRO-2026')}). Anda memiliki akses penuh ke seluruh 56 modul coding (30 SQL + 26 Python), 65 soal asesmen, dan 40 skenario interview.`
+              : 'Pelajari fondasi SQL, Python, Power BI, dan Interview di Bab 1 secara gratis. Upgrade ke Pro untuk membuka 49 modul coding lanjutan, 50 soal asesmen Pro, dan 35 skenario interview di Bab 2–4.'}</span>
           </div>
         </div>
         <div class="esb-right">
@@ -2080,7 +2080,7 @@ Correlation != Causation -> Controlled Experiment` },
               ${esc(ch.code)}: ${esc(ch.title.split('&')[0].trim())} ${ch.tier === 'free' ? '(Gratis)' : Store.isPro() ? '(Pro)' : '🔒'}
             </button>
           `).join('')}
-          <button class="fchip" data-ivchap="all">Semua Bab (20)</button>
+          <button class="fchip" data-ivchap="all">Semua Bab (${window.INTERVIEW_CARDS.length})</button>
         </div>
       </div>
 
@@ -2445,7 +2445,7 @@ Correlation != Causation -> Controlled Experiment` },
                   <li class="inc">${SVG.check} <span><strong>Bab 1 Power BI &amp; Quiz</strong>: Dasar Star Schema &amp; DAX (15 Soal Dasar)</span></li>
                   <li class="inc">${SVG.check} <span><strong>Bab 1 Interview Playbook</strong>: 5 Skenario Fondasi Peran &amp; EDA</span></li>
                   <li class="inc">${SVG.check} <span>Akses SQLite 3.45 &amp; Pyodide In-Browser Runtime</span></li>
-                  <li class="exc"><span>✕</span> <span>Bab 2, Bab 3 &amp; Bab 4 (Materi Intermediate &amp; Advanced)</span></li>
+                  <li class="exc"><span>✕</span> <span>Bab 2, Bab 3 &amp; Bab 4 (49 Modul Coding Pro, 50 Quiz &amp; 35 Interview)</span></li>
                   <li class="exc"><span>✕</span> <span>Kunci Jawaban &amp; Solusi Referensi Resmi</span></li>
                   <li class="exc"><span>✕</span> <span>Full Timed Assessment Simulator (10 Soal Lintas Bab)</span></li>
                 </ul>
@@ -2472,10 +2472,10 @@ Correlation != Causation -> Controlled Experiment` },
               <div class="ptc-features">
                 <span class="label-caps">SEMUA FITUR FREE, DITAMBAH:</span>
                 <ul>
-                  <li class="inc pro">${SVG.check} <span><strong>Akses Penuh Bab 2, Bab 3 &amp; Bab 4</strong> di Seluruh Track</span></li>
-                  <li class="inc pro">${SVG.check} <span><strong>SQL Advanced</strong>: Multi-Table Joins, Anti-Join, CASE WHEN, CTE, DENSE_RANK &amp; LAG() MoM</span></li>
-                  <li class="inc pro">${SVG.check} <span><strong>Python Advanced</strong>: Imputasi Median, Deduplikasi, Time-Series pct_change &amp; Pivot Table</span></li>
-                  <li class="inc pro">${SVG.check} <span><strong>Power BI Advanced</strong>: Context Transition, Time Intelligence, RLS &amp; Optimasi VertiPaq</span></li>
+                  <li class="inc pro">${SVG.check} <span><strong>Akses Penuh Bab 2, Bab 3 &amp; Bab 4</strong> (Total 161 Item Kurikulum)</span></li>
+                  <li class="inc pro">${SVG.check} <span><strong>30 Modul SQL (27 Pro)</strong>: Multi-Join, CTE, CASE WHEN, Window &amp; Pareto</span></li>
+                  <li class="inc pro">${SVG.check} <span><strong>26 Modul Python (22 Pro)</strong>: Sanitasi, IQR Outlier, Rolling &amp; Pivot Matrix</span></li>
+                  <li class="inc pro">${SVG.check} <span><strong>65 Soal Asesmen &amp; 40 Skenario Interview</strong> (A/B Testing, STAR &amp; Executive Case)</span></li>
                   <li class="inc pro">${SVG.check} <span><strong>Official Reference Solutions</strong> &amp; EXPLAIN QUERY PLAN Diagnostics</span></li>
                   <li class="inc pro">${SVG.check} <span><strong>Full Timed Assessment Simulator</strong> &amp; Kredensial Kompetensi</span></li>
                 </ul>
@@ -2541,22 +2541,22 @@ Correlation != Causation -> Controlled Experiment` },
                 </tr>
                 <tr>
                   <td><strong>BAB 02 · Materi Menengah</strong></td>
-                  <td>Multi-Table INNER/LEFT Anti-Join, HAVING, Data Cleaning (fillna/drop_duplicates), DAX Iterators</td>
-                  <td>5 SQL · 3 Python · 13 Quiz · 3 Playbook</td>
+                  <td>Multi-Table Joins, Gross Profit, Payroll, Pipeline Sanitasi, IQR Outlier, Z-Score &amp; DAX Iterators</td>
+                  <td>9 SQL · 7 Python · 18 Quiz · 12 Playbook</td>
                   <td><span class="chip">Terkunci</span></td>
                   <td><span class="chip chip-focus">TERBUKA PENUH</span></td>
                 </tr>
                 <tr>
                   <td><strong>BAB 03 · Materi Lanjutan</strong></td>
-                  <td>CASE WHEN Segmentation, Self-Join, N-th Salary, Time-Series (.dt &amp; pct_change), A/B Testing</td>
-                  <td>4 SQL · 3 Python · 10 Quiz · 5 Playbook</td>
+                  <td>CASE WHEN, Self-Join, Omnichannel, Quarterly Trend, Rolling Window, np.select &amp; A/B Testing</td>
+                  <td>9 SQL · 8 Python · 16 Quiz · 11 Playbook</td>
                   <td><span class="chip">Terkunci</span></td>
                   <td><span class="chip chip-focus">TERBUKA PENUH</span></td>
                 </tr>
                 <tr>
                   <td><strong>BAB 04 · Materi Enterprise</strong></td>
-                  <td>CTE, Window Functions (DENSE_RANK, SUM OVER, LAG MoM), Matrix Pivot Table, RLS &amp; Executive Cases</td>
-                  <td>3 SQL · 2 Python · 7 Quiz · 7 Playbook</td>
+                  <td>Window Functions (DENSE_RANK, LAG, Moving Avg, Pareto), Matrix Pivot, Melt, Two-Sum &amp; Executive Cases</td>
+                  <td>9 SQL · 7 Python · 16 Quiz · 12 Playbook</td>
                   <td><span class="chip">Terkunci</span></td>
                   <td><span class="chip chip-focus">TERBUKA PENUH</span></td>
                 </tr>
