@@ -103,6 +103,82 @@ window.Store = (() => {
     persist();
   }
 
+  const ACCOUNT_PREFIX = 'datadojo_acc_';
+
+  function saveCurrentAccountProfile() {
+    if (!state.name) return;
+    try {
+      localStorage.setItem(ACCOUNT_PREFIX + state.name.toLowerCase(), JSON.stringify(state));
+    } catch (err) {
+      console.error('Gagal menyimpan profil akun', err);
+    }
+  }
+
+  function getSavedAccounts() {
+    const list = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(ACCOUNT_PREFIX)) {
+          const raw = localStorage.getItem(k);
+          if (raw) {
+            const data = JSON.parse(raw);
+            const lvl = getLevel(data.xp || 0);
+            list.push({
+              name: data.name,
+              xp: data.xp || 0,
+              level: lvl.number,
+              levelTitle: lvl.title
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Gagal membaca daftar akun', err);
+    }
+    return list;
+  }
+
+  function logout({ clearData = false } = {}) {
+    if (clearData) {
+      try {
+        if (state.name) {
+          localStorage.removeItem(ACCOUNT_PREFIX + state.name.toLowerCase());
+        }
+        localStorage.removeItem(STORAGE_KEY);
+      } catch (err) {
+        console.error(err);
+      }
+      state = createDefaultState();
+      state.name = '';
+    } else {
+      saveCurrentAccountProfile();
+      state.name = '';
+    }
+    persist();
+  }
+
+  function switchAccount(name) {
+    if (!name) return;
+    saveCurrentAccountProfile();
+    try {
+      const saved = localStorage.getItem(ACCOUNT_PREFIX + name.toLowerCase());
+      if (saved) {
+        state = JSON.parse(saved);
+      } else {
+        const def = createDefaultState();
+        def.name = name;
+        state = def;
+      }
+    } catch (err) {
+      const def = createDefaultState();
+      def.name = name;
+      state = def;
+    }
+    saveCurrentAccountProfile();
+    persist();
+  }
+
   function reset() {
     state = createDefaultState();
     persist();
@@ -125,6 +201,10 @@ window.Store = (() => {
     addXp,
     update,
     reset,
+    logout,
+    switchAccount,
+    getSavedAccounts,
+    saveCurrentAccountProfile,
     subscribe: (fn) => { listeners.add(fn); return () => listeners.delete(fn); }
   };
 })();

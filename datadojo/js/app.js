@@ -684,11 +684,51 @@ Korelasi ≠ Kausalitas → butuh eksperimen` },
         <a href="#/profile" class="metric metric-level" title="${esc(lvl.title)}">
           <span>${lvl.emoji}</span><strong>Lv.${lvl.number}</strong><small class="hide-sm">${esc(lvl.title)}</small>
         </a>
-        <a href="#/profile" class="tb-user" title="Profil">
-          <span class="tb-avatar">${initial}</span>
-          <span class="tb-user-meta hide-sm"><strong>${esc(s.name || 'Ragada')}</strong><small>online</small></span>
-        </a>
+        <div class="tb-user-wrap">
+          <button class="tb-user" id="tbUserBtn" title="Menu Akun & Profil" aria-expanded="false">
+            <span class="tb-avatar">${initial}</span>
+            <span class="tb-user-meta hide-sm"><strong>${esc(s.name || 'Ragada')}</strong><small>online ▾</small></span>
+          </button>
+          <div class="tb-user-dropdown" id="tbUserDropdown">
+            <div class="tud-header">
+              <span class="tud-avatar">${initial}</span>
+              <div class="tud-info">
+                <strong>${esc(s.name || 'Ragada')}</strong>
+                <small>${esc(lvl.title)} · ${s.xp || 185} XP</small>
+              </div>
+            </div>
+            <div class="tud-divider"></div>
+            <a href="#/profile" class="tud-item"><span class="tud-icon">👤</span> Profil & Badges</a>
+            <button class="tud-item" id="tbBtnSwitch"><span class="tud-icon">🔄</span> Ganti Akun</button>
+            <div class="tud-divider"></div>
+            <button class="tud-item danger" id="tbBtnLogout"><span class="tud-icon">🚪</span> Keluar (Log Out)</button>
+          </div>
+        </div>
       </div>`;
+
+    const userBtn = $('#tbUserBtn', topbar);
+    const dropdown = $('#tbUserDropdown', topbar);
+    if (userBtn && dropdown) {
+      userBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.toggle('show');
+        userBtn.setAttribute('aria-expanded', String(isOpen));
+      });
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.tb-user-wrap')) {
+          dropdown.classList.remove('show');
+          userBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+      $('#tbBtnLogout', dropdown)?.addEventListener('click', () => {
+        dropdown.classList.remove('show');
+        openLogoutModal();
+      });
+      $('#tbBtnSwitch', dropdown)?.addEventListener('click', () => {
+        dropdown.classList.remove('show');
+        openSwitchAccountModal();
+      });
+    }
   }
 
   // ===================================================================
@@ -1750,8 +1790,19 @@ Korelasi ≠ Kausalitas → butuh eksperimen` },
       <section class="profile-head card">
         <div class="avatar xl">${lvl.emoji}</div>
         <div class="profile-info">
-          <label class="muted small" for="nameInput">Nama tampilan</label>
-          <div class="name-row"><input id="nameInput" maxlength="24" value="${esc(s.name)}" placeholder="Nama kamu"><button class="btn btn-sm btn-primary" id="saveName">Simpan</button></div>
+          <div class="profile-title-bar">
+            <div>
+              <label class="muted small" for="nameInput">Nama tampilan</label>
+              <div class="name-row">
+                <input id="nameInput" maxlength="24" value="${esc(s.name)}" placeholder="Nama kamu">
+                <button class="btn btn-sm btn-primary" id="saveName">Simpan</button>
+              </div>
+            </div>
+            <div class="profile-quick-actions">
+              <button class="btn btn-sm btn-secondary" id="btnProfileSwitch">🔄 Ganti Akun</button>
+              <button class="btn btn-sm btn-danger" id="btnProfileLogout">🚪 Log Out</button>
+            </div>
+          </div>
           <p><strong>Level ${lvl.number} · ${esc(lvl.title)}</strong> — ${s.xp} XP</p>
           <div class="bar big"><i style="width:${lvl.progress * 100}%"></i></div>
           <small class="muted">${lvl.next ? `${lvl.next.min - s.xp} XP lagi menuju ${esc(lvl.next.title)} ${lvl.next.emoji}` : 'Level maksimum!'}</small>
@@ -1847,8 +1898,14 @@ Korelasi ≠ Kausalitas → butuh eksperimen` },
       </section>
 
       <section class="danger-zone card">
-        <div><strong>Reset progres</strong><p class="muted small">Menghapus semua XP, badge, dan riwayat. Tidak bisa dibatalkan.</p></div>
-        <button class="btn btn-sm btn-danger" id="resetAll">Reset</button>
+        <div>
+          <strong>Sesi & Akun</strong>
+          <p class="muted small">Keluar dari akun di perangkat ini atau hapus seluruh data progres.</p>
+        </div>
+        <div class="danger-zone-actions">
+          <button class="btn btn-sm btn-secondary" id="btnLogoutBottom">🚪 Log Out</button>
+          <button class="btn btn-sm btn-danger" id="resetAll">Hapus Semua</button>
+        </div>
       </section>`;
 
     const attachBadgeEvents = () => {
@@ -1881,10 +1938,15 @@ Korelasi ≠ Kausalitas → butuh eksperimen` },
       });
     }
 
+    $('#btnProfileSwitch')?.addEventListener('click', openSwitchAccountModal);
+    $('#btnProfileLogout')?.addEventListener('click', openLogoutModal);
+    $('#btnLogoutBottom')?.addEventListener('click', openLogoutModal);
+
     $('#saveName').addEventListener('click', () => {
       const name = $('#nameInput').value.trim().slice(0, 24);
       if (!name) { toast('Nama tidak boleh kosong', 'warn'); return; }
       Store.update((st) => { st.name = name; });
+      Store.saveCurrentAccountProfile();
       toast('Nama disimpan ✨', 'info');
     });
 
@@ -1903,18 +1965,168 @@ Korelasi ≠ Kausalitas → butuh eksperimen` },
   }
 
   // ===================================================================
+  // LOGOUT & ACCOUNT SWITCHER MODALS
+  // ===================================================================
+  function openLogoutModal() {
+    const s = S();
+    const name = s.name || 'Pengguna';
+    const lvl = Store.getLevel();
+
+    const close = modal(`
+      <div class="logout-modal-box">
+        <div class="lm-icon">🚪</div>
+        <h2>Keluar dari Akun?</h2>
+        <p class="muted">Kamu saat ini login sebagai <strong>${esc(name)}</strong> (Level ${lvl.number} · ${s.xp} XP).</p>
+        
+        <div class="logout-action-cards">
+          <div class="btn-logout-card" id="btnConfirmLogoutKeep" role="button" tabindex="0">
+            <span class="blc-icon">💾</span>
+            <div class="blc-text">
+              <strong>Simpan Progres & Log Out</strong>
+              <small>Progres ${esc(name)} tetap aman tersimpan di browser ini. Kamu bisa masuk kembali kapan saja.</small>
+            </div>
+          </div>
+
+          <div class="btn-logout-card danger" id="btnConfirmLogoutClear" role="button" tabindex="0">
+            <span class="blc-icon">🗑️</span>
+            <div class="blc-text">
+              <strong>Hapus Data & Log Out</strong>
+              <small>Hapus riwayat, XP, dan jawaban akun ${esc(name)} dari perangkat ini.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-actions center">
+          <button class="btn btn-ghost" data-close>Batal</button>
+        </div>
+      </div>
+    `);
+
+    $('#btnConfirmLogoutKeep').addEventListener('click', () => {
+      close();
+      Store.logout({ clearData: false });
+      toast(`Sampai jumpa, ${name}! Kamu telah berhasil logout 👋`, 'info', 4000);
+      askName();
+    });
+
+    $('#btnConfirmLogoutClear').addEventListener('click', () => {
+      close();
+      Store.logout({ clearData: true });
+      toast('Data akun dihapus & kamu telah logout 👋', 'warn', 4000);
+      askName();
+    });
+  }
+
+  function openSwitchAccountModal() {
+    const saved = Store.getSavedAccounts();
+    const currentName = S().name || '';
+
+    const close = modal(`
+      <div class="switch-modal-box">
+        <div class="lm-icon">🔄</div>
+        <h2>Ganti Akun DataDojo</h2>
+        <p class="muted">Pilih profil yang tersimpan di perangkat ini atau masuk dengan nama baru.</p>
+
+        ${saved.length ? `
+          <div class="saved-accounts-list">
+            ${saved.map(acc => `
+              <div class="saved-acc-card ${acc.name.toLowerCase() === currentName.toLowerCase() ? 'active' : ''}" data-switch-name="${esc(acc.name)}" role="button" tabindex="0">
+                <span class="sab-avatar">${esc(acc.name.charAt(0).toUpperCase())}</span>
+                <div class="sab-info">
+                  <strong>${esc(acc.name)}${acc.name.toLowerCase() === currentName.toLowerCase() ? ' <span class="chip chip-xp">Aktif</span>' : ''}</strong>
+                  <small class="muted">Lv.${acc.level} ${esc(acc.levelTitle)} · ${acc.xp} XP</small>
+                </div>
+                <span class="sab-action">${acc.name.toLowerCase() === currentName.toLowerCase() ? 'Sedang Aktif' : 'Beralih →'}</span>
+              </div>
+            `).join('')}
+          </div>
+        ` : '<p class="muted small" style="margin: 12px 0;">Belum ada akun lain yang tersimpan di browser ini.</p>'}
+
+        <div class="switch-new-form">
+          <label class="muted small" for="switchNewName">Atau masuk dengan nama baru:</label>
+          <div class="name-row">
+            <input id="switchNewName" maxlength="24" placeholder="Nama akun baru...">
+            <button class="btn btn-primary" id="btnGoSwitchNew">Masuk 🚀</button>
+          </div>
+        </div>
+
+        <div class="hero-actions center">
+          <button class="btn btn-ghost" data-close>Batal</button>
+        </div>
+      </div>
+    `);
+
+    $$('[data-switch-name]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const name = el.dataset.switchName;
+        if (name.toLowerCase() === currentName.toLowerCase()) { close(); return; }
+        Store.switchAccount(name);
+        close();
+        toast(`Selamat datang kembali, ${name}! ✨`, 'info', 4000);
+        location.hash = '#/';
+      });
+    });
+
+    const goNew = () => {
+      const name = $('#switchNewName').value.trim().slice(0, 24);
+      if (!name) { toast('Nama akun tidak boleh kosong', 'warn'); return; }
+      Store.switchAccount(name);
+      close();
+      toast(`Akun baru dibuat! Halo ${name} 🥋`, 'info', 4000);
+      location.hash = '#/';
+    };
+    $('#btnGoSwitchNew').addEventListener('click', goNew);
+    $('#switchNewName').addEventListener('keydown', (e) => { if (e.key === 'Enter') goNew(); });
+  }
+
+  // ===================================================================
   // ONBOARDING & INIT
   // ===================================================================
   function askName() {
+    const saved = Store.getSavedAccounts();
     const close = modal(`<div class="onboard">
       <div class="levelup-emoji">🥋</div>
-      <h2>Selamat datang di <span class="grad">DataDojo</span>!</h2>
-      <p class="muted">Tempat latihan interview Data Analyst: SQL, Python, Power BI & behavioral. Siapa nama kamu?</p>
-      <input id="onboardName" maxlength="24" placeholder="Nama panggilan" autofocus>
-      <button class="btn btn-primary btn-lg" id="onboardGo">Mulai Belajar 🚀</button></div>`);
+      <h2>Masuk ke <span class="grad">DataDojo</span></h2>
+      <p class="muted">Platform latihan live coding SQL & Python, kuis Power BI, dan simulasi interview.</p>
+      
+      ${saved.length ? `
+        <div class="onboard-saved-title">Pilih profil tersimpan di perangkat ini:</div>
+        <div class="saved-accounts-list">
+          ${saved.map(acc => `
+            <div class="saved-acc-card" data-login-acc="${esc(acc.name)}" role="button" tabindex="0">
+              <span class="sab-avatar">${esc(acc.name.charAt(0).toUpperCase())}</span>
+              <div class="sab-info">
+                <strong>${esc(acc.name)}</strong>
+                <small class="muted">Lv.${acc.level} ${esc(acc.levelTitle)} · ${acc.xp} XP</small>
+              </div>
+              <span class="sab-action">Masuk →</span>
+            </div>
+          `).join('')}
+        </div>
+        <div class="auth-divider"><span>atau masuk dengan nama baru</span></div>
+      ` : ''}
+
+      <div class="onboard-input-box">
+        <label class="muted small" for="onboardName">Nama panggilan kamu:</label>
+        <div class="name-row">
+          <input id="onboardName" maxlength="24" placeholder="Ketik nama kamu..." autofocus>
+          <button class="btn btn-primary" id="onboardGo">Mulai Belajar 🚀</button>
+        </div>
+      </div>
+    </div>`, { onClose: () => { if (!S().name) Store.update((st) => { st.name = 'Analyst'; }); } });
+
+    $$('[data-login-acc]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const name = el.dataset.loginAcc;
+        Store.switchAccount(name);
+        close();
+        toast(`Halo kembali, ${name}! 🔥`, 'info', 4000);
+      });
+    });
+
     const go = () => {
       const name = $('#onboardName').value.trim().slice(0, 24) || 'Analyst';
-      Store.update((st) => { st.name = name; });
+      Store.switchAccount(name);
       close();
       toast(`Halo ${name}! Selesaikan challenge pertamamu untuk badge 🎯`, 'info', 4000);
     };
@@ -1926,6 +2138,7 @@ Korelasi ≠ Kausalitas → butuh eksperimen` },
   function init() {
     Store.subscribe(() => { renderTopbar(); checkBadges(); });
     checkBadges(true);
+    Store.saveCurrentAccountProfile();
     renderTopbar();
     window.addEventListener('hashchange', router);
     router();
