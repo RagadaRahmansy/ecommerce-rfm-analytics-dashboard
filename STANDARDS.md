@@ -247,6 +247,9 @@ Sebagai engineer modern yang mahir memanfaatkan Autonomous Coding Agents (Google
 2. **Verifikasi Kritis (Human-in-the-Loop):** Jangan pernah menerima kode yang digenerate oleh AI tanpa membaca, memahami, dan memverifikasi alur logikanya secara manual.
 3. **Audit Dependensi yang Dihasilkan AI:** Pastikan AI tidak menyarankan pustaka fiktif (*hallucinated packages*) atau dependensi yang telah usang/memiliki celah keamanan.
 4. **AI sebagai Simulator Edge-Case:** Gunakan kemampuan agent untuk membuat skenario uji ekstrim (misal: simulasi transaksi jutaan baris data, pengujian input karakter tak lazim, atau verifikasi *race condition*).
+5. **Protokol Pra-Eksekusi Wajib (Pre-Execution Explanation / PRD):** Sebelum mengeksekusi kode apa pun atau meminta persetujuan untuk eksekusi, Coding Agent **wajib** menjelaskan rencana teknisnya secara transparan:
+   - Menggunakan **teks biasa** untuk perubahan ringkas (tujuan, komponen terdampak, alur logika, dan action plan).
+   - Menggunakan **dokumen PRD / Spesifikasi Teknis** untuk fitur arsitektur besar (alur bisnis, skema data, mitigasi keamanan, penanganan edge cases, dan tahapan rilis).
 
 ---
 

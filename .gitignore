@@ -130,4 +130,13 @@ cv_ragada_*.html
 !datadojo/**
 !datadojo-enterprise/**
 
+# 11. Ekatunggal Group B2B Analytics Project
+*.duckdb
+*.duckdb.wal
+aura_d2c_analytics/frontend/dist/
+!aura_d2c_analytics/src/sql/**
+!aura_d2c_analytics/data/raw/*.csv
+!aura_d2c_analytics/reports/*.pdf
+!aura_d2c_analytics/frontend/public/*.pdf
+
 
