@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KreditLens — Dossier Risiko Kredit & Buku Besar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"> <!-- taste-skill-ignore -->
+  <link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+
+  <!-- Mobile Top Navigation Bar -->
+  <header class="mobile-bar">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="brand-mark">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="12" height="12" />
+          <path d="M2 8h12M8 2v12" />
+        </svg>
+      </div>
+      <span class="brand-name">KreditLens</span>
+    </div>
+    <button class="btn" id="btn-mobile-menu" type="button" aria-label="Buka navigasi">Menu</button>
+  </header>
+
+  <div class="app">
+    <!-- Left Sidebar (Open Plane Shell) -->
+    <aside class="sidebar" id="app-sidebar" aria-label="Navigasi utama">
+      <div class="brand-row">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="12" height="12" />
+            <path d="M2 8h12M8 2v12" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-name">KreditLens</div>
+        </div>
+      </div>
+
+      <div class="workspace-scope">
+        <span>Komite Risiko · Q3 2026</span>
+        <span>SLIK OJK</span>
+      </div>
+
+      <div class="group-label">Dossier Portofolio</div>
+      <button type="button" class="nav-item" aria-current="page" data-view="all">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>
+          <span>Ringkasan &amp; Glassbox</span>
+        </span>
+      </button>
+      <button type="button" class="nav-item" data-view="vintage">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M2 13l4-5 3 2 5-7"/><path d="M2 14h12"/></svg>
+          <span>Kurva Vintage MOB</span>
+        </span>
+        <span class="nav-badge">1 Atensi</span>
+      </button>
+      <button type="button" class="nav-item" data-view="rollrate">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M3 4h10M3 8h10M3 12h10"/></svg>
+          <span>Matriks Roll-Rate</span>
+        </span>
+      </button>
+      <button type="button" class="nav-item" data-view="ledger">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><path d="M3 8l3 3 7-7"/></svg>
+          <span>Audit Buku Besar</span>
+        </span>
+      </button>
+
+      <div class="group-label">Kendali Underwriting</div>
+      <button type="button" class="nav-item" id="nav-cutoff-sim">
+        <span class="nav-item-left">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2"/></svg>
+          <span>Cut-off Skor (625)</span>
+        </span>
+      </button>
+
+      <div class="bottom">
+        <div class="audit-box">
+          <div class="audit-box-title">
+            <span>Buku Besar Append-Only</span>
+            <span class="pill pos">Δ Rp 0.00</span>
+          </div>
+          <div class="audit-box-sub num">1,482,904 baris jurnal terverifikasi terhadap snapshot.</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Fluid Canvas -->
+    <main class="canvas">
+      <!-- Title Row: Screen Question + One Finding + Primary Action -->
+      <div class="title-row">
+        <div>
+          <h1>Dossier Risiko Kredit &amp; Buku Besar</h1>
+          <p class="sub">
+            Kohort Jun 2026 melewati batas gagal bayar MOB-3 di angka 2.85% (+163 bps vs acuan Jan 2026) akibat penurunan cut-off skor kredit ke 580; seluruh baki debet Rp 148.42 M terekonsiliasi dengan selisih Rp 0.00 pada buku besar.
+          </p>
+        </div>
+        <div class="title-actions">
+          <button type="button" class="btn" id="btn-copy-sql">Salin Query SQL dbt</button>
+          <button type="button" class="btn primary" id="btn-tighten-policy">Kembalikan Cut-off Skor ke 640</button>
+        </div>
+      </div>
+
+      <!-- Filter & Scope Row -->
+      <div class="filters">
+        <label for="select-cohort-filter" class="stamp">Cakupan Kohort</label>
+        <select id="select-cohort-filter" class="select-ctrl" aria-label="Filter kohort vintage">
+          <option value="ALL">Semua Kohort Pencairan (Q1–Q3 2026)</option>
+          <option value="BREACH">Hanya Kohort Lewat Batas (Jun 2026 · Skor 580)</option>
+          <option value="PRIME">Kohort Skor Prime (&gt;= 625 Skor)</option>
+        </select>
+
+        <div class="segmented" role="group" aria-label="Mode Inspektur">
+          <button type="button" aria-pressed="true" data-mode="sql">Query SQL dbt</button>
+          <button type="button" aria-pressed="false" data-mode="lineage">Lineage &amp; Rumus</button>
+        </div>
+
+        <div class="spacer"></div>
+        <span class="stamp num" id="freshness-stamp">Snapshot: 15 Okt 2026 · Rekonsiliasi vs 30 Sep 2026</span>
+      </div>
+
+      <!-- Divided KPI Strip (Acts as Interactive Glassbox Selector Tabs) -->
+      <section class="kpis" role="tablist" aria-label="Metrik Utama Risiko">
+        <button type="button" class="kpi" role="tab" aria-selected="true" data-metric="aum">
+          <div class="kpi-top">
+            <span class="kpi-label">Baki Debet Aktif (AUM)</span>
+            <span class="kpi-tag">Rekonsiliasi Buku Besar</span>
+          </div>
+          <div class="kpi-value num">Rp 148.42 <small>M</small></div>
+          <div class="delta num"><span class="pos">+Rp 8.92 M</span> vs 30 Sep 2026 (18,420 pinjaman)</div>
+        </button>
+
+        <button type="button" class="kpi" role="tab" aria-selected="false" data-metric="par30">
+          <div class="kpi-top">
+            <span class="kpi-label">Portofolio Berisiko (PAR-30)</span>
+            <span class="kpi-tag">DPD &gt; 30</span>
+          </div>
+          <div class="kpi-value regular num" style="font-size:24px">5.81<small>%</small></div>
+          <div class="delta num"><span class="neg">+0.46%</span> vs 5.35% pada 30 Sep 2026 (Rp 8.63 M)</div>
+        </button>
+
+        <button type="button" class="kpi" role="tab" aria-selected="false" data-metric="npl">
+          <div class="kpi-top">
+            <span class="kpi-label">Rasio NPL Gross (DPD &gt; 90)</span>
+            <span class="kpi-tag">Batas OJK 5.0%</span>
+          </div>
+          <div class="kpi-value regular num" style="font-size:24px">2.74<small>%</small></div>
+          <div class="delta num"><span class="neg">+0.32%</span> vs 2.42% pada 30 Sep 2026 (Rp 4.07 M)</div>
+        </button>
+
+        <button type="button" class="kpi" role="tab" aria-selected="false" data-metric="rollrate">
+          <div class="kpi-top">
+            <span class="kpi-label">Roll-Rate (DPD 1–30 → 31–60)</span>
+            <span class="kpi-tag">Penagihan Desk</span>
+          </div>
+          <div class="kpi-value regular num" style="font-size:24px">38.4<small>%</small></div>
+          <div class="delta num"><span class="neg">+3.2%</span> vs 35.2% bulan lalu (Pulih: 44.8%)</div>
+        </button>
+      </section>
+
+      <!-- Row 1: Vintage MOB Curves & Cohort Table (Left 6) + Glassbox Backend SQL Inspector (Right 6) -->
+      <div class="grid" id="section-row-1">
+        <!-- Left Panel: Vintage Analysis Curve + Cohort Table -->
+        <section class="panel col-6" id="panel-vintage">
+          <div class="panel-head">
+            <h2>Tingkat Gagal Bayar Kumulatif Vintage (MOB 0–6)</h2>
+            <div id="vintage-chart-legend" class="meta"></div>
+          </div>
+
+          <div class="chart-wrap" id="chart-vintage-mob" style="min-height:196px"></div>
+
+          <div class="table-wrap" style="margin-top:10px">
+            <table aria-label="Matriks Gagal Bayar Kohort Vintage">
+              <thead>
+                <tr>
+                  <th>Kohort</th>
+                  <th class="n">Skor</th>
+                  <th class="n">Pencairan</th>
+                  <th class="n">MOB 1</th>
+                  <th class="n">MOB 3</th>
+                  <th class="n">MOB 6</th>
+                  <th>Status Ambang</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-vintage"></tbody>
+            </table>
+          </div>
+
+          <div class="chart-note">
+            <span>Ambang MOB-3: Kohort di atas 1.50% gagal bayar kumulatif memicu evaluasi otomatis cut-off skor kredit.</span>
+            <span class="num">Total Pencairan Kohort: Rp 123.60 M</span>
+          </div>
+        </section>
+
+        <!-- Right Panel: Glassbox Backend SQL & Mathematical Proof Inspector -->
+        <section class="panel col-6" id="panel-glassbox">
+          <div class="panel-head">
+            <h2 id="gb-heading">Bukti Glassbox: Baki Debet Aktif (AUM)</h2>
+            <span class="pill pos" id="gb-audit-pill">Terverifikasi Selisih Rp 0.00</span>
+          </div>
+
+          <div class="gb-meta-grid">
+            <div class="gb-kv">
+              <div class="gb-kv-label" id="gb-num-label">Debit Pencairan − Kredit Pelunasan</div>
+              <div class="gb-kv-val num" id="gb-num-val">Rp 412.80 M − Rp 264.38 M = Rp 148.42 M</div>
+            </div>
+            <div class="gb-kv">
+              <div class="gb-kv-label" id="gb-den-label">Kontrak Terverifikasi di Buku Besar</div>
+              <div class="gb-kv-val num" id="gb-den-val">18,420 pinjaman (Δ = Rp 0.00)</div>
+            </div>
+          </div>
+
+          <div class="gb-formula">
+            <div class="gb-kv-label">Invarian Matematis &amp; Alur Data</div>
+            <div style="margin-top:2px"><code id="gb-formula-text">AUM_t = SUM(debit_disbursement) - SUM(credit_repayment) WHERE tx_ts &lt;= t</code></div>
+          </div>
+
+          <div class="gb-sql-box" style="flex:1">
+            <pre><code id="gb-sql-code"></code></pre>
+          </div>
+
+          <div class="gb-lineage-row">
+            <span id="gb-lineage-text">Alur Data: raw_core.repayment_ledger → marts_risk.fct_loan_daily_snapshot</span>
+            <span class="num">dbt v1.8 · PostgreSQL 16</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- Row 2: Full-Width Markov Transition Roll-Rate Matrix + Full-Width Immutable Ledger Audit Checkpoints -->
+      <div class="grid" id="section-row-2">
+        <!-- Markov Roll-Rate Transition Matrix (12 Cols so all 8 columns align without clipping) -->
+        <section class="panel col-12" id="panel-rollrate">
+          <div class="panel-head">
+            <h2>Matriks Transisi Roll-Rate Markov (30 Sep 2026 → 15 Okt 2026)</h2>
+            <span class="meta">Total probabilitas baris = 100.0% di seluruh status DPD</span>
+          </div>
+
+          <div class="table-wrap">
+            <table aria-label="Matriks Transisi Roll-Rate Markov">
+              <thead>
+                <tr>
+                  <th>Dari Bucket (t−1)</th>
+                  <th class="n">Saldo Awal</th>
+                  <th class="n">Ke Lancar (Pulih)</th>
+                  <th class="n">Ke DPD 1–30</th>
+                  <th class="n">Ke DPD 31–60</th>
+                  <th class="n">Ke DPD 61–90</th>
+                  <th class="n">Ke Macet (&gt;90)</th>
+                  <th class="n">Ke Lunas Penuh</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-rollrate"></tbody>
+            </table>
+          </div>
+
+          <div class="chart-note">
+            <span>Temuan Penagihan: 38.4% saldo DPD 1–30 memburuk ke DPD 31–60; saat pinjaman mencapai DPD 61–90, 74.6% bermigrasi ke Macet (&gt;90 DPD).</span>
+            <span class="num">Tingkat Pemulihan Awal: 44.8%</span>
+          </div>
+        </section>
+
+        <!-- Immutable Ledger Reconciliation & Risk Gate Checks (12 Cols) -->
+        <section class="panel col-12" id="panel-ledger">
+          <div class="panel-head">
+            <h2>Rekonsiliasi Buku Besar Immutable &amp; Asersi Ambang Risiko</h2>
+            <span class="meta">Asersi Otomatis dbt / CI Tanpa Toleransi Selisih</span>
+          </div>
+
+          <div class="table-wrap">
+            <table aria-label="Titik Pemeriksaan Audit Buku Besar Immutable">
+              <thead>
+                <tr>
+                  <th>ID Cek</th>
+                  <th>Aturan Invarian Audit</th>
+                  <th>Logika Asersi SQL</th>
+                  <th class="n">Target</th>
+                  <th class="n">Aktual</th>
+                  <th class="n">Selisih</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-audit"></tbody>
+            </table>
+          </div>
+
+          <div class="chart-note">
+            <span id="policy-status-text">Aturan Underwriting Aktif: Skor Kredit Minimum = 625 (relaksasi Jun 2026 ke 580 telah dihentikan).</span>
+            <span class="num">3 LULUS · 1 LEWAT BATAS</span>
+          </div>
+        </section>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="assets/charts.js"></script>
+  <script src="assets/data.js"></script>
+  <script>
+    (() => {
+      const D = window.KREDITLENS_DATA;
+      let currentMetric = 'aum';
+      let currentCohortFilter = 'ALL';
+
+      // 1. Render Vintage Chart using tasteskill Charts.line
+      function renderVintageChart() {
+        const el = document.getElementById('chart-vintage-mob');
+        const legendEl = document.getElementById('vintage-chart-legend');
+        if (!el) return;
+
+        const jun = D.vintageCohorts.find(c => c.cohort.startsWith('2026-06'));
+        const jan = D.vintageCohorts.find(c => c.cohort.startsWith('2026-01'));
+        const mar = D.vintageCohorts.find(c => c.cohort.startsWith('2026-03'));
+
+        const series = [];
+        if (currentCohortFilter === 'ALL' || currentCohortFilter === 'BREACH') {
+          series.push({ name: 'Jun 26 (580)', values: jun.mob });
+        }
+        if (currentCohortFilter === 'ALL' || currentCohortFilter === 'PRIME') {
+          series.push({ name: 'Mar 26 (640)', values: mar.mob });
+          series.push({ name: 'Jan 26 (640)', values: jan.mob });
+        }
+
+        Charts.line(el, {
+          height: 176,
+          labels: D.mobLabels,
+          series,
+          yTicks: [0, 1.5, 3.0, 4.5, 6.0],
+          format: (v) => v.toFixed(2) + '%',
+          tickFormat: (v) => v.toFixed(1) + '%',
+          reference: { value: 1.5, label: 'Batas 1.5%' },
+          annotations: currentCohortFilter === 'PRIME' ? [] : [
+            { at: 3, label: 'Jun MOB-3: 2.85%', short: '2.85%' }
+          ],
+          legend: legendEl
+        });
+      }
+
+      // 2. Render Vintage Table
+      function renderVintageTable() {
+        const tbody = document.getElementById('tbody-vintage');
+        if (!tbody) return;
+
+        const rows = D.vintageCohorts.filter(c => {
+          if (currentCohortFilter === 'BREACH') return c.scoreCutoff < 600;
+          if (currentCohortFilter === 'PRIME') return c.scoreCutoff >= 625;
+          return true;
+        });
+
+        tbody.innerHTML = rows.map(r => {
+          const mob1 = r.mob[1] != null ? r.mob[1].toFixed(2) + '%' : '-';
+          const mob3 = r.mob[3] != null ? r.mob[3].toFixed(2) + '%' : '-';
+          const mob6 = r.mob[6] != null ? r.mob[6].toFixed(2) + '%' : '-';
+          const mob3Style = r.mob[3] > 1.5 ? 'color:var(--negative);font-weight:700' : '';
+          return `<tr class="interactive-row" data-cohort="${r.cohort}">
+            <td>${r.cohort}</td>
+            <td class="n num">${r.scoreCutoff}</td>
+            <td class="n num">Rp ${r.disbursedB.toFixed(2)} M</td>
+            <td class="n num">${mob1}</td>
+            <td class="n num" style="${mob3Style}">${mob3}</td>
+            <td class="n num">${mob6}</td>
+            <td><span class="pill ${r.statusClass}">${r.status}</span></td>
+          </tr>`;
+        }).join('');
+      }
+
+      // 3. Render Markov Roll-Rate Table
+      function renderRollRateTable() {
+        const tbody = document.getElementById('tbody-rollrate');
+        if (!tbody) return;
+
+        tbody.innerHTML = D.rollRateMatrix.map(r => {
+          const dpd60Style = r.toDpd60 >= 30 ? 'color:var(--negative);font-weight:700' : '';
+          const dpd90Style = r.toDpd90 >= 50 ? 'color:var(--negative);font-weight:700' : '';
+          const defStyle = r.toDefault >= 70 ? 'color:var(--negative);font-weight:700' : '';
+          const cureStyle = r.toCurrent >= 40 && r.fromBucket !== 'Lancar (DPD 0)' ? 'color:var(--positive);font-weight:500' : '';
+          return `<tr class="interactive-row" onclick="window.selectGlassboxMetric('rollrate')">
+            <td>${r.fromBucket}</td>
+            <td class="n num">Rp ${r.startBalanceB.toFixed(2)} M</td>
+            <td class="n num" style="${cureStyle}">${r.toCurrent.toFixed(1)}%</td>
+            <td class="n num">${r.toDpd30.toFixed(1)}%</td>
+            <td class="n num" style="${dpd60Style}">${r.toDpd60.toFixed(1)}%</td>
+            <td class="n num" style="${dpd90Style}">${r.toDpd90.toFixed(1)}%</td>
+            <td class="n num" style="${defStyle}">${r.toDefault.toFixed(1)}%</td>
+            <td class="n num">${r.toPaidOff.toFixed(1)}%</td>
+          </tr>`;
+        }).join('');
+      }
+
+      // 4. Render Ledger Audit Checkpoints Table
+      function renderAuditTable() {
+        const tbody = document.getElementById('tbody-audit');
+        if (!tbody) return;
+
+        tbody.innerHTML = D.auditChecks.map(c => {
+          const pillClass = c.status === 'LULUS' ? 'pos' : 'neg';
+          return `<tr>
+            <td><code>${c.checkId}</code></td>
+            <td class="wrap-cell">${c.name}</td>
+            <td class="wrap-cell"><code>${c.assertion}</code></td>
+            <td class="n num">${c.expected}</td>
+            <td class="n num">${c.actual}</td>
+            <td class="n num">${c.variance}</td>
+            <td><span class="pill ${pillClass}">${c.status}</span></td>
+          </tr>`;
+        }).join('');
+      }
+
+      // 5. Update Glassbox SQL & Proof Inspector
+      function updateGlassbox(metricKey) {
+        const spec = D.glassboxSpecs[metricKey];
+        if (!spec) return;
+        currentMetric = metricKey;
+
+        document.querySelectorAll('.kpis .kpi').forEach(btn => {
+          btn.setAttribute('aria-selected', btn.dataset.metric === metricKey ? 'true' : 'false');
+        });
+
+        document.getElementById('gb-heading').textContent = `Bukti Glassbox: ${spec.title}`;
+        document.getElementById('gb-num-label').textContent = spec.numeratorLabel;
+        document.getElementById('gb-num-val').textContent = spec.numeratorValue;
+        document.getElementById('gb-den-label').textContent = spec.denominatorLabel;
+        document.getElementById('gb-den-val').textContent = spec.denominatorValue;
+        document.getElementById('gb-formula-text').textContent = spec.formula;
+        document.getElementById('gb-sql-code').textContent = spec.sql;
+        document.getElementById('gb-lineage-text').textContent = `Alur Data: ${spec.lineage}`;
+      }
+
+      window.selectGlassboxMetric = updateGlassbox;
+
+      // Wire KPI tab clicks
+      document.querySelectorAll('.kpis .kpi').forEach(btn => {
+        btn.addEventListener('click', () => updateGlassbox(btn.dataset.metric));
+      });
+
+      // Wire Cohort Filter dropdown
+      const cohortSelect = document.getElementById('select-cohort-filter');
+      if (cohortSelect) {
+        cohortSelect.addEventListener('change', (e) => {
+          currentCohortFilter = e.target.value;
+          renderVintageChart();
+          renderVintageTable();
+        });
+      }
+
+      // Wire Copy SQL button
+      const copyBtn = document.getElementById('btn-copy-sql');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+          const sql = D.glassboxSpecs[currentMetric]?.sql || '';
+          if (navigator.clipboard) {
+            navigator.clipboard.writeText(sql);
+          }
+          copyBtn.textContent = 'SQL Tersalin ke Clipboard';
+          setTimeout(() => { copyBtn.textContent = 'Salin Query SQL dbt'; }, 1800);
+        });
+      }
+
+      // Wire Primary Action: Restore Score Cut-off to 640
+      const tightenBtn = document.getElementById('btn-tighten-policy');
+      if (tightenBtn) {
+        tightenBtn.addEventListener('click', () => {
+          const policyText = document.getElementById('policy-status-text');
+          const navCutoff = document.getElementById('nav-cutoff-sim');
+          tightenBtn.textContent = 'Cut-off Skor Dikunci di 640';
+          if (policyText) {
+            policyText.textContent = 'Kebijakan Diperbarui: Cut-off skor dikembalikan ke 640 (Proyeksi Gagal Bayar MOB-3: 1.15%).';
+          }
+          if (navCutoff) {
+            navCutoff.querySelector('span:last-child').textContent = 'Kebijakan Cut-off Skor (640)';
+          }
+        });
+      }
+
+      // Wire Sidebar Navigation filter views
+      document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.sidebar .nav-item[data-view]').forEach(b => b.removeAttribute('aria-current'));
+          btn.setAttribute('aria-current', 'page');
+          const view = btn.dataset.view;
+          if (view === 'rollrate') {
+            updateGlassbox('rollrate');
+          } else if (view === 'ledger') {
+            updateGlassbox('aum');
+          }
+          document.getElementById('app-sidebar').classList.remove('open');
+        });
+      });
+
+      // Wire Mobile Menu Button
+      const mobileBtn = document.getElementById('btn-mobile-menu');
+      if (mobileBtn) {
+        mobileBtn.addEventListener('click', () => {
+          document.getElementById('app-sidebar').classList.toggle('open');
+        });
+      }
+
+      // Initial render
+      renderVintageChart();
+      renderVintageTable();
+      renderRollRateTable();
+      renderAuditTable();
+      updateGlassbox('aum');
+
+      window.addEventListener('resize', () => {
+        renderVintageChart();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -43,6 +43,8 @@ parsed_stitch.txt
 test_img.png
 scratch/
 .agents/
+.taste-skill/
+**/.taste-skill/
 
 # 4. Python Environment & Artifacts
 __pycache__/
@@ -117,7 +119,7 @@ dont_stop_*.py
 generate_edm_*.py
 napom_*.py
 vibe_dj_*.html
-/index.html
+skills-lock.json
 
 # 9. Personal Career & Administrative Documents
 *.docx
