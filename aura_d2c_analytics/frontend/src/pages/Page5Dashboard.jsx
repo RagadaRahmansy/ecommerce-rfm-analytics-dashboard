@@ -588,18 +588,18 @@ export default function Page5Dashboard({ data }) {
         <div className="border-b-2 border-[#141413] pb-4 grid grid-cols-1 md:grid-cols-2 gap-2 font-mono text-xs">
           <div>
             <div>
-              <strong>TO:</strong> CHIEF EXECUTIVE OFFICER &amp; VP OF MARKETING
+              <strong>KEPADA:</strong> DIREKSI &amp; MANAJEMEN OPERASIONAL
             </div>
             <div>
-              <strong>FROM:</strong> SENIOR DATA ANALYST (ANALYTICS ENGINEERING)
+              <strong>DARI:</strong> TIM ANALISIS DATA &amp; KEUANGAN
             </div>
           </div>
           <div className="md:text-right">
             <div>
-              <strong>SUBJECT:</strong> REKONSILIASI MARGIN &amp; REALOKASI ANGGARAN KUARTAL III
+              <strong>HAL:</strong> REKOMENDASI EFISIENSI MARGIN &amp; LOGISTIK KUARTAL III 2026
             </div>
             <div>
-              <strong>CLASSIFICATION:</strong> BOARDROOM ACTIONABLE DIRECTIVE
+              <strong>SIFAT:</strong> LAPORAN INTERNAL
             </div>
           </div>
         </div>
@@ -607,46 +607,43 @@ export default function Page5Dashboard({ data }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-[#D8D6CE]">
           <div className="space-y-2 pr-2">
             <div className="font-mono text-xs font-bold text-[#991B1B]">
-              DIRECTIVE 01 // RESTRUKTURISASI PROMO TIKTOK SHOP
+              ARAHAN 01 // DISKON &amp; LOGISTIK LUAR PULAU
             </div>
             <h3 className="font-serif text-lg font-bold text-[#141413]">
-              Hentikan Subsidi Diskon Satuan &gt;15% pada Flash Sale
+              Batasi Plafon Diskon Grosir Maksimal 15%
             </h3>
             <p className="text-xs text-[#3D3C3A] leading-relaxed">
-              Audit tabel <code>mart_channel_unit_economics</code> membuktikan bahwa kombinasi diskon 20–35%, komisi
-              10%, dan tingkat batal/retur 14% membuat <em>Contribution ROAS</em> TikTok Shop jatuh di bawah 1.0x.
-              Terapkan batas maksimum diskon 12% untuk pembelian SKU tunggal, atau arahkan kampanye ke paket{' '}
-              <strong>Glass Skin Bundle (Rp 560.000)</strong> untuk menyerap beban biaya akuisisi.
+              Audit data membuktikan bahwa kombinasi diskon grosir 20–35%, biaya kargo kontainer antarpulau, dan retur
+              kerusakan transit sebesar 16,4% membuat margin kontribusi Cabang Luar Pulau minus Rp 93,4 juta. Diskon di atas
+              15% harus mensyaratkan skema <em>Free On Board (FOB)</em> di mana ongkos angkut ditanggung pembeli.
             </p>
           </div>
 
           <div className="space-y-2 md:pl-6 pr-2 pt-4 md:pt-0">
             <div className="font-mono text-xs font-bold text-[#166534]">
-              DIRECTIVE 02 // REALOKASI ANGGARAN IKLAN AKUISISI
+              ARAHAN 02 // REPLIKASI MODEL GUDANG PUSAT
             </div>
             <h3 className="font-serif text-lg font-bold text-[#141413]">
-              Pindahkan 35% Budget TikTok Ads ke Website &amp; Shopee
+              Tingkatkan Penetrasi Pabrik Matras Jawa &amp; Jabodetabek
             </h3>
             <p className="text-xs text-[#3D3C3A] leading-relaxed">
-              Pelanggan yang diakuisisi melalui <strong>Website D2C</strong> mencatat rasio pembelian berulang sebesar{' '}
-              <strong>48%</strong> (dibandingkan 13% di TikTok Shop) serta biaya payment gateway hanya 2.5%. Mengalihkan
-              Rp 35 juta/bulan dari iklan Flash Sale ke kampanye konversi Website dan Shopee Retargeting diproyeksikan
-              menambah laba bersih kas sebesar <strong>+Rp 95 juta per kuartal</strong>.
+              <strong>Gudang Pusat</strong> mencatat rasio repeat order tertinggi (39,6%) dengan tingkat retur sangat rendah
+              (2,9%) dan laba bersih positif Rp 107,2 juta. Alihkan sebagian fokus pengiriman ke konsentrasi klaster industri
+              mebel di Jabodetabek dan Jawa Tengah yang memiliki perputaran piutang (TOP) lebih lancar.
             </p>
           </div>
 
           <div className="space-y-2 md:pl-6 pt-4 md:pt-0">
             <div className="font-mono text-xs font-bold text-[#141413]">
-              DIRECTIVE 03 // MONETISASI SEGMEN RFM TANPA IKLAN
+              ARAHAN 03 // MONITORING KLIEN AT-RISK
             </div>
             <h3 className="font-serif text-lg font-bold text-[#141413]">
-              Otomasi Retensi Siklus Habis Pakai 30 Hari
+              Kunjungan Penjualan untuk Klien Berulang Pasif
             </h3>
             <p className="text-xs text-[#3D3C3A] leading-relaxed">
-              Produk utama (Serum 30ml) memiliki siklus habis pakai 28–32 hari. Gunakan tabel{' '}
-              <code>mart_gold.mart_rfm_segments</code> untuk mengaktifkan pengingat pengisian ulang (<em>refill</em>) via
-              WhatsApp/Email pada hari ke-25 khusus bagi segmen <strong>Potential Loyalists</strong> dan{' '}
-              <strong>At-Risk Repeat Buyers</strong> dengan CAC mendekati Rp 0.
+              Data RFM mengidentifikasi <strong>159 pabrik mitra (segmen At-Risk)</strong> yang memiliki riwayat transaksi rata-rata
+              Rp 4 juta namun belum melakukan pemesanan kembali dalam 100 hari terakhir. Tim sales lapangan disarankan melakukan kunjungan
+              langsung untuk memeriksa kebutuhan stok kawat per dan busa mereka.
             </p>
           </div>
         </div>

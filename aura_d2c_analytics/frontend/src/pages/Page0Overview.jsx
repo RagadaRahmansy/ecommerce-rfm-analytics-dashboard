@@ -37,15 +37,15 @@ export default function Page0Overview({ onNavigate }) {
       {/* Editorial Title Block */}
       <section className="border-b-2 border-[#141413] pb-8 space-y-4">
         <div className="font-mono text-xs uppercase tracking-[0.18em] text-[#991B1B] font-bold">
-          SECTION 00 // EXECUTIVE CASE STUDY &amp; ARCHITECTURAL BLUEPRINT
+          SECTION 00 // RINGKASAN EKSEKUTIF &amp; ARSITEKTUR DATA
         </div>
         <h1 className="font-serif text-3xl md:text-5xl font-bold text-[#141413] leading-[1.12] tracking-tight max-w-4xl">
-          Ekatunggal Group: Rekonsiliasi Margin Distribusi Bahan Baku Springbed &amp; Sofa melalui Data Warehouse.
+          Ekatunggal Group: Evaluasi Laba-Rugi dan Rantai Pasok Bahan Baku Kasur &amp; Sofa.
         </h1>
         <p className="text-base md:text-lg text-[#3D3C3A] max-w-3xl leading-relaxed">
-          Dokumentasi kerja lengkap bagaimana seorang <strong>Senior Data Analyst (5 tahun pengalaman)</strong> membangun
-          infrastruktur data dari nol di <strong>PT Ekatunggal Tunas Mandiri</strong>—menganalisis rantai pasok material
-          kasur pegas dan mebel antara Gudang Pusat Jabodetabek (Citeureup), Cabang Jawa, dan Cabang Luar Pulau.
+          Laporan terpadu kinerja distribusi material <strong>PT Ekatunggal Tunas Mandiri</strong> selama semester pertama 2026.
+          Mengintegrasikan data transaksi order, ongkos kirim kargo antarpulau, dan struktur HPP pabrik untuk mengidentifikasi
+          sumber kebocoran profitabilitas antara Gudang Pusat (Citeureup), Cabang Jawa, dan Cabang Luar Pulau.
         </p>
 
         <div className="pt-3 flex flex-wrap gap-3 font-mono text-xs">
@@ -53,13 +53,13 @@ export default function Page0Overview({ onNavigate }) {
             onClick={() => onNavigate('dashboard')}
             className="px-5 py-2.5 bg-[#141413] text-[#FAF9F5] hover:bg-[#333330] font-semibold uppercase tracking-wider transition"
           >
-            [05] BUKA EXECUTIVE P&amp;L STATEMENT →
+            [05] BUKA LAPORAN LABA-RUGI (P&amp;L) →
           </button>
           <button
             onClick={() => onNavigate('step1')}
             className="px-5 py-2.5 bg-white text-[#141413] border border-[#141413] hover:bg-[#F2F0E8] font-semibold uppercase tracking-wider transition"
           >
-            [01] MULAI DARI ARSITEKTUR DATA →
+            [01] LIHAT STRUKTUR DATA &amp; SKEMA →
           </button>
         </div>
       </section>
@@ -69,33 +69,32 @@ export default function Page0Overview({ onNavigate }) {
         <div className="lg:col-span-6 p-6 md:p-8 space-y-4">
           <div className="flex items-baseline justify-between border-b border-[#D8D6CE] pb-2">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#991B1B]">
-              DIAGNOSIS MASALAH BISNIS B2B
+              LATAR BELAKANG MASALAH
             </span>
-            <span className="font-mono text-[11px] text-[#6E6D68]">DISTRIBUSI NASIONAL</span>
+            <span className="font-mono text-[11px] text-[#6E6D68]">OPERASIONAL DISTRIBUSI</span>
           </div>
           <h2 className="font-serif text-2xl font-bold text-[#141413]">
-            Paradoks Pertumbuhan Semu: Volume Penjualan Grosir Tinggi, Margin Bersih Terkuras
+            Volume Pengiriman Tinggi, Namun Margin Bersih Tergerus
           </h2>
           <blockquote className="border-l-2 border-[#991B1B] pl-4 py-1 text-sm italic text-[#3D3C3A] bg-[#FAF9F5] p-3">
-            &ldquo;Laporan penjualan cabang luar pulau (Makassar &amp; Samarinda) mencatat volume pesanan kawat pegas dan busa
-            yang sangat besar. Namun setelah dikurangi biaya kargo kontainer antarpulau, klaim retur barang rusak transit,
-            dan diskon volume, laba bersih cabang tersebut justru minus!&rdquo;
+            &ldquo;Penjualan cabang luar pulau (Makassar &amp; Samarinda) mencatat volume pesanan kawat pegas dan busa
+            yang besar. Namun setelah dikurangi biaya kargo kontainer antarpulau, klaim retur barang rusak transit,
+            dan diskon grosir, kontribusi kas bersih cabang tersebut justru berada di zona merah.&rdquo;
           </blockquote>
           <div className="space-y-2.5 text-xs md:text-sm text-[#3D3C3A] leading-relaxed pt-1">
             <p>
-              <strong>1. Ilusi Omzet Tagihan Kotor (Gross Invoiced):</strong> Penjualan dihitung atas dasar nilai faktur
-              sebelum memperhitungkan diskon volume grosir 20–35%, ongkir pelayaran antarpulau 10%, dan penalti klaim
-              kerusakan material di perjalanan.
+              <strong>1. Perbedaan Omzet Faktur vs Realisasi Kas:</strong> Pembukuan awal hanya mengacu pada nilai faktur
+              kotor sebelum memperhitungkan diskon volume grosir (20–35%), ongkos ekspedisi kontainer (10%), serta biaya
+              penanganan retur akibat kerusakan fisik dalam transit.
             </p>
             <p>
-              <strong>2. Fragmentasi Data Cabang:</strong> Data pesanan (PO) di gudang cabang terpisah dari biaya logistik
-              dan data HPP material pabrik, membuat manajemen kesulitan membedakan cabang yang sehat dari cabang yang
-              bocor margin.
+              <strong>2. Data Logistik dan Penjualan Belum Terintegrasi:</strong> Informasi Purchase Order (PO) cabang terpisah
+              dari data tagihan ekspedisi dan HPP material pabrik, sehingga manajemen belum memiliki visibilitas atas margin
+              riil per lini produk.
             </p>
             <p>
-              <strong>3. Retensi Pembelian Pabrik Mitra:</strong> Tanpa analisis kohort, tim sales tidak mengetahui
-              apakah pabrik mebel mitra rutin memesan ulang kawat dan busa setiap bulan atau hanya memanfaatkan potongan harga
-              pembukaan cabang baru.
+              <strong>3. Pola Pemesanan Berulang Mitra Pabrik:</strong> Belum ada pemetaan riil mengenai pabrik matras dan
+              sofa mana yang konsisten melakukan repeat order bulanan dibandingkan klien yang hanya membeli saat ada potongan harga khusus.
             </p>
           </div>
         </div>
@@ -103,16 +102,17 @@ export default function Page0Overview({ onNavigate }) {
         <div className="lg:col-span-6 p-6 md:p-8 space-y-4 bg-[#FAF9F5]/50">
           <div className="flex items-baseline justify-between border-b border-[#D8D6CE] pb-2">
             <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#166534]">
-              SOLUSI ARSITEKTUR ANALITIK
+              PENDEKATAN PENGOLAHAN DATA
             </span>
-            <span className="font-mono text-[11px] text-[#6E6D68]">MODERN LEAN DATA STACK</span>
+            <span className="font-mono text-[11px] text-[#6E6D68]">DATA WAREHOUSE DUCKDB</span>
           </div>
           <h2 className="font-serif text-2xl font-bold text-[#141413]">
-            Rekonsiliasi Transaksional Berbasis DuckDB &amp; Kimball Star Schema
+            Konsolidasi Data Penjualan, Logistik, dan HPP
           </h2>
           <p className="text-xs md:text-sm text-[#3D3C3A] leading-relaxed">
-            Sebagai analis pertama di perusahaan, membangun infrastruktur cloud mahal sejak hari pertama adalah pemborosan.
-            Pendekatan senior adalah merancang pipeline lokal yang cepat, idempotent, dan 100% berbasis standar SQL:
+            Untuk mendapatkan kepastian angka tanpa beban operasional yang rumit, dibangun data pipeline berbasis DuckDB dan
+            pemodelan dimensional Kimball. Seluruh transaksi dari 4 sumber data direkonsiliasi hingga menghasilkan laporan laba-rugi
+            yang terverifikasi:
           </p>
 
           <table className="w-full border-collapse border border-[#141413] text-xs font-mono bg-white">

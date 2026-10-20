@@ -1,0 +1,14 @@
+dbt_ekatunggal:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('SUPABASE_HOST') }}"
+      user: "{{ env_var('SUPABASE_USER') }}"
+      password: "{{ env_var('SUPABASE_PASSWORD') }}"
+      port: 6543
+      dbname: postgres
+      schema: public
+      threads: 4
+      keepalives_idle: 0
+      sslmode: require

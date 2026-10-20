@@ -1,0 +1,1248 @@
+[0m06:31:43.941359 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000015313432990>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000153134D35D0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x00000153134D36D0>]}
+
+
+============================== 06:31:43.969847 | 2f5c3b7d-abfd-43d5-9eca-14bd90d8a8dc ==============================
+[0m06:31:43.969847 [info ] [MainThread]: Running with dbt=1.13.0-b1
+[0m06:31:43.971468 [debug] [MainThread]: running dbt with arguments {'version_check': 'True', 'no_print': 'None', 'maximum_seed_size_mib': '1', 'target_path': 'None', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'static_parser': 'True', 'printer_width': '80', 'write_json': 'True', 'introspect': 'True', 'log_cache_events': 'False', 'empty': 'None', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'partial_parse': 'True', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'profiles_dir': '.', 'indirect_selection': 'eager', 'hints_enabled': 'True', 'invocation_command': 'dbt debug --profiles-dir .', 'use_experimental_parser': 'False', 'use_colors': 'True', 'log_path': 'C:\\Users\\Ragada Rahmansyah\\Documents\\antigravity\\quirky-hertz\\aura_d2c_analytics\\dbt_ekatunggal\\logs'}
+[0m06:31:43.973067 [debug] [MainThread]: Tracking: tracking
+[0m06:31:44.159538 [info ] [MainThread]: dbt version: 1.13.0-b1
+[0m06:31:44.161636 [info ] [MainThread]: python version: 3.11.9
+[0m06:31:44.163336 [info ] [MainThread]: python path: C:\Users\Ragada Rahmansyah\AppData\Local\Programs\Python\Python311\python.exe
+[0m06:31:44.165036 [info ] [MainThread]: os info: Windows-10-10.0.26200-SP0
+[0m06:31:44.543294 [info ] [MainThread]: Using profiles dir at .
+[0m06:31:44.545317 [info ] [MainThread]: Using profiles.yml file at .\profiles.yml
+[0m06:31:44.547078 [info ] [MainThread]: Using dbt_project.yml file at C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\dbt_project.yml
+[0m06:31:44.555062 [info ] [MainThread]: adapter type: postgres
+[0m06:31:44.556670 [info ] [MainThread]: adapter version: 1.11.0
+[0m06:31:44.894444 [info ] [MainThread]: Configuration:
+[0m06:31:44.896375 [info ] [MainThread]:   profiles.yml file [[32mOK found and valid[0m]
+[0m06:31:44.898693 [info ] [MainThread]:   dbt_project.yml file [[32mOK found and valid[0m]
+[0m06:31:44.900387 [info ] [MainThread]: Required dependencies:
+[0m06:31:44.902100 [debug] [MainThread]: Executing "git --help"
+[0m06:31:45.085354 [debug] [MainThread]: STDOUT: "b"usage: git [-v | --version] [-h | --help] [-C <path>] [-c <name>=<value>]\n           [--exec-path[=<path>]] [--html-path] [--man-path] [--info-path]\n           [-p | --paginate | -P | --no-pager] [--no-replace-objects] [--bare]\n           [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]\n           [--config-env=<name>=<envvar>] <command> [<args>]\n\nThese are common Git commands used in various situations:\n\nstart a working area (see also: git help tutorial)\n   clone     Clone a repository into a new directory\n   init      Create an empty Git repository or reinitialize an existing one\n\nwork on the current change (see also: git help everyday)\n   add       Add file contents to the index\n   mv        Move or rename a file, a directory, or a symlink\n   restore   Restore working tree files\n   rm        Remove files from the working tree and from the index\n\nexamine the history and state (see also: git help revisions)\n   bisect    Use binary search to find the commit that introduced a bug\n   diff      Show changes between commits, commit and working tree, etc\n   grep      Print lines matching a pattern\n   log       Show commit logs\n   show      Show various types of objects\n   status    Show the working tree status\n\ngrow, mark and tweak your common history\n   branch    List, create, or delete branches\n   commit    Record changes to the repository\n   merge     Join two or more development histories together\n   rebase    Reapply commits on top of another base tip\n   reset     Reset current HEAD to the specified state\n   switch    Switch branches\n   tag       Create, list, delete or verify a tag object signed with GPG\n\ncollaborate (see also: git help workflows)\n   fetch     Download objects and refs from another repository\n   pull      Fetch from and integrate with another repository or a local branch\n   push      Update remote refs along with associated objects\n\n'git help -a' and 'git help -g' list available subcommands and some\nconcept guides. See 'git help <command>' or 'git help <concept>'\nto read about a specific subcommand or concept.\nSee 'git help git' for an overview of the system.\n""
+[0m06:31:45.087332 [debug] [MainThread]: STDERR: "b''"
+[0m06:31:45.088331 [info ] [MainThread]:  - git [[32mOK found[0m]
+
+[0m06:31:45.090141 [info ] [MainThread]: Connection:
+[0m06:31:45.091311 [info ] [MainThread]:   host: aws-0-ap-south-1.pooler.supabase.com
+[0m06:31:45.092548 [info ] [MainThread]:   port: 6543
+[0m06:31:45.094231 [info ] [MainThread]:   user: postgres.ldxuhvcbprqtzonmejak
+[0m06:31:45.095923 [info ] [MainThread]:   database: postgres
+[0m06:31:45.098298 [info ] [MainThread]:   schema: public
+[0m06:31:45.099437 [info ] [MainThread]:   connect_timeout: 10
+[0m06:31:45.101411 [info ] [MainThread]:   role: None
+[0m06:31:45.103698 [info ] [MainThread]:   search_path: None
+[0m06:31:45.104798 [info ] [MainThread]:   keepalives_idle: 0
+[0m06:31:45.106456 [info ] [MainThread]:   sslmode: require
+[0m06:31:45.107977 [info ] [MainThread]:   sslcert: None
+[0m06:31:45.109665 [info ] [MainThread]:   sslkey: None
+[0m06:31:45.110763 [info ] [MainThread]:   sslrootcert: None
+[0m06:31:45.112443 [info ] [MainThread]:   application_name: dbt
+[0m06:31:45.114219 [info ] [MainThread]:   autocommit: False
+[0m06:31:45.115338 [info ] [MainThread]:   retries: 1
+[0m06:31:45.117566 [info ] [MainThread]: Registered adapter: postgres=1.11.0
+[0m06:31:46.587213 [debug] [MainThread]: Acquiring new postgres connection 'debug'
+[0m06:31:47.175925 [debug] [MainThread]: Using postgres connection "debug"
+[0m06:31:47.177706 [debug] [MainThread]: On debug: select 1 as id
+[0m06:31:47.177706 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m06:31:49.424481 [debug] [MainThread]: SQL status: SELECT 1 in 2.246 seconds
+[0m06:31:49.424481 [debug] [MainThread]: On debug: Close
+[0m06:31:49.424481 [info ] [MainThread]:   Connection test: [[32mOK connection ok[0m]
+
+[0m06:31:49.432656 [info ] [MainThread]: [32mAll checks passed![0m
+[0m06:31:49.436338 [debug] [MainThread]: Command `dbt debug` succeeded at 06:31:49.436338 after 5.92 seconds
+[0m06:31:49.438925 [debug] [MainThread]: Connection 'debug' was properly closed.
+[0m06:31:49.440811 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000001531334EDD0>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000015313716050>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000015313415C10>]}
+[0m06:31:49.441935 [debug] [MainThread]: Flushing usage events
+[0m06:31:52.190643 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m06:32:18.880315 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FC9E2750>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FB13FC10>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FC84A690>]}
+
+
+============================== 06:32:18.888547 | 73b3437e-d9af-460d-83d3-44771d398c7d ==============================
+[0m06:32:18.888547 [info ] [MainThread]: Running with dbt=1.13.0-b1
+[0m06:32:18.892933 [debug] [MainThread]: running dbt with arguments {'maximum_seed_size_mib': '1', 'no_print': 'None', 'version_check': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'static_parser': 'True', 'target_path': 'None', 'printer_width': '80', 'write_json': 'True', 'empty': 'False', 'log_cache_events': 'False', 'introspect': 'True', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'profiles_dir': '.', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'partial_parse': 'True', 'use_colors': 'True', 'hints_enabled': 'True', 'indirect_selection': 'eager', 'use_experimental_parser': 'False', 'invocation_command': 'dbt run --profiles-dir .', 'log_path': 'C:\\Users\\Ragada Rahmansyah\\Documents\\antigravity\\quirky-hertz\\aura_d2c_analytics\\dbt_ekatunggal\\logs'}
+[0m06:32:18.894681 [debug] [MainThread]: Tracking: tracking
+[0m06:32:20.213165 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FCB83A90>]}
+[0m06:32:20.427334 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8F7F2E3D0>]}
+[0m06:32:20.432333 [info ] [MainThread]: Registered adapter: postgres=1.11.0
+[0m06:32:22.051067 [debug] [MainThread]: checksum: 7d0e4b1a1e5ec4da9b62c3f3dc8aaf640f9f12c7ad6713507d102302506d7242, vars: {}, profile: dbt_ekatunggal, target: dev, version: 1.13.0b1
+[0m06:32:22.052203 [info ] [MainThread]: Unable to do partial parsing because saved manifest not found. Starting full parse.
+[0m06:32:22.057499 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'partial_parser', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FCC0A590>]}
+[0m06:32:29.770773 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FA4E9AD0>]}
+[0m06:32:30.207181 [debug] [MainThread]: Wrote artifact WritableManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\manifest.json
+[0m06:32:30.216380 [debug] [MainThread]: Wrote artifact SemanticManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\semantic_manifest.json
+[0m06:32:30.501998 [debug] [MainThread]: Wrote artifact OsiDocument to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\osi_document.json
+[0m06:32:30.587372 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FD357990>]}
+[0m06:32:30.591148 [info ] [MainThread]: Found 6 models, 9 data tests, 4 sources, 477 macros
+[0m06:32:30.593164 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FCC52ED0>]}
+[0m06:32:30.608659 [info ] [MainThread]: 
+[0m06:32:30.621146 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m06:32:30.623838 [info ] [MainThread]: 
+[0m06:32:30.626338 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m06:32:30.647697 [debug] [ThreadPool]: Acquiring new postgres connection 'list_postgres'
+[0m06:32:30.672335 [debug] [ThreadPool]: Acquiring new postgres connection 'list_postgres'
+[0m06:32:31.173776 [debug] [ThreadPool]: Using postgres connection "list_postgres"
+[0m06:32:31.175289 [debug] [ThreadPool]: Using postgres connection "list_postgres"
+[0m06:32:31.175289 [debug] [ThreadPool]: On list_postgres: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "list_postgres"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m06:32:31.176925 [debug] [ThreadPool]: On list_postgres: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "list_postgres"} */
+
+    select distinct nspname from pg_namespace
+  
+[0m06:32:31.179801 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m06:32:31.180828 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m06:32:33.455244 [debug] [ThreadPool]: SQL status: SELECT 13 in 2.275 seconds
+[0m06:32:33.459158 [debug] [ThreadPool]: On list_postgres: Close
+[0m06:32:33.459688 [debug] [ThreadPool]: SQL status: SELECT 13 in 2.278 seconds
+[0m06:32:33.475420 [debug] [ThreadPool]: On list_postgres: Close
+[0m06:32:33.478455 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_postgres, now create_postgres_public_stg_silver)
+[0m06:32:33.480472 [debug] [ThreadPool]: Re-using an available connection from the pool (formerly list_postgres, now create_postgres_public_mart_gold)
+[0m06:32:33.480472 [debug] [ThreadPool]: Creating schema "database: "postgres"
+schema: "public_stg_silver"
+"
+[0m06:32:33.484347 [debug] [ThreadPool]: Creating schema "database: "postgres"
+schema: "public_mart_gold"
+"
+[0m06:32:33.496642 [debug] [ThreadPool]: Using postgres connection "create_postgres_public_stg_silver"
+[0m06:32:33.499438 [debug] [ThreadPool]: Using postgres connection "create_postgres_public_mart_gold"
+[0m06:32:33.499438 [debug] [ThreadPool]: On create_postgres_public_stg_silver: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "create_postgres_public_stg_silver"} */
+create schema if not exists "public_stg_silver"
+[0m06:32:33.503450 [debug] [ThreadPool]: On create_postgres_public_mart_gold: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "create_postgres_public_mart_gold"} */
+create schema if not exists "public_mart_gold"
+[0m06:32:33.503450 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m06:32:33.503450 [debug] [ThreadPool]: Opening a new connection, currently in state closed
+[0m06:32:35.710906 [debug] [ThreadPool]: SQL status: CREATE SCHEMA in 2.204 seconds
+[0m06:32:35.713904 [debug] [ThreadPool]: On create_postgres_public_mart_gold: COMMIT
+[0m06:32:35.714905 [debug] [ThreadPool]: Using postgres connection "create_postgres_public_mart_gold"
+[0m06:32:35.716905 [debug] [ThreadPool]: On create_postgres_public_mart_gold: COMMIT
+[0m06:32:35.719912 [debug] [ThreadPool]: SQL status: CREATE SCHEMA in 2.215 seconds
+[0m06:32:35.722913 [debug] [ThreadPool]: On create_postgres_public_stg_silver: COMMIT
+[0m06:32:35.723903 [debug] [ThreadPool]: Using postgres connection "create_postgres_public_stg_silver"
+[0m06:32:35.724902 [debug] [ThreadPool]: On create_postgres_public_stg_silver: COMMIT
+[0m06:32:36.016265 [debug] [ThreadPool]: SQL status: COMMIT in 0.298 seconds
+[0m06:32:36.017267 [debug] [ThreadPool]: SQL status: COMMIT in 0.291 seconds
+[0m06:32:36.018290 [debug] [ThreadPool]: On create_postgres_public_mart_gold: Close
+[0m06:32:36.019739 [debug] [ThreadPool]: On create_postgres_public_stg_silver: Close
+[0m06:32:36.025402 [debug] [ThreadPool]: Acquiring new postgres connection 'list_postgres_public_stg_silver'
+[0m06:32:36.026404 [debug] [ThreadPool]: Acquiring new postgres connection 'list_postgres_public_mart_gold'
+[0m06:32:36.037995 [debug] [ThreadPool]: Using postgres connection "list_postgres_public_stg_silver"
+[0m06:32:36.040000 [debug] [ThreadPool]: Using postgres connection "list_postgres_public_mart_gold"
+[0m06:32:36.042002 [debug] [ThreadPool]: On list_postgres_public_stg_silver: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "list_postgres_public_stg_silver"} */
+select
+      'postgres' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'public_stg_silver'
+    union all
+    select
+      'postgres' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'public_stg_silver'
+    union all
+    select
+      'postgres' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'public_stg_silver'
+    union all
+    select distinct
+     'postgres' as database,
+     proname as name,
+     ns.nspname as schema,
+     'function' as type
+    from pg_proc
+     join pg_namespace as ns on pronamespace = ns.oid
+    where ns.nspname ilike 'public_stg_silver'
+  
+[0m06:32:36.042992 [debug] [ThreadPool]: On list_postgres_public_mart_gold: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "list_postgres_public_mart_gold"} */
+select
+      'postgres' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'public_mart_gold'
+    union all
+    select
+      'postgres' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'public_mart_gold'
+    union all
+    select
+      'postgres' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'public_mart_gold'
+    union all
+    select distinct
+     'postgres' as database,
+     proname as name,
+     ns.nspname as schema,
+     'function' as type
+    from pg_proc
+     join pg_namespace as ns on pronamespace = ns.oid
+    where ns.nspname ilike 'public_mart_gold'
+  
+[0m06:32:36.044989 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m06:32:36.045987 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m06:32:38.267255 [debug] [ThreadPool]: SQL status: SELECT 0 in 2.224 seconds
+[0m06:32:38.270016 [debug] [ThreadPool]: On list_postgres_public_stg_silver: ROLLBACK
+[0m06:32:38.273554 [debug] [ThreadPool]: SQL status: SELECT 0 in 2.227 seconds
+[0m06:32:38.275011 [debug] [ThreadPool]: On list_postgres_public_mart_gold: ROLLBACK
+[0m06:32:38.574971 [debug] [ThreadPool]: On list_postgres_public_stg_silver: Close
+[0m06:32:38.576484 [debug] [ThreadPool]: On list_postgres_public_mart_gold: Close
+[0m06:32:38.587924 [debug] [MainThread]: Using postgres connection "master"
+[0m06:32:38.587924 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "master"} */
+select distinct
+        dependent_namespace.nspname as dependent_schema,
+        dependent_class.relname as dependent_name,
+        referenced_namespace.nspname as referenced_schema,
+        referenced_class.relname as referenced_name
+
+    -- Query for views: views are entries in pg_class with an entry in pg_rewrite, but we avoid
+    -- a seq scan on pg_rewrite by leveraging the fact there is an "internal" row in pg_depend for
+    -- the view...
+    from pg_class as dependent_class
+    join pg_namespace as dependent_namespace on dependent_namespace.oid = dependent_class.relnamespace
+    join pg_depend as dependent_depend on dependent_depend.refobjid = dependent_class.oid
+        and dependent_depend.classid = 'pg_rewrite'::regclass
+        and dependent_depend.refclassid = 'pg_class'::regclass
+        and dependent_depend.deptype = 'i'
+
+    -- ... and via pg_depend (that has a row per column, hence the need for "distinct" above, and
+    -- making sure to exclude the internal row to avoid a view appearing to depend on itself)...
+    join pg_depend as joining_depend on joining_depend.objid = dependent_depend.objid
+        and joining_depend.classid = 'pg_rewrite'::regclass
+        and joining_depend.refclassid = 'pg_class'::regclass
+        and joining_depend.refobjid != dependent_depend.refobjid
+
+    -- ... we can find the tables they query from in pg_class, but excluding system tables. Note we
+    -- don't need need to exclude _dependent_ system tables, because they only query from other
+    -- system tables, and so are automatically excluded by excluding _referenced_ system tables
+    join pg_class as referenced_class on referenced_class.oid = joining_depend.refobjid
+    join pg_namespace as referenced_namespace on referenced_namespace.oid = referenced_class.relnamespace
+        and referenced_namespace.nspname != 'information_schema'
+        and referenced_namespace.nspname not like 'pg\_%'
+
+    order by
+        dependent_schema, dependent_name, referenced_schema, referenced_name;
+[0m06:32:38.592621 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m06:32:40.931771 [debug] [MainThread]: SQL status: SELECT 1 in 2.340 seconds
+[0m06:32:40.934934 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FCCC8F90>]}
+[0m06:32:40.936957 [debug] [MainThread]: On master: ROLLBACK
+[0m06:32:41.239337 [debug] [MainThread]: On master: COMMIT
+[0m06:32:41.240360 [debug] [MainThread]: Using postgres connection "master"
+[0m06:32:41.241361 [debug] [MainThread]: On master: COMMIT
+[0m06:32:41.756775 [debug] [MainThread]: SQL status: COMMIT in 0.514 seconds
+[0m06:32:41.759205 [debug] [MainThread]: On master: Close
+[0m06:32:41.785111 [debug] [Thread-1 (]: Began running node model.dbt_ekatunggal.stg_ad_spend
+[0m06:32:41.786061 [debug] [Thread-2 (]: Began running node model.dbt_ekatunggal.stg_customers
+[0m06:32:41.787068 [debug] [Thread-3 (]: Began running node model.dbt_ekatunggal.stg_order_items
+[0m06:32:41.788068 [debug] [Thread-4 (]: Began running node model.dbt_ekatunggal.stg_orders
+[0m06:32:41.790066 [info ] [Thread-1 (]: 1 of 6 START sql view model public_stg_silver.stg_ad_spend ..................... [RUN]
+[0m06:32:41.792188 [info ] [Thread-2 (]: 2 of 6 START sql view model public_stg_silver.stg_customers .................... [RUN]
+[0m06:32:41.795680 [info ] [Thread-3 (]: 3 of 6 START sql view model public_stg_silver.stg_order_items .................. [RUN]
+[0m06:32:41.797914 [info ] [Thread-4 (]: 4 of 6 START sql view model public_stg_silver.stg_orders ....................... [RUN]
+[0m06:32:41.800198 [debug] [Thread-1 (]: Acquiring new postgres connection 'model.dbt_ekatunggal.stg_ad_spend'
+[0m06:32:41.802472 [debug] [Thread-2 (]: Acquiring new postgres connection 'model.dbt_ekatunggal.stg_customers'
+[0m06:32:41.804133 [debug] [Thread-3 (]: Acquiring new postgres connection 'model.dbt_ekatunggal.stg_order_items'
+[0m06:32:41.805833 [debug] [Thread-4 (]: Acquiring new postgres connection 'model.dbt_ekatunggal.stg_orders'
+[0m06:32:41.807116 [debug] [Thread-1 (]: Began compiling node model.dbt_ekatunggal.stg_ad_spend
+[0m06:32:41.808760 [debug] [Thread-2 (]: Began compiling node model.dbt_ekatunggal.stg_customers
+[0m06:32:41.810815 [debug] [Thread-3 (]: Began compiling node model.dbt_ekatunggal.stg_order_items
+[0m06:32:41.812253 [debug] [Thread-4 (]: Began compiling node model.dbt_ekatunggal.stg_orders
+[0m06:32:41.825372 [debug] [Thread-1 (]: Writing injected SQL for node "model.dbt_ekatunggal.stg_ad_spend"
+[0m06:32:41.829368 [debug] [Thread-2 (]: Writing injected SQL for node "model.dbt_ekatunggal.stg_customers"
+[0m06:32:41.833365 [debug] [Thread-3 (]: Writing injected SQL for node "model.dbt_ekatunggal.stg_order_items"
+[0m06:32:41.838395 [debug] [Thread-4 (]: Writing injected SQL for node "model.dbt_ekatunggal.stg_orders"
+[0m06:32:41.847378 [debug] [Thread-2 (]: Began executing node model.dbt_ekatunggal.stg_customers
+[0m06:32:41.848772 [debug] [Thread-4 (]: Began executing node model.dbt_ekatunggal.stg_orders
+[0m06:32:41.850230 [debug] [Thread-1 (]: Began executing node model.dbt_ekatunggal.stg_ad_spend
+[0m06:32:41.851230 [debug] [Thread-3 (]: Began executing node model.dbt_ekatunggal.stg_order_items
+[0m06:32:41.923533 [debug] [Thread-4 (]: Writing runtime sql for node "model.dbt_ekatunggal.stg_orders"
+[0m06:32:41.917554 [debug] [Thread-2 (]: Writing runtime sql for node "model.dbt_ekatunggal.stg_customers"
+[0m06:32:41.931037 [debug] [Thread-1 (]: Writing runtime sql for node "model.dbt_ekatunggal.stg_ad_spend"
+[0m06:32:41.936754 [debug] [Thread-3 (]: Writing runtime sql for node "model.dbt_ekatunggal.stg_order_items"
+[0m06:32:41.944123 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.stg_customers"
+[0m06:32:41.946315 [debug] [Thread-2 (]: On model.dbt_ekatunggal.stg_customers: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_customers"} */
+
+  create view "postgres"."public_stg_silver"."stg_customers__dbt_tmp"
+    
+    
+  as (
+    -- Silver Layer: stg_customers
+SELECT
+    customer_id,
+    TRIM(full_name) AS full_name,
+    LOWER(TRIM(email)) AS email,
+    TRIM(city) AS city,
+    TRIM(province) AS province,
+    TRIM(acquisition_channel) AS acquisition_channel,
+    TRIM(acquisition_campaign) AS acquisition_campaign,
+    created_at,
+    DATE_TRUNC('month', CAST(created_at AS DATE)) AS cohort_month
+FROM "postgres"."raw_bronze"."raw_customers"
+  );
+[0m06:32:41.947335 [debug] [Thread-1 (]: Using postgres connection "model.dbt_ekatunggal.stg_ad_spend"
+[0m06:32:41.948319 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.stg_order_items"
+[0m06:32:41.948319 [debug] [Thread-4 (]: Using postgres connection "model.dbt_ekatunggal.stg_orders"
+[0m06:32:41.949316 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m06:32:41.951340 [debug] [Thread-1 (]: On model.dbt_ekatunggal.stg_ad_spend: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_ad_spend"} */
+
+  create view "postgres"."public_stg_silver"."stg_ad_spend__dbt_tmp"
+    
+    
+  as (
+    -- Silver Layer: stg_ad_spend
+SELECT
+    spend_date,
+    platform,
+    target_channel,
+    campaign_name,
+    spend_idr,
+    impressions,
+    clicks
+FROM "postgres"."raw_bronze"."raw_ad_spend"
+  );
+[0m06:32:41.952342 [debug] [Thread-3 (]: On model.dbt_ekatunggal.stg_order_items: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_order_items"} */
+
+  create view "postgres"."public_stg_silver"."stg_order_items__dbt_tmp"
+    
+    
+  as (
+    -- Silver Layer: stg_order_items
+SELECT
+    item_id,
+    order_id,
+    product_sku,
+    product_name,
+    category,
+    quantity,
+    unit_price AS unit_price_idr,
+    unit_cogs AS unit_cogs_idr,
+    line_gross_amount AS line_gross_idr,
+    line_cogs_amount AS line_cogs_idr
+FROM "postgres"."raw_bronze"."raw_order_items"
+  );
+[0m06:32:41.954342 [debug] [Thread-4 (]: On model.dbt_ekatunggal.stg_orders: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_orders"} */
+
+  create view "postgres"."public_stg_silver"."stg_orders__dbt_tmp"
+    
+    
+  as (
+    -- Silver Layer: stg_orders
+-- Menghilangkan 15 webhook duplicate menggunakan ROW_NUMBER()
+WITH ranked_orders AS (
+    SELECT
+        order_id,
+        customer_id,
+        channel AS sales_channel,
+        LOWER(TRIM(order_status)) AS order_status,
+        order_date AS ordered_at,
+        CAST(order_date AS DATE) AS order_date,
+        DATE_TRUNC('month', CAST(order_date AS DATE)) AS order_month,
+        gross_amount AS gmv_gross_idr,
+        discount_amount AS discount_idr,
+        channel_fee_amount AS marketplace_fee_idr,
+        return_shipping_loss AS return_shipping_loss_idr,
+        payment_method,
+        ROW_NUMBER() OVER (
+            PARTITION BY order_id 
+            ORDER BY order_date ASC
+        ) AS rn
+    FROM "postgres"."raw_bronze"."raw_orders"
+)
+SELECT
+    order_id,
+    customer_id,
+    sales_channel,
+    order_status,
+    ordered_at,
+    order_date,
+    order_month,
+    payment_method,
+    gmv_gross_idr,
+    discount_amount_idr,
+    CASE 
+        WHEN order_status = 'completed' THEN gmv_gross_idr 
+        ELSE 0 
+    END AS realized_gross_idr,
+    CASE 
+        WHEN order_status = 'completed' THEN (gmv_gross_idr - discount_amount_idr) 
+        ELSE 0 
+    END AS net_sales_idr,
+    CASE 
+        WHEN order_status = 'completed' THEN marketplace_fee_idr 
+        ELSE 0 
+    END AS marketplace_fee_idr,
+    CASE 
+        WHEN order_status = 'returned' THEN return_shipping_loss_idr 
+        ELSE 0 
+    END AS return_shipping_loss_idr
+FROM (
+    SELECT 
+        order_id, customer_id, sales_channel, order_status, ordered_at, order_date, order_month, payment_method,
+        gmv_gross_idr, discount_idr AS discount_amount_idr, marketplace_fee_idr, return_shipping_loss_idr, rn
+    FROM ranked_orders
+) ranked
+WHERE rn = 1
+  );
+[0m06:32:41.956316 [debug] [Thread-1 (]: Opening a new connection, currently in state init
+[0m06:32:41.958315 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m06:32:41.960317 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m06:32:45.032791 [debug] [Thread-2 (]: SQL status: CREATE VIEW in 3.083 seconds
+[0m06:32:45.043603 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.stg_customers"
+[0m06:32:45.043603 [debug] [Thread-2 (]: On model.dbt_ekatunggal.stg_customers: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_customers"} */
+alter table "postgres"."public_stg_silver"."stg_customers__dbt_tmp" rename to "stg_customers"
+[0m06:32:45.333270 [debug] [Thread-3 (]: SQL status: CREATE VIEW in 3.376 seconds
+[0m06:32:45.338965 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.stg_order_items"
+[0m06:32:45.339585 [debug] [Thread-2 (]: SQL status: ALTER TABLE in 0.291 seconds
+[0m06:32:45.339585 [debug] [Thread-1 (]: SQL status: CREATE VIEW in 3.385 seconds
+[0m06:32:45.342068 [debug] [Thread-3 (]: On model.dbt_ekatunggal.stg_order_items: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_order_items"} */
+alter table "postgres"."public_stg_silver"."stg_order_items__dbt_tmp" rename to "stg_order_items"
+[0m06:32:45.377677 [debug] [Thread-2 (]: On model.dbt_ekatunggal.stg_customers: COMMIT
+[0m06:32:45.382911 [debug] [Thread-1 (]: Using postgres connection "model.dbt_ekatunggal.stg_ad_spend"
+[0m06:32:45.382911 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.stg_customers"
+[0m06:32:45.387386 [debug] [Thread-1 (]: On model.dbt_ekatunggal.stg_ad_spend: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_ad_spend"} */
+alter table "postgres"."public_stg_silver"."stg_ad_spend__dbt_tmp" rename to "stg_ad_spend"
+[0m06:32:45.388972 [debug] [Thread-2 (]: On model.dbt_ekatunggal.stg_customers: COMMIT
+[0m06:32:45.628011 [debug] [Thread-1 (]: SQL status: ALTER TABLE in 0.237 seconds
+[0m06:32:45.633224 [debug] [Thread-1 (]: On model.dbt_ekatunggal.stg_ad_spend: COMMIT
+[0m06:32:45.634222 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.249 seconds
+[0m06:32:45.634222 [debug] [Thread-2 (]: SQL status: COMMIT in 0.243 seconds
+[0m06:32:45.636242 [debug] [Thread-1 (]: Using postgres connection "model.dbt_ekatunggal.stg_ad_spend"
+[0m06:32:45.639253 [debug] [Thread-3 (]: On model.dbt_ekatunggal.stg_order_items: COMMIT
+[0m06:32:45.654195 [debug] [Thread-2 (]: Applying DROP to: "postgres"."public_stg_silver"."stg_customers__dbt_backup"
+[0m06:32:45.655843 [debug] [Thread-1 (]: On model.dbt_ekatunggal.stg_ad_spend: COMMIT
+[0m06:32:45.658125 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.stg_order_items"
+[0m06:32:45.676036 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.stg_customers"
+[0m06:32:45.679901 [debug] [Thread-3 (]: On model.dbt_ekatunggal.stg_order_items: COMMIT
+[0m06:32:45.682757 [debug] [Thread-2 (]: On model.dbt_ekatunggal.stg_customers: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_customers"} */
+drop view if exists "postgres"."public_stg_silver"."stg_customers__dbt_backup" cascade
+[0m06:32:45.949718 [debug] [Thread-3 (]: SQL status: COMMIT in 0.265 seconds
+[0m06:32:45.955101 [debug] [Thread-3 (]: Applying DROP to: "postgres"."public_stg_silver"."stg_order_items__dbt_backup"
+[0m06:32:45.956091 [debug] [Thread-1 (]: SQL status: COMMIT in 0.278 seconds
+[0m06:32:45.957101 [debug] [Thread-2 (]: SQL status: DROP VIEW in 0.272 seconds
+[0m06:32:45.959079 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.stg_order_items"
+[0m06:32:45.964544 [debug] [Thread-1 (]: Applying DROP to: "postgres"."public_stg_silver"."stg_ad_spend__dbt_backup"
+[0m06:32:45.971137 [debug] [Thread-2 (]: On model.dbt_ekatunggal.stg_customers: Close
+[0m06:32:45.972453 [debug] [Thread-3 (]: On model.dbt_ekatunggal.stg_order_items: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_order_items"} */
+drop view if exists "postgres"."public_stg_silver"."stg_order_items__dbt_backup" cascade
+[0m06:32:45.976471 [debug] [Thread-1 (]: Using postgres connection "model.dbt_ekatunggal.stg_ad_spend"
+[0m06:32:45.982871 [debug] [Thread-1 (]: On model.dbt_ekatunggal.stg_ad_spend: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_ad_spend"} */
+drop view if exists "postgres"."public_stg_silver"."stg_ad_spend__dbt_backup" cascade
+[0m06:32:45.989249 [debug] [Thread-2 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FE816A10>]}
+[0m06:32:45.991520 [info ] [Thread-2 (]: 2 of 6 OK created sql view model public_stg_silver.stg_customers ............... [[32mCREATE VIEW[0m in 4.18s]
+[0m06:32:45.994974 [debug] [Thread-2 (]: Finished running node model.dbt_ekatunggal.stg_customers
+[0m06:32:46.257339 [debug] [Thread-1 (]: SQL status: DROP VIEW in 0.273 seconds
+[0m06:32:46.259702 [debug] [Thread-3 (]: SQL status: DROP VIEW in 0.277 seconds
+[0m06:32:46.260704 [debug] [Thread-4 (]: SQL status: CREATE VIEW in 4.301 seconds
+[0m06:32:46.264527 [debug] [Thread-1 (]: On model.dbt_ekatunggal.stg_ad_spend: Close
+[0m06:32:46.267529 [debug] [Thread-3 (]: On model.dbt_ekatunggal.stg_order_items: Close
+[0m06:32:46.272733 [debug] [Thread-4 (]: Using postgres connection "model.dbt_ekatunggal.stg_orders"
+[0m06:32:46.275227 [debug] [Thread-1 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FE7A6750>]}
+[0m06:32:46.276228 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FE8502D0>]}
+[0m06:32:46.278254 [debug] [Thread-4 (]: On model.dbt_ekatunggal.stg_orders: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_orders"} */
+alter table "postgres"."public_stg_silver"."stg_orders__dbt_tmp" rename to "stg_orders"
+[0m06:32:46.279263 [info ] [Thread-1 (]: 1 of 6 OK created sql view model public_stg_silver.stg_ad_spend ................ [[32mCREATE VIEW[0m in 4.48s]
+[0m06:32:46.281808 [info ] [Thread-3 (]: 3 of 6 OK created sql view model public_stg_silver.stg_order_items ............. [[32mCREATE VIEW[0m in 4.47s]
+[0m06:32:46.284895 [debug] [Thread-1 (]: Finished running node model.dbt_ekatunggal.stg_ad_spend
+[0m06:32:46.287231 [debug] [Thread-3 (]: Finished running node model.dbt_ekatunggal.stg_order_items
+[0m06:32:46.670308 [debug] [Thread-4 (]: SQL status: ALTER TABLE in 0.387 seconds
+[0m06:32:46.675400 [debug] [Thread-4 (]: On model.dbt_ekatunggal.stg_orders: COMMIT
+[0m06:32:46.676405 [debug] [Thread-4 (]: Using postgres connection "model.dbt_ekatunggal.stg_orders"
+[0m06:32:46.677857 [debug] [Thread-4 (]: On model.dbt_ekatunggal.stg_orders: COMMIT
+[0m06:32:47.589667 [debug] [Thread-4 (]: SQL status: COMMIT in 0.913 seconds
+[0m06:32:47.596202 [debug] [Thread-4 (]: Applying DROP to: "postgres"."public_stg_silver"."stg_orders__dbt_backup"
+[0m06:32:47.600152 [debug] [Thread-4 (]: Using postgres connection "model.dbt_ekatunggal.stg_orders"
+[0m06:32:47.602169 [debug] [Thread-4 (]: On model.dbt_ekatunggal.stg_orders: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.stg_orders"} */
+drop view if exists "postgres"."public_stg_silver"."stg_orders__dbt_backup" cascade
+[0m06:32:47.900827 [debug] [Thread-4 (]: SQL status: DROP VIEW in 0.297 seconds
+[0m06:32:47.904543 [debug] [Thread-4 (]: On model.dbt_ekatunggal.stg_orders: Close
+[0m06:32:47.906022 [debug] [Thread-4 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FE82C9D0>]}
+[0m06:32:47.908040 [info ] [Thread-4 (]: 4 of 6 OK created sql view model public_stg_silver.stg_orders .................. [[32mCREATE VIEW[0m in 6.10s]
+[0m06:32:47.911387 [debug] [Thread-4 (]: Finished running node model.dbt_ekatunggal.stg_orders
+[0m06:32:47.914414 [debug] [Thread-2 (]: Began running node model.dbt_ekatunggal.fct_orders
+[0m06:32:47.916648 [info ] [Thread-2 (]: 5 of 6 START sql table model public_mart_gold.fct_orders ....................... [RUN]
+[0m06:32:47.918349 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly model.dbt_ekatunggal.stg_customers, now model.dbt_ekatunggal.fct_orders)
+[0m06:32:47.920012 [debug] [Thread-2 (]: Began compiling node model.dbt_ekatunggal.fct_orders
+[0m06:32:47.926480 [debug] [Thread-2 (]: Writing injected SQL for node "model.dbt_ekatunggal.fct_orders"
+[0m06:32:47.930483 [debug] [Thread-2 (]: Began executing node model.dbt_ekatunggal.fct_orders
+[0m06:32:47.973840 [debug] [Thread-2 (]: Writing runtime sql for node "model.dbt_ekatunggal.fct_orders"
+[0m06:32:47.973840 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.fct_orders"
+[0m06:32:47.980877 [debug] [Thread-2 (]: On model.dbt_ekatunggal.fct_orders: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.fct_orders"} */
+
+  
+    
+
+  create  table "postgres"."public_mart_gold"."fct_orders__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Gold Layer: fct_orders
+WITH item_cogs_agg AS (
+    SELECT
+        order_id,
+        SUM(quantity) AS total_items_qty,
+        SUM(line_cogs_idr) AS cogs_idr
+    FROM "postgres"."public_stg_silver"."stg_order_items"
+    GROUP BY order_id
+),
+customer_order_seq AS (
+    SELECT
+        order_id,
+        ROW_NUMBER() OVER (
+            PARTITION BY customer_id 
+            ORDER BY ordered_at ASC
+        ) AS customer_order_seq
+    FROM "postgres"."public_stg_silver"."stg_orders"
+)
+SELECT
+    o.order_id,
+    o.customer_id,
+    c.cohort_month AS customer_cohort_month,
+    c.acquisition_channel,
+    c.acquisition_campaign,
+    o.sales_channel,
+    o.order_status,
+    o.ordered_at,
+    o.order_date,
+    o.order_month,
+    o.payment_method,
+    s.customer_order_seq,
+    CASE 
+        WHEN s.customer_order_seq = 1 THEN 'New Customer Order' 
+        ELSE 'Repeat Customer Order' 
+    END AS buyer_type,
+    COALESCE(i.total_items_qty, 0) AS total_items_qty,
+    o.gmv_gross_idr,
+    o.realized_gross_idr,
+    o.discount_amount_idr AS discount_idr,
+    o.net_sales_idr,
+    o.marketplace_fee_idr,
+    CASE 
+        WHEN o.order_status = 'completed' THEN COALESCE(i.cogs_idr, 0) 
+        ELSE 0 
+    END AS cogs_idr,
+    o.return_shipping_loss_idr,
+    (
+        o.net_sales_idr - 
+        o.marketplace_fee_idr - 
+        (CASE WHEN o.order_status = 'completed' THEN COALESCE(i.cogs_idr, 0) ELSE 0 END) - 
+        o.return_shipping_loss_idr
+    ) AS contribution_margin_before_ads_idr
+FROM "postgres"."public_stg_silver"."stg_orders" o
+LEFT JOIN "postgres"."public_stg_silver"."stg_customers" c ON o.customer_id = c.customer_id
+LEFT JOIN item_cogs_agg i ON o.order_id = i.order_id
+LEFT JOIN customer_order_seq s ON o.order_id = s.order_id
+  );
+  
+[0m06:32:47.982888 [debug] [Thread-2 (]: Opening a new connection, currently in state closed
+[0m06:32:49.468989 [debug] [Thread-2 (]: SQL status: SELECT 2371 in 1.486 seconds
+[0m06:32:49.481682 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.fct_orders"
+[0m06:32:49.481682 [debug] [Thread-2 (]: On model.dbt_ekatunggal.fct_orders: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.fct_orders"} */
+alter table "postgres"."public_mart_gold"."fct_orders__dbt_tmp" rename to "fct_orders"
+[0m06:32:49.744970 [debug] [Thread-2 (]: SQL status: ALTER TABLE in 0.261 seconds
+[0m06:32:49.748969 [debug] [Thread-2 (]: On model.dbt_ekatunggal.fct_orders: COMMIT
+[0m06:32:49.750970 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.fct_orders"
+[0m06:32:49.751969 [debug] [Thread-2 (]: On model.dbt_ekatunggal.fct_orders: COMMIT
+[0m06:32:49.945102 [debug] [Thread-2 (]: SQL status: COMMIT in 0.192 seconds
+[0m06:32:49.949101 [debug] [Thread-2 (]: Applying DROP to: "postgres"."public_mart_gold"."fct_orders__dbt_backup"
+[0m06:32:49.955101 [debug] [Thread-2 (]: Using postgres connection "model.dbt_ekatunggal.fct_orders"
+[0m06:32:49.957102 [debug] [Thread-2 (]: On model.dbt_ekatunggal.fct_orders: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.fct_orders"} */
+drop table if exists "postgres"."public_mart_gold"."fct_orders__dbt_backup" cascade
+[0m06:32:50.190189 [debug] [Thread-2 (]: SQL status: DROP TABLE in 0.232 seconds
+[0m06:32:50.193166 [debug] [Thread-2 (]: On model.dbt_ekatunggal.fct_orders: Close
+[0m06:32:50.196393 [debug] [Thread-2 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FE96B410>]}
+[0m06:32:50.199408 [info ] [Thread-2 (]: 5 of 6 OK created sql table model public_mart_gold.fct_orders .................. [[32mSELECT 2371[0m in 2.28s]
+[0m06:32:50.201674 [debug] [Thread-2 (]: Finished running node model.dbt_ekatunggal.fct_orders
+[0m06:32:50.204598 [debug] [Thread-3 (]: Began running node model.dbt_ekatunggal.mart_channel_unit_economics
+[0m06:32:50.206403 [info ] [Thread-3 (]: 6 of 6 START sql table model public_mart_gold.mart_channel_unit_economics ...... [RUN]
+[0m06:32:50.208635 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly model.dbt_ekatunggal.stg_order_items, now model.dbt_ekatunggal.mart_channel_unit_economics)
+[0m06:32:50.210141 [debug] [Thread-3 (]: Began compiling node model.dbt_ekatunggal.mart_channel_unit_economics
+[0m06:32:50.217686 [debug] [Thread-3 (]: Writing injected SQL for node "model.dbt_ekatunggal.mart_channel_unit_economics"
+[0m06:32:50.220379 [debug] [Thread-3 (]: Began executing node model.dbt_ekatunggal.mart_channel_unit_economics
+[0m06:32:50.229557 [debug] [Thread-3 (]: Writing runtime sql for node "model.dbt_ekatunggal.mart_channel_unit_economics"
+[0m06:32:50.232559 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.mart_channel_unit_economics"
+[0m06:32:50.233556 [debug] [Thread-3 (]: On model.dbt_ekatunggal.mart_channel_unit_economics: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.mart_channel_unit_economics"} */
+
+  
+    
+
+  create  table "postgres"."public_mart_gold"."mart_channel_unit_economics__dbt_tmp"
+  
+  
+    as
+  
+  (
+    -- Gold Layer: mart_channel_unit_economics
+WITH monthly_orders AS (
+    SELECT
+        sales_channel AS channel,
+        order_month,
+        COUNT(order_id) AS total_orders,
+        COUNT(CASE WHEN order_status = 'completed' THEN 1 END) AS completed_orders,
+        COUNT(CASE WHEN order_status = 'returned' THEN 1 END) AS returned_orders,
+        COUNT(CASE WHEN order_status = 'cancelled' THEN 1 END) AS cancelled_orders,
+        COUNT(DISTINCT CASE WHEN buyer_type = 'New Customer Order' AND order_status = 'completed' THEN customer_id END) AS new_paying_customers,
+        COUNT(CASE WHEN buyer_type = 'Repeat Customer Order' AND order_status = 'completed' THEN 1 END) AS repeat_orders,
+        SUM(gmv_gross_idr) AS gmv_gross_idr,
+        SUM(realized_gross_idr) AS realized_gross_idr,
+        SUM(discount_idr) AS discount_idr,
+        SUM(net_sales_idr) AS net_sales_idr,
+        SUM(marketplace_fee_idr) AS marketplace_fee_idr,
+        SUM(cogs_idr) AS cogs_idr,
+        SUM(return_shipping_loss_idr) AS return_shipping_loss_idr,
+        SUM(contribution_margin_before_ads_idr) AS cm_before_ads_idr
+    FROM "postgres"."public_mart_gold"."fct_orders"
+    GROUP BY sales_channel, order_month
+),
+monthly_ads AS (
+    SELECT
+        target_channel AS channel,
+        DATE_TRUNC('month', spend_date) AS ad_month,
+        SUM(spend_idr) AS ad_spend_idr,
+        SUM(impressions) AS total_impressions,
+        SUM(clicks) AS total_clicks
+    FROM "postgres"."public_stg_silver"."stg_ad_spend"
+    GROUP BY target_channel, DATE_TRUNC('month', spend_date)
+)
+SELECT
+    o.channel,
+    o.order_month,
+    o.total_orders,
+    o.completed_orders,
+    o.returned_orders,
+    o.cancelled_orders,
+    o.new_paying_customers,
+    o.repeat_orders,
+    ROUND((o.returned_orders + o.cancelled_orders)::NUMERIC / NULLIF(o.total_orders, 0) * 100, 2) AS fail_rate_pct,
+    o.gmv_gross_idr,
+    o.realized_gross_idr,
+    o.discount_idr,
+    o.net_sales_idr,
+    o.marketplace_fee_idr,
+    o.cogs_idr,
+    o.return_shipping_loss_idr,
+    o.cm_before_ads_idr,
+    COALESCE(a.ad_spend_idr, 0) AS ad_spend_idr,
+    (o.cm_before_ads_idr - COALESCE(a.ad_spend_idr, 0)) AS net_profit_idr,
+    ROUND(o.gmv_gross_idr::NUMERIC / NULLIF(COALESCE(a.ad_spend_idr, 0), 0), 2) AS vanity_roas,
+    ROUND(o.cm_before_ads_idr::NUMERIC / NULLIF(COALESCE(a.ad_spend_idr, 0), 0), 2) AS contribution_roas,
+    ROUND(COALESCE(a.ad_spend_idr, 0)::NUMERIC / NULLIF(o.new_paying_customers, 0), 0) AS cac_idr,
+    ROUND((o.cm_before_ads_idr - COALESCE(a.ad_spend_idr, 0))::NUMERIC / NULLIF(o.net_sales_idr, 0) * 100, 2) AS net_margin_pct
+FROM monthly_orders o
+LEFT JOIN monthly_ads a 
+    ON o.channel = a.channel 
+    AND o.order_month = a.ad_month
+ORDER BY o.order_month ASC, o.channel ASC
+  );
+  
+[0m06:32:50.235556 [debug] [Thread-3 (]: Opening a new connection, currently in state closed
+[0m06:32:51.378640 [debug] [Thread-3 (]: SQL status: SELECT 18 in 1.142 seconds
+[0m06:32:51.385676 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.mart_channel_unit_economics"
+[0m06:32:51.386677 [debug] [Thread-3 (]: On model.dbt_ekatunggal.mart_channel_unit_economics: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.mart_channel_unit_economics"} */
+alter table "postgres"."public_mart_gold"."mart_channel_unit_economics__dbt_tmp" rename to "mart_channel_unit_economics"
+[0m06:32:51.563370 [debug] [Thread-3 (]: SQL status: ALTER TABLE in 0.175 seconds
+[0m06:32:51.567848 [debug] [Thread-3 (]: On model.dbt_ekatunggal.mart_channel_unit_economics: COMMIT
+[0m06:32:51.568828 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.mart_channel_unit_economics"
+[0m06:32:51.569828 [debug] [Thread-3 (]: On model.dbt_ekatunggal.mart_channel_unit_economics: COMMIT
+[0m06:32:51.682578 [debug] [Thread-3 (]: SQL status: COMMIT in 0.112 seconds
+[0m06:32:51.686578 [debug] [Thread-3 (]: Applying DROP to: "postgres"."public_mart_gold"."mart_channel_unit_economics__dbt_backup"
+[0m06:32:51.688578 [debug] [Thread-3 (]: Using postgres connection "model.dbt_ekatunggal.mart_channel_unit_economics"
+[0m06:32:51.690581 [debug] [Thread-3 (]: On model.dbt_ekatunggal.mart_channel_unit_economics: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "model.dbt_ekatunggal.mart_channel_unit_economics"} */
+drop table if exists "postgres"."public_mart_gold"."mart_channel_unit_economics__dbt_backup" cascade
+[0m06:32:51.871556 [debug] [Thread-3 (]: SQL status: DROP TABLE in 0.179 seconds
+[0m06:32:51.874645 [debug] [Thread-3 (]: On model.dbt_ekatunggal.mart_channel_unit_economics: Close
+[0m06:32:51.878620 [debug] [Thread-3 (]: Sending event: {'category': 'dbt', 'action': 'run_model', 'label': '73b3437e-d9af-460d-83d3-44771d398c7d', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FE96A550>]}
+[0m06:32:51.881619 [info ] [Thread-3 (]: 6 of 6 OK created sql table model public_mart_gold.mart_channel_unit_economics . [[32mSELECT 18[0m in 1.67s]
+[0m06:32:51.884418 [debug] [Thread-3 (]: Finished running node model.dbt_ekatunggal.mart_channel_unit_economics
+[0m06:32:51.893223 [debug] [MainThread]: On master: COMMIT
+[0m06:32:51.897628 [debug] [MainThread]: Using postgres connection "master"
+[0m06:32:51.899727 [debug] [MainThread]: On master: COMMIT
+[0m06:32:51.901181 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m06:32:53.833470 [debug] [MainThread]: SQL status: COMMIT in 1.932 seconds
+[0m06:32:53.834485 [debug] [MainThread]: On master: Close
+[0m06:32:53.836496 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m06:32:53.838486 [debug] [MainThread]: Connection 'create_postgres_public_stg_silver' was properly closed.
+[0m06:32:53.839486 [debug] [MainThread]: Connection 'create_postgres_public_mart_gold' was properly closed.
+[0m06:32:53.840485 [debug] [MainThread]: Connection 'list_postgres_public_stg_silver' was properly closed.
+[0m06:32:53.841505 [debug] [MainThread]: Connection 'list_postgres_public_mart_gold' was properly closed.
+[0m06:32:53.842507 [debug] [MainThread]: Connection 'model.dbt_ekatunggal.stg_ad_spend' was properly closed.
+[0m06:32:53.843485 [debug] [MainThread]: Connection 'model.dbt_ekatunggal.fct_orders' was properly closed.
+[0m06:32:53.844486 [debug] [MainThread]: Connection 'model.dbt_ekatunggal.mart_channel_unit_economics' was properly closed.
+[0m06:32:53.845487 [debug] [MainThread]: Connection 'model.dbt_ekatunggal.stg_orders' was properly closed.
+[0m06:32:53.846485 [info ] [MainThread]: 
+[0m06:32:53.848256 [info ] [MainThread]: Finished running 2 table models, 4 view models in 0 hours 0 minutes and 23.22 seconds (23.22s).
+[0m06:32:53.852492 [debug] [MainThread]: Command end result
+[0m06:32:53.926427 [debug] [MainThread]: Wrote artifact WritableManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\manifest.json
+[0m06:32:53.934032 [debug] [MainThread]: Wrote artifact SemanticManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\semantic_manifest.json
+[0m06:32:53.940730 [debug] [MainThread]: Wrote artifact OsiDocument to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\osi_document.json
+[0m06:32:53.962715 [debug] [MainThread]: Wrote artifact RunExecutionResult to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\run_results.json
+[0m06:32:53.963811 [info ] [MainThread]: 
+[0m06:32:53.965753 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m06:32:53.967333 [info ] [MainThread]: 
+[0m06:32:53.969769 [info ] [MainThread]: Done. PASS=6 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=6
+[0m06:32:53.974365 [debug] [MainThread]: Command `dbt run` succeeded at 06:32:53.973797 after 35.55 seconds
+[0m06:32:53.975565 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FC9B2350>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FC84A950>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x000002F8FC8E5F10>]}
+[0m06:32:53.977053 [debug] [MainThread]: Flushing usage events
+[0m06:32:57.087007 [debug] [MainThread]: An error was encountered while trying to flush usage events
+[0m06:33:16.359755 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'start', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F94463E50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F9437A390>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F9437A2D0>]}
+
+
+============================== 06:33:16.372826 | 84f998ce-343f-435c-a3c6-4f8faa6f37f4 ==============================
+[0m06:33:16.372826 [info ] [MainThread]: Running with dbt=1.13.0-b1
+[0m06:33:16.375845 [debug] [MainThread]: running dbt with arguments {'maximum_seed_size_mib': '1', 'no_print': 'None', 'version_check': 'True', 'warn_error_options': 'WarnErrorOptionsV2(error=[], warn=[], silence=[])', 'target_path': 'None', 'static_parser': 'True', 'printer_width': '80', 'write_json': 'True', 'empty': 'None', 'log_cache_events': 'False', 'introspect': 'True', 'cache_selected_only': 'False', 'log_format': 'default', 'debug': 'False', 'fail_fast': 'False', 'profiles_dir': '.', 'send_anonymous_usage_stats': 'True', 'quiet': 'False', 'warn_error': 'None', 'partial_parse': 'True', 'indirect_selection': 'eager', 'hints_enabled': 'True', 'invocation_command': 'dbt test --profiles-dir .', 'use_experimental_parser': 'False', 'use_colors': 'True', 'log_path': 'C:\\Users\\Ragada Rahmansyah\\Documents\\antigravity\\quirky-hertz\\aura_d2c_analytics\\dbt_ekatunggal\\logs'}
+[0m06:33:16.378182 [debug] [MainThread]: Tracking: tracking
+[0m06:33:17.567143 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'project_id', 'label': '84f998ce-343f-435c-a3c6-4f8faa6f37f4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F9460C510>]}
+[0m06:33:17.789770 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'adapter_info', 'label': '84f998ce-343f-435c-a3c6-4f8faa6f37f4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F8F99E510>]}
+[0m06:33:17.793791 [info ] [MainThread]: Registered adapter: postgres=1.11.0
+[0m06:33:19.722852 [debug] [MainThread]: checksum: 7d0e4b1a1e5ec4da9b62c3f3dc8aaf640f9f12c7ad6713507d102302506d7242, vars: {}, profile: dbt_ekatunggal, target: dev, version: 1.13.0b1
+[0m06:33:20.423900 [debug] [MainThread]: Partial parsing enabled: 0 files deleted, 0 files added, 0 files changed.
+[0m06:33:20.424900 [debug] [MainThread]: Nothing changed, skipping partial parsing.
+[0m06:33:20.426902 [debug] [MainThread]: Partial parsing enabled, no changes found, skipping parsing
+[0m06:33:20.459478 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'load_project', 'label': '84f998ce-343f-435c-a3c6-4f8faa6f37f4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F94AE8490>]}
+[0m06:33:21.032553 [debug] [MainThread]: Wrote artifact WritableManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\manifest.json
+[0m06:33:21.043544 [debug] [MainThread]: Wrote artifact SemanticManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\semantic_manifest.json
+[0m06:33:21.181184 [debug] [MainThread]: Wrote artifact OsiDocument to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\osi_document.json
+[0m06:33:21.352680 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'resource_counts', 'label': '84f998ce-343f-435c-a3c6-4f8faa6f37f4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F91FF6A10>]}
+[0m06:33:21.355679 [info ] [MainThread]: Found 6 models, 9 data tests, 4 sources, 477 macros
+[0m06:33:21.358475 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '84f998ce-343f-435c-a3c6-4f8faa6f37f4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F94A623D0>]}
+[0m06:33:21.369690 [info ] [MainThread]: 
+[0m06:33:21.371487 [info ] [MainThread]: Concurrency: 4 threads (target='dev')
+[0m06:33:21.373688 [info ] [MainThread]: 
+[0m06:33:21.379728 [debug] [MainThread]: Acquiring new postgres connection 'master'
+[0m06:33:21.403257 [debug] [ThreadPool]: Acquiring new postgres connection 'list_postgres_public_mart_gold'
+[0m06:33:21.424247 [debug] [ThreadPool]: Acquiring new postgres connection 'list_postgres_public_stg_silver'
+[0m06:33:22.049910 [debug] [ThreadPool]: Using postgres connection "list_postgres_public_mart_gold"
+[0m06:33:22.050910 [debug] [ThreadPool]: Using postgres connection "list_postgres_public_stg_silver"
+[0m06:33:22.051910 [debug] [ThreadPool]: On list_postgres_public_mart_gold: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "list_postgres_public_mart_gold"} */
+select
+      'postgres' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'public_mart_gold'
+    union all
+    select
+      'postgres' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'public_mart_gold'
+    union all
+    select
+      'postgres' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'public_mart_gold'
+    union all
+    select distinct
+     'postgres' as database,
+     proname as name,
+     ns.nspname as schema,
+     'function' as type
+    from pg_proc
+     join pg_namespace as ns on pronamespace = ns.oid
+    where ns.nspname ilike 'public_mart_gold'
+  
+[0m06:33:22.053907 [debug] [ThreadPool]: On list_postgres_public_stg_silver: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "list_postgres_public_stg_silver"} */
+select
+      'postgres' as database,
+      tablename as name,
+      schemaname as schema,
+      'table' as type
+    from pg_tables
+    where schemaname ilike 'public_stg_silver'
+    union all
+    select
+      'postgres' as database,
+      viewname as name,
+      schemaname as schema,
+      'view' as type
+    from pg_views
+    where schemaname ilike 'public_stg_silver'
+    union all
+    select
+      'postgres' as database,
+      matviewname as name,
+      schemaname as schema,
+      'materialized_view' as type
+    from pg_matviews
+    where schemaname ilike 'public_stg_silver'
+    union all
+    select distinct
+     'postgres' as database,
+     proname as name,
+     ns.nspname as schema,
+     'function' as type
+    from pg_proc
+     join pg_namespace as ns on pronamespace = ns.oid
+    where ns.nspname ilike 'public_stg_silver'
+  
+[0m06:33:22.054910 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m06:33:22.055910 [debug] [ThreadPool]: Opening a new connection, currently in state init
+[0m06:33:23.324226 [debug] [ThreadPool]: SQL status: SELECT 2 in 1.269 seconds
+[0m06:33:23.328365 [debug] [ThreadPool]: On list_postgres_public_mart_gold: ROLLBACK
+[0m06:33:23.328365 [debug] [ThreadPool]: SQL status: SELECT 4 in 1.272 seconds
+[0m06:33:23.332680 [debug] [ThreadPool]: On list_postgres_public_stg_silver: ROLLBACK
+[0m06:33:23.419444 [debug] [ThreadPool]: On list_postgres_public_mart_gold: Close
+[0m06:33:23.423658 [debug] [ThreadPool]: On list_postgres_public_stg_silver: Close
+[0m06:33:23.433049 [debug] [MainThread]: Using postgres connection "master"
+[0m06:33:23.435273 [debug] [MainThread]: On master: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "connection_name": "master"} */
+select distinct
+        dependent_namespace.nspname as dependent_schema,
+        dependent_class.relname as dependent_name,
+        referenced_namespace.nspname as referenced_schema,
+        referenced_class.relname as referenced_name
+
+    -- Query for views: views are entries in pg_class with an entry in pg_rewrite, but we avoid
+    -- a seq scan on pg_rewrite by leveraging the fact there is an "internal" row in pg_depend for
+    -- the view...
+    from pg_class as dependent_class
+    join pg_namespace as dependent_namespace on dependent_namespace.oid = dependent_class.relnamespace
+    join pg_depend as dependent_depend on dependent_depend.refobjid = dependent_class.oid
+        and dependent_depend.classid = 'pg_rewrite'::regclass
+        and dependent_depend.refclassid = 'pg_class'::regclass
+        and dependent_depend.deptype = 'i'
+
+    -- ... and via pg_depend (that has a row per column, hence the need for "distinct" above, and
+    -- making sure to exclude the internal row to avoid a view appearing to depend on itself)...
+    join pg_depend as joining_depend on joining_depend.objid = dependent_depend.objid
+        and joining_depend.classid = 'pg_rewrite'::regclass
+        and joining_depend.refclassid = 'pg_class'::regclass
+        and joining_depend.refobjid != dependent_depend.refobjid
+
+    -- ... we can find the tables they query from in pg_class, but excluding system tables. Note we
+    -- don't need need to exclude _dependent_ system tables, because they only query from other
+    -- system tables, and so are automatically excluded by excluding _referenced_ system tables
+    join pg_class as referenced_class on referenced_class.oid = joining_depend.refobjid
+    join pg_namespace as referenced_namespace on referenced_namespace.oid = referenced_class.relnamespace
+        and referenced_namespace.nspname != 'information_schema'
+        and referenced_namespace.nspname not like 'pg\_%'
+
+    order by
+        dependent_schema, dependent_name, referenced_schema, referenced_name;
+[0m06:33:23.436273 [debug] [MainThread]: Opening a new connection, currently in state init
+[0m06:33:24.350771 [debug] [MainThread]: SQL status: SELECT 5 in 0.914 seconds
+[0m06:33:24.354871 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'runnable_timing', 'label': '84f998ce-343f-435c-a3c6-4f8faa6f37f4', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F94C23890>]}
+[0m06:33:24.357271 [debug] [MainThread]: On master: ROLLBACK
+[0m06:33:24.513556 [debug] [MainThread]: On master: COMMIT
+[0m06:33:24.515556 [debug] [MainThread]: Using postgres connection "master"
+[0m06:33:24.516574 [debug] [MainThread]: On master: COMMIT
+[0m06:33:24.727127 [debug] [MainThread]: SQL status: COMMIT in 0.209 seconds
+[0m06:33:24.729307 [debug] [MainThread]: On master: Close
+[0m06:33:24.746791 [debug] [Thread-1 (]: Began running node test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b
+[0m06:33:24.747789 [debug] [Thread-2 (]: Began running node test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc
+[0m06:33:24.748899 [debug] [Thread-3 (]: Began running node test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0
+[0m06:33:24.750267 [debug] [Thread-4 (]: Began running node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b
+[0m06:33:24.751733 [info ] [Thread-1 (]: 1 of 9 START test not_null_fct_orders_customer_id .............................. [RUN]
+[0m06:33:24.753956 [info ] [Thread-2 (]: 2 of 9 START test not_null_fct_orders_net_sales_idr ............................ [RUN]
+[0m06:33:24.757000 [info ] [Thread-3 (]: 3 of 9 START test not_null_fct_orders_order_id ................................. [RUN]
+[0m06:33:24.760289 [info ] [Thread-4 (]: 4 of 9 START test not_null_mart_channel_unit_economics_channel ................. [RUN]
+[0m06:33:24.762771 [debug] [Thread-1 (]: Acquiring new postgres connection 'test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b'
+[0m06:33:24.765257 [debug] [Thread-2 (]: Acquiring new postgres connection 'test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc'
+[0m06:33:24.768135 [debug] [Thread-3 (]: Acquiring new postgres connection 'test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0'
+[0m06:33:24.770431 [debug] [Thread-4 (]: Acquiring new postgres connection 'test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b'
+[0m06:33:24.772685 [debug] [Thread-1 (]: Began compiling node test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b
+[0m06:33:24.774941 [debug] [Thread-2 (]: Began compiling node test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc
+[0m06:33:24.777101 [debug] [Thread-3 (]: Began compiling node test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0
+[0m06:33:24.779097 [debug] [Thread-4 (]: Began compiling node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b
+[0m06:33:24.833428 [debug] [Thread-1 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b"
+[0m06:33:24.850500 [debug] [Thread-2 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc"
+[0m06:33:24.867167 [debug] [Thread-3 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0"
+[0m06:33:24.886010 [debug] [Thread-4 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b"
+[0m06:33:24.891445 [debug] [Thread-1 (]: Began executing node test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b
+[0m06:33:24.893451 [debug] [Thread-2 (]: Began executing node test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc
+[0m06:33:24.903441 [debug] [Thread-4 (]: Began executing node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b
+[0m06:33:24.934880 [debug] [Thread-3 (]: Began executing node test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0
+[0m06:33:24.941432 [debug] [Thread-1 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b"
+[0m06:33:24.947746 [debug] [Thread-2 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc"
+[0m06:33:24.954067 [debug] [Thread-4 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b"
+[0m06:33:24.960080 [debug] [Thread-3 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0"
+[0m06:33:24.966214 [debug] [Thread-1 (]: Using postgres connection "test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b"
+[0m06:33:24.968199 [debug] [Thread-1 (]: On test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select customer_id
+from "postgres"."public_mart_gold"."fct_orders"
+where customer_id is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:24.970216 [debug] [Thread-1 (]: Opening a new connection, currently in state init
+[0m06:33:24.980527 [debug] [Thread-2 (]: Using postgres connection "test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc"
+[0m06:33:24.981527 [debug] [Thread-2 (]: On test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select net_sales_idr
+from "postgres"."public_mart_gold"."fct_orders"
+where net_sales_idr is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:24.983522 [debug] [Thread-4 (]: Using postgres connection "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b"
+[0m06:33:24.984575 [debug] [Thread-3 (]: Using postgres connection "test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0"
+[0m06:33:24.985569 [debug] [Thread-2 (]: Opening a new connection, currently in state init
+[0m06:33:24.987554 [debug] [Thread-4 (]: On test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select channel
+from "postgres"."public_mart_gold"."mart_channel_unit_economics"
+where channel is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:24.988548 [debug] [Thread-3 (]: On test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select order_id
+from "postgres"."public_mart_gold"."fct_orders"
+where order_id is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:24.992098 [debug] [Thread-4 (]: Opening a new connection, currently in state init
+[0m06:33:24.993626 [debug] [Thread-3 (]: Opening a new connection, currently in state init
+[0m06:33:26.027031 [debug] [Thread-2 (]: SQL status: SELECT 1 in 1.041 seconds
+[0m06:33:26.044052 [debug] [Thread-2 (]: On test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc: ROLLBACK
+[0m06:33:26.046040 [debug] [Thread-1 (]: SQL status: SELECT 1 in 1.076 seconds
+[0m06:33:26.051519 [debug] [Thread-1 (]: On test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b: ROLLBACK
+[0m06:33:26.054518 [debug] [Thread-4 (]: SQL status: SELECT 1 in 1.063 seconds
+[0m06:33:26.060520 [debug] [Thread-4 (]: On test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b: ROLLBACK
+[0m06:33:26.062519 [debug] [Thread-3 (]: SQL status: SELECT 1 in 1.068 seconds
+[0m06:33:26.067517 [debug] [Thread-3 (]: On test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0: ROLLBACK
+[0m06:33:26.132957 [debug] [Thread-2 (]: On test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc: Close
+[0m06:33:26.136289 [info ] [Thread-2 (]: 2 of 9 PASS not_null_fct_orders_net_sales_idr .................................. [[32mPASS[0m in 1.37s]
+[0m06:33:26.139580 [debug] [Thread-2 (]: Finished running node test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc
+[0m06:33:26.145712 [debug] [Thread-2 (]: Began running node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0
+[0m06:33:26.149073 [debug] [Thread-1 (]: On test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b: Close
+[0m06:33:26.150767 [info ] [Thread-2 (]: 5 of 9 START test not_null_mart_channel_unit_economics_order_month ............. [RUN]
+[0m06:33:26.157750 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.dbt_ekatunggal.not_null_fct_orders_net_sales_idr.dac1dbe4dc, now test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0)
+[0m06:33:26.155271 [info ] [Thread-1 (]: 1 of 9 PASS not_null_fct_orders_customer_id .................................... [[32mPASS[0m in 1.39s]
+[0m06:33:26.159694 [debug] [Thread-4 (]: On test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b: Close
+[0m06:33:26.161744 [debug] [Thread-2 (]: Began compiling node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0
+[0m06:33:26.167333 [debug] [Thread-1 (]: Finished running node test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b
+[0m06:33:26.188963 [debug] [Thread-3 (]: On test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0: Close
+[0m06:33:26.197748 [debug] [Thread-2 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0"
+[0m06:33:26.190964 [info ] [Thread-4 (]: 4 of 9 PASS not_null_mart_channel_unit_economics_channel ....................... [[32mPASS[0m in 1.42s]
+[0m06:33:26.200613 [debug] [Thread-1 (]: Began running node test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64
+[0m06:33:26.205132 [info ] [Thread-3 (]: 3 of 9 PASS not_null_fct_orders_order_id ....................................... [[32mPASS[0m in 1.44s]
+[0m06:33:26.207567 [debug] [Thread-4 (]: Finished running node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b
+[0m06:33:26.210528 [debug] [Thread-2 (]: Began executing node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0
+[0m06:33:26.212009 [info ] [Thread-1 (]: 6 of 9 START test not_null_stg_orders_order_id ................................. [RUN]
+[0m06:33:26.215124 [debug] [Thread-3 (]: Finished running node test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0
+[0m06:33:26.218049 [debug] [Thread-4 (]: Began running node test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043
+[0m06:33:26.226194 [debug] [Thread-2 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0"
+[0m06:33:26.228815 [debug] [Thread-1 (]: Re-using an available connection from the pool (formerly test.dbt_ekatunggal.not_null_fct_orders_customer_id.16fe324f7b, now test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64)
+[0m06:33:26.230815 [debug] [Thread-3 (]: Began running node test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5
+[0m06:33:26.232817 [info ] [Thread-4 (]: 7 of 9 START test not_null_stg_orders_sales_channel ............................ [RUN]
+[0m06:33:26.235502 [debug] [Thread-1 (]: Began compiling node test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64
+[0m06:33:26.237881 [debug] [Thread-2 (]: Using postgres connection "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0"
+[0m06:33:26.239280 [info ] [Thread-3 (]: 8 of 9 START test unique_fct_orders_order_id ................................... [RUN]
+[0m06:33:26.243629 [debug] [Thread-4 (]: Re-using an available connection from the pool (formerly test.dbt_ekatunggal.not_null_mart_channel_unit_economics_channel.92ebf8177b, now test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043)
+[0m06:33:26.264915 [debug] [Thread-1 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64"
+[0m06:33:26.266916 [debug] [Thread-2 (]: On test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select order_month
+from "postgres"."public_mart_gold"."mart_channel_unit_economics"
+where order_month is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:26.269914 [debug] [Thread-3 (]: Re-using an available connection from the pool (formerly test.dbt_ekatunggal.not_null_fct_orders_order_id.4e687af8d0, now test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5)
+[0m06:33:26.271915 [debug] [Thread-4 (]: Began compiling node test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043
+[0m06:33:26.274917 [debug] [Thread-2 (]: Opening a new connection, currently in state closed
+[0m06:33:26.276918 [debug] [Thread-3 (]: Began compiling node test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5
+[0m06:33:26.279920 [debug] [Thread-1 (]: Began executing node test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64
+[0m06:33:26.302268 [debug] [Thread-4 (]: Writing injected SQL for node "test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043"
+[0m06:33:26.333637 [debug] [Thread-3 (]: Writing injected SQL for node "test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5"
+[0m06:33:26.339644 [debug] [Thread-1 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64"
+[0m06:33:26.345777 [debug] [Thread-4 (]: Began executing node test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043
+[0m06:33:26.352851 [debug] [Thread-4 (]: Writing runtime sql for node "test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043"
+[0m06:33:26.353847 [debug] [Thread-3 (]: Began executing node test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5
+[0m06:33:26.357192 [debug] [Thread-1 (]: Using postgres connection "test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64"
+[0m06:33:26.366288 [debug] [Thread-3 (]: Writing runtime sql for node "test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5"
+[0m06:33:26.368423 [debug] [Thread-1 (]: On test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select order_id
+from "postgres"."public_stg_silver"."stg_orders"
+where order_id is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:26.370433 [debug] [Thread-4 (]: Using postgres connection "test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043"
+[0m06:33:26.373602 [debug] [Thread-1 (]: Opening a new connection, currently in state closed
+[0m06:33:26.375603 [debug] [Thread-3 (]: Using postgres connection "test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5"
+[0m06:33:26.376605 [debug] [Thread-4 (]: On test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+
+
+select sales_channel
+from "postgres"."public_stg_silver"."stg_orders"
+where sales_channel is null
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:26.379603 [debug] [Thread-3 (]: On test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+select
+    order_id as unique_field,
+    count(*) as n_records
+
+from "postgres"."public_mart_gold"."fct_orders"
+where order_id is not null
+group by order_id
+having count(*) > 1
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:26.381605 [debug] [Thread-4 (]: Opening a new connection, currently in state closed
+[0m06:33:26.383600 [debug] [Thread-3 (]: Opening a new connection, currently in state closed
+[0m06:33:27.048935 [debug] [Thread-2 (]: SQL status: SELECT 1 in 0.774 seconds
+[0m06:33:27.052931 [debug] [Thread-2 (]: On test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0: ROLLBACK
+[0m06:33:27.111551 [debug] [Thread-3 (]: SQL status: SELECT 1 in 0.727 seconds
+[0m06:33:27.115293 [debug] [Thread-3 (]: On test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5: ROLLBACK
+[0m06:33:27.128288 [debug] [Thread-1 (]: SQL status: SELECT 1 in 0.754 seconds
+[0m06:33:27.129304 [debug] [Thread-4 (]: SQL status: SELECT 1 in 0.748 seconds
+[0m06:33:27.133305 [debug] [Thread-1 (]: On test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64: ROLLBACK
+[0m06:33:27.137304 [debug] [Thread-4 (]: On test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043: ROLLBACK
+[0m06:33:27.139305 [debug] [Thread-2 (]: On test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0: Close
+[0m06:33:27.142306 [info ] [Thread-2 (]: 5 of 9 PASS not_null_mart_channel_unit_economics_order_month ................... [[32mPASS[0m in 0.99s]
+[0m06:33:27.144911 [debug] [Thread-2 (]: Finished running node test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0
+[0m06:33:27.147070 [debug] [Thread-2 (]: Began running node test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a
+[0m06:33:27.148680 [info ] [Thread-2 (]: 9 of 9 START test unique_stg_orders_order_id ................................... [RUN]
+[0m06:33:27.151066 [debug] [Thread-2 (]: Re-using an available connection from the pool (formerly test.dbt_ekatunggal.not_null_mart_channel_unit_economics_order_month.3d67ffb0e0, now test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a)
+[0m06:33:27.152788 [debug] [Thread-2 (]: Began compiling node test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a
+[0m06:33:27.171330 [debug] [Thread-2 (]: Writing injected SQL for node "test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a"
+[0m06:33:27.175588 [debug] [Thread-2 (]: Began executing node test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a
+[0m06:33:27.179612 [debug] [Thread-2 (]: Writing runtime sql for node "test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a"
+[0m06:33:27.182633 [debug] [Thread-2 (]: Using postgres connection "test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a"
+[0m06:33:27.184611 [debug] [Thread-2 (]: On test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a: /* {"app": "dbt", "dbt_version": "1.13.0b1", "profile_name": "dbt_ekatunggal", "target_name": "dev", "node_id": "test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a"} */
+
+    
+    select
+      count(*) as failures,
+      count(*) != 0 as should_warn,
+      count(*) != 0 as should_error
+    from (
+      
+    
+  
+    
+    
+
+select
+    order_id as unique_field,
+    count(*) as n_records
+
+from "postgres"."public_stg_silver"."stg_orders"
+where order_id is not null
+group by order_id
+having count(*) > 1
+
+
+
+  
+  
+      
+    ) dbt_internal_test
+[0m06:33:27.185611 [debug] [Thread-2 (]: Opening a new connection, currently in state closed
+[0m06:33:27.200982 [debug] [Thread-3 (]: On test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5: Close
+[0m06:33:27.203982 [info ] [Thread-3 (]: 8 of 9 PASS unique_fct_orders_order_id ......................................... [[32mPASS[0m in 0.93s]
+[0m06:33:27.205843 [debug] [Thread-3 (]: Finished running node test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5
+[0m06:33:27.227074 [debug] [Thread-4 (]: On test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043: Close
+[0m06:33:27.230495 [info ] [Thread-4 (]: 7 of 9 PASS not_null_stg_orders_sales_channel .................................. [[32mPASS[0m in 0.99s]
+[0m06:33:27.233643 [debug] [Thread-4 (]: Finished running node test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043
+[0m06:33:27.234659 [debug] [Thread-1 (]: On test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64: Close
+[0m06:33:27.238677 [info ] [Thread-1 (]: 6 of 9 PASS not_null_stg_orders_order_id ....................................... [[32mPASS[0m in 1.01s]
+[0m06:33:27.240705 [debug] [Thread-1 (]: Finished running node test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64
+[0m06:33:27.954933 [debug] [Thread-2 (]: SQL status: SELECT 1 in 0.769 seconds
+[0m06:33:27.959521 [debug] [Thread-2 (]: On test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a: ROLLBACK
+[0m06:33:28.051191 [debug] [Thread-2 (]: On test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a: Close
+[0m06:33:28.053198 [info ] [Thread-2 (]: 9 of 9 PASS unique_stg_orders_order_id ......................................... [[32mPASS[0m in 0.90s]
+[0m06:33:28.055770 [debug] [Thread-2 (]: Finished running node test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a
+[0m06:33:28.060867 [debug] [MainThread]: On master: COMMIT
+[0m06:33:28.062593 [debug] [MainThread]: Using postgres connection "master"
+[0m06:33:28.063701 [debug] [MainThread]: On master: COMMIT
+[0m06:33:28.065723 [debug] [MainThread]: Opening a new connection, currently in state closed
+[0m06:33:28.786106 [debug] [MainThread]: SQL status: COMMIT in 0.721 seconds
+[0m06:33:28.788258 [debug] [MainThread]: On master: Close
+[0m06:33:28.793416 [debug] [MainThread]: Connection 'master' was properly closed.
+[0m06:33:28.795559 [debug] [MainThread]: Connection 'list_postgres_public_mart_gold' was properly closed.
+[0m06:33:28.796571 [debug] [MainThread]: Connection 'list_postgres_public_stg_silver' was properly closed.
+[0m06:33:28.798917 [debug] [MainThread]: Connection 'test.dbt_ekatunggal.not_null_stg_orders_order_id.81cfe2fe64' was properly closed.
+[0m06:33:28.798917 [debug] [MainThread]: Connection 'test.dbt_ekatunggal.unique_stg_orders_order_id.e3b841c71a' was properly closed.
+[0m06:33:28.800161 [debug] [MainThread]: Connection 'test.dbt_ekatunggal.unique_fct_orders_order_id.523ddb6ce5' was properly closed.
+[0m06:33:28.801187 [debug] [MainThread]: Connection 'test.dbt_ekatunggal.not_null_stg_orders_sales_channel.999622e043' was properly closed.
+[0m06:33:28.803187 [info ] [MainThread]: 
+[0m06:33:28.806396 [info ] [MainThread]: Finished running 9 data tests in 0 hours 0 minutes and 7.42 seconds (7.42s).
+[0m06:33:28.813284 [debug] [MainThread]: Command end result
+[0m06:33:28.941498 [debug] [MainThread]: Wrote artifact WritableManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\manifest.json
+[0m06:33:28.954265 [debug] [MainThread]: Wrote artifact SemanticManifest to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\semantic_manifest.json
+[0m06:33:28.966946 [debug] [MainThread]: Wrote artifact OsiDocument to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\osi_document.json
+[0m06:33:29.002120 [debug] [MainThread]: Wrote artifact RunExecutionResult to C:\Users\Ragada Rahmansyah\Documents\antigravity\quirky-hertz\aura_d2c_analytics\dbt_ekatunggal\target\run_results.json
+[0m06:33:29.004278 [info ] [MainThread]: 
+[0m06:33:29.006542 [info ] [MainThread]: [32mCompleted successfully[0m
+[0m06:33:29.009418 [info ] [MainThread]: 
+[0m06:33:29.012717 [info ] [MainThread]: Done. PASS=9 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=9
+[0m06:33:29.019845 [debug] [MainThread]: Command `dbt test` succeeded at 06:33:29.019281 after 13.18 seconds
+[0m06:33:29.022074 [debug] [MainThread]: Sending event: {'category': 'dbt', 'action': 'invocation', 'label': 'end', 'context': [<snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F94463D50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F94355F50>, <snowplow_tracker.self_describing_json.SelfDescribingJson object at 0x0000020F8DA21A50>]}
+[0m06:33:29.024408 [debug] [MainThread]: Flushing usage events
+[0m06:33:31.577157 [debug] [MainThread]: An error was encountered while trying to flush usage events

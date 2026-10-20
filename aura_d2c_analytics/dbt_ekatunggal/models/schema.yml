@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Tabel transaksi order hasil pembersihan dan deduplikasi webhook."
+    columns:
+      - name: order_id
+        description: "Primary key unik order transaksi."
+        tests:
+          - unique
+          - not_null
+      - name: sales_channel
+        tests:
+          - not_null
+
+  - name: fct_orders
+    description: "Tabel fakta analitik utama Ekatunggal Group."
+    columns:
+      - name: order_id
+        tests:
+          - unique
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+      - name: net_sales_idr
+        tests:
+          - not_null
+
+  - name: mart_channel_unit_economics
+    description: "Tabel mart unit economics bulanan per cabang distribusi."
+    columns:
+      - name: channel
+        tests:
+          - not_null
+      - name: order_month
+        tests:
+          - not_null

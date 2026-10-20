@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: raw_bronze
+    schema: raw_bronze
+    description: "Tabel mentah hasil ekstraksi dari file CSV operasional dan tagihan iklan."
+    tables:
+      - name: raw_customers
+        description: "Data registrasi klien pabrik mebel dan springbed."
+      - name: raw_orders
+        description: "Data transaksi Purchase Order (PO) mentah termasuk anomali webhook duplicate."
+      - name: raw_order_items
+        description: "Rincian SKU produk kasur dan sofa dalam tiap PO."
+      - name: raw_ad_spend
+        description: "Biaya kampanye pemasaran harian per cabang target."

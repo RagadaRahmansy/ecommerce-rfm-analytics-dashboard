@@ -131,14 +131,14 @@ export default function App() {
         {/* Warehouse Telemetry Specification Block */}
         <div className="p-5 border-t border-[#141413] bg-[#EAE7DF] hidden lg:block space-y-2 font-mono text-[11px]">
           <div className="flex items-center justify-between border-b border-[#C9C6BC] pb-1.5">
-            <span className="text-[#52514E] uppercase">STORAGE ENGINE</span>
-            <span className="font-bold text-[#166534]">READY</span>
+            <span className="text-[#52514E] uppercase">STATUS DATA WAREHOUSE</span>
+            <span className="font-bold text-[#166534]">ONLINE</span>
           </div>
           <div className="text-[#3D3C3A] space-y-0.5">
             <div>DB: aura_analytics.duckdb</div>
-            <div>LAYERS: Bronze / Silver / Gold</div>
-            <div>ASSERTIONS: 3/3 PASSED</div>
-            <div>RECORDS: 8,249 INGESTED</div>
+            <div>LAYER: Bronze / Silver / Gold</div>
+            <div>VALIDASI INTEGRITAS: 3/3 LOLOS</div>
+            <div>TOTAL DATA: 8.249 BARIS</div>
           </div>
         </div>
       </aside>
@@ -148,9 +148,9 @@ export default function App() {
         {/* Top Specification Strip */}
         <header className="sticky top-0 z-20 bg-[#FAF9F5]/95 backdrop-blur-sm border-b border-[#141413] px-6 py-2.5 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3 text-[11px] font-mono text-[#52514E]">
-            <span className="uppercase font-bold text-[#141413]">AUTHOR: SENIOR DATA ANALYST (5 YOE)</span>
+            <span className="uppercase font-bold text-[#141413]">PT EKATUNGGAL TUNAS MANDIRI</span>
             <span>/</span>
-            <span>PERIOD: JAN–JUN 2026 (H1 AUDIT)</span>
+            <span>AUDIT DISTRIBUSI H1 2026</span>
             <span className="hidden md:inline">/</span>
             <span className="hidden md:inline">{payload.warehouse_engine}</span>
           </div>

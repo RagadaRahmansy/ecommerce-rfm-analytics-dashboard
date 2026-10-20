@@ -1,0 +1,25 @@
+name: 'dbt_ekatunggal'
+version: '1.0.0'
+config-version: 2
+
+profile: 'dbt_ekatunggal'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  dbt_ekatunggal:
+    staging:
+      +schema: stg_silver
+      +materialized: view
+    marts:
+      +schema: mart_gold
+      +materialized: table
